@@ -3938,7 +3938,7 @@ function epgGetEveningSoon(data) {
   if (!data || !data.epg_list || !data.epg_list.length) return null;
   const now = new Date();
   const threshold = new Date(now);
-  threshold.setHours(21, 10, 0, 0);
+  threshold.setHours(21, 25, 0, 0);
   const searchFrom = now < threshold ? threshold : now;
   for (let i = 0; i < data.epg_list.length; i++) {
     const p = data.epg_list[i];
