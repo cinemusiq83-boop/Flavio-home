@@ -765,6 +765,62 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .toast { position:fixed; bottom:30px; right:30px; z-index:3000; background:var(--dark3); border:1px solid var(--gold); color:var(--text); padding:14px 24px; border-radius:2px; font-size:.82rem; letter-spacing:.1em; transform:translateX(200px); opacity:0; transition:all .4s; }
 .toast.show { transform:translateX(0); opacity:1; }
 
+/* ── TV MAINTENANT / CE SOIR TABS ── */
+.tv-time-tabs {
+  display:flex;
+  align-items:center;
+  gap:0;
+  padding:0 40px 0;
+  margin-bottom:0;
+  border-bottom:1px solid rgba(201,168,76,0.1);
+}
+.tv-time-tab {
+  padding:14px 24px;
+  background:transparent;
+  border:none;
+  font-family:'Cinzel',serif;
+  font-size:.82rem;
+  font-weight:700;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:rgba(232,228,216,0.4);
+  cursor:pointer;
+  position:relative;
+  transition:color .25s;
+}
+.tv-time-tab.active {
+  color:var(--text);
+}
+.tv-time-tab.active::after {
+  content:'';
+  position:absolute;
+  bottom:-1px;
+  left:0; right:0;
+  height:2px;
+  background:var(--gold);
+  border-radius:1px 1px 0 0;
+}
+.tv-time-tab:hover { color:var(--text); }
+
+/* Ce soir grid – même style que maintenant mais avec heure affichée différemment */
+.tv-channel-evening-time {
+  font-size:.75rem;
+  font-weight:700;
+  color:var(--gold);
+  background:rgba(201,168,76,0.12);
+  border:1px solid rgba(201,168,76,0.25);
+  border-radius:4px;
+  padding:2px 8px;
+  display:inline-block;
+  margin-bottom:4px;
+  letter-spacing:.05em;
+}
+
+@media(max-width:768px){
+  .tv-time-tabs { padding:0 14px; }
+  .tv-time-tab { padding:11px 16px; font-size:.72rem; letter-spacing:.12em; }
+}
+
 /* ── RESPONSIVE MOBILE ── */
 @media (max-width:768px) {
   .login-box { width:92vw; padding:36px 24px; }
@@ -1114,6 +1170,10 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <!-- TV SECTION -->
   <div id="tvSection" style="display:none; padding-top:64px;">
     <div class="tv-header"><h2>📺 TV en Direct</h2></div>
+    <div class="tv-time-tabs">
+      <button class="tv-time-tab active" id="tvTabMaintenant" onclick="switchTvTimeTab('maintenant')">Maintenant</button>
+      <button class="tv-time-tab" id="tvTabCeSoir" onclick="switchTvTimeTab('cesoir')">Ce Soir</button>
+    </div>
     <div class="tv-categories" id="tvCats"></div>
     <div class="tv-channels-grid" id="tvGrid"></div>
   </div>
@@ -3309,7 +3369,7 @@ const tvChannels = [
 //  STATE
 // ══════════════════════════════════════════
 let isSignup=false, editMode=false, editingProfileId=null, selectedAvatar='', currentAvatarCat='NETFLIX';
-let currentTab='accueil', currentTvCat='Tous';
+let currentTab='accueil', currentTvCat='Tous', currentTvTimeTab='maintenant';
 let heroFilm = allContent.find(m=>m.hero) || allContent[0];
 let currentSerieData = null;
 let currentFilmForVersion = null;
@@ -3601,6 +3661,9 @@ function showTab(tab, el){
 
   if(tab==='tv'){
     document.getElementById('tvSection').style.display='block';
+    currentTvTimeTab='maintenant';
+    document.getElementById('tvTabMaintenant').classList.add('active');
+    document.getElementById('tvTabCeSoir').classList.remove('active');
     renderTV('Tous');
   } else if(tab==='chaines'){
     document.getElementById('chainesSection').style.display='block';
@@ -3748,13 +3811,25 @@ async function epgFetch(chId){
   if(!epgId) return null;
   const key=epgId+'_'+epgGetTodayDate();
   if(epgCache[key]) return epgCache[key];
-  try{
-    const r=await fetch(`https://corsproxy.io/?url=https://epg.pw/api/epg.json?lang%3Dfr%26date%3D${epgGetTodayDate()}%26channel_id%3D${epgId}`);
-    if(!r.ok) return null;
-    const d=await r.json();
-    epgCache[key]=d;
-    return d;
-  }catch(e){return null;}
+  const targetUrl='https://epg.pw/api/epg.json?lang=fr&date='+epgGetTodayDate()+'&channel_id='+epgId;
+  const proxies=[
+    'https://corsproxy.io/?url='+encodeURIComponent(targetUrl),
+    'https://api.allorigins.win/raw?url='+encodeURIComponent(targetUrl),
+    'https://proxy.cors.sh/'+targetUrl,
+    targetUrl
+  ];
+  for(let i=0;i<proxies.length;i++){
+    try{
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),6000);
+      const r=await fetch(proxies[i],{signal:controller.signal});
+      clearTimeout(timer);
+      if(!r.ok) continue;
+      const d=await r.json();
+      if(d&&d.epg_list){epgCache[key]=d;return d;}
+    }catch(e){continue;}
+  }
+  return null;
 }
 function epgGetCurrent(data){
   if(!data||!data.epg_list||!data.epg_list.length) return null;
@@ -3789,6 +3864,16 @@ async function epgUpdateCard(el, chId){
 }
 
 // ══════════════════════════════════════════
+//  TV TIME TAB SWITCH
+// ══════════════════════════════════════════
+function switchTvTimeTab(tab) {
+  currentTvTimeTab = tab;
+  document.getElementById('tvTabMaintenant').classList.toggle('active', tab === 'maintenant');
+  document.getElementById('tvTabCeSoir').classList.toggle('active', tab === 'cesoir');
+  renderTV(currentTvCat);
+}
+
+// ══════════════════════════════════════════
 //  TV
 // ══════════════════════════════════════════
 function renderTV(cat){
@@ -3799,10 +3884,40 @@ function renderTV(cat){
   const grid=document.getElementById('tvGrid');
   grid.innerHTML='';
   const list=cat==='Tous'?tvChannels:tvChannels.filter(c=>c.cat===cat);
-  list.forEach(ch=>{
-    const div=document.createElement('div');
-    div.className='tv-channel';
-    div.innerHTML=`
+
+  if(currentTvTimeTab === 'cesoir') {
+    renderTVCeSoir(list);
+  } else {
+    list.forEach(ch=>{
+      const div=document.createElement('div');
+      div.className='tv-channel';
+      div.innerHTML=`
+        <div class="tv-channel-logo-wrap">
+          <img src="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
+        </div>
+        <div class="tv-channel-info">
+          <div class="tv-channel-program loading">Chargement…</div>
+          <div class="tv-channel-time"></div>
+          <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
+        </div>`;
+      div.onclick=()=>window.open(ch.src,'_blank');
+      grid.appendChild(div);
+      epgUpdateCard(div, ch.id);
+    });
+  }
+}
+
+// ══════════════════════════════════════════
+//  TV CE SOIR — programmes à partir de 20h00
+// ══════════════════════════════════════════
+async function renderTVCeSoir(list) {
+  const grid = document.getElementById('tvGrid');
+  // Afficher les cartes avec état de chargement
+  list.forEach(ch => {
+    const div = document.createElement('div');
+    div.className = 'tv-channel';
+    div.id = `cesoir-ch-${ch.id}`;
+    div.innerHTML = `
       <div class="tv-channel-logo-wrap">
         <img src="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
       </div>
@@ -3811,11 +3926,55 @@ function renderTV(cat){
         <div class="tv-channel-time"></div>
         <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
       </div>`;
-    div.onclick=()=>window.open(ch.src,'_blank');
+    div.onclick = () => window.open(ch.src, '_blank');
     grid.appendChild(div);
-    // Chargement EPG asynchrone
-    epgUpdateCard(div, ch.id);
   });
+
+  // Charger EPG ce soir pour chaque chaîne
+  list.forEach(ch => epgUpdateCardCeSoir(ch.id));
+}
+
+function epgGetEveningSoon(data) {
+  if (!data || !data.epg_list || !data.epg_list.length) return null;
+  const now = new Date();
+  const threshold = new Date(now);
+  threshold.setHours(21, 10, 0, 0);
+  const searchFrom = now < threshold ? threshold : now;
+  for (let i = 0; i < data.epg_list.length; i++) {
+    const p = data.epg_list[i];
+    const start = new Date(p.start_date);
+    const next = data.epg_list[i + 1];
+    const end = next ? new Date(next.start_date) : new Date(start.getTime() + 3600000);
+    if (start <= searchFrom && searchFrom < end) return { ...p, end_date: end };
+  }
+  for (let i = 0; i < data.epg_list.length; i++) {
+    const p = data.epg_list[i];
+    const start = new Date(p.start_date);
+    const next = data.epg_list[i + 1];
+    const end = next ? new Date(next.start_date) : new Date(start.getTime() + 3600000);
+    if (start >= threshold) return { ...p, end_date: end };
+  }
+  return null;
+}
+
+async function epgUpdateCardCeSoir(chId) {
+  const el = document.getElementById('cesoir-ch-' + chId);
+  if (!el) return;
+  const data = await epgFetch(chId);
+  const prog = epgGetEveningSoon(data);
+  const progEl = el.querySelector('.tv-channel-program');
+  const timeEl = el.querySelector('.tv-channel-time');
+  const barFill = el.querySelector('.tv-channel-progress-bar-fill');
+  if (prog) {
+    progEl.textContent = prog.title;
+    progEl.classList.remove('loading');
+    timeEl.textContent = epgFormatTime(prog.start_date) + ' – ' + epgFormatTime(prog.end_date);
+    if (barFill) barFill.style.width = '0%';
+  } else {
+    progEl.textContent = 'Programme indisponible';
+    progEl.classList.remove('loading');
+    timeEl.textContent = '';
+  }
 }
 
 // ══════════════════════════════════════════
