@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Flavio Home">
 <link rel="apple-touch-icon" href="https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=799,height=800/image/534669332/2ad96421-f41f-40d2-b11a-e9e9bdda1fc3.jpg">
 <link rel="icon" type="image/jpg" href="https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=799,height=800/image/534669332/2ad96421-f41f-40d2-b11a-e9e9bdda1fc3.jpg">
+<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; frame-src * youtube.com www.youtube.com youtube-nocookie.com www.youtube-nocookie.com uqload.is uqload.com;">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet">
 
@@ -621,6 +622,29 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   transition:all .2s; text-transform:uppercase;
 }
 .btn-vof:hover { background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.4); }
+
+.btn-trailer {
+  display:flex; align-items:center; gap:8px;
+  padding:14px 24px;
+  background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.4);
+  border-radius:4px; color:var(--gold); font-family:'Raleway',sans-serif;
+  font-size:.85rem; letter-spacing:.06em; cursor:pointer;
+  transition:all .2s; text-transform:uppercase;
+}
+.btn-trailer:hover { background:rgba(201,168,76,0.22); border-color:var(--gold); }
+
+/* Trailer btn on card overlay */
+.trailer-btn-card {
+  width:30px; height:30px; border-radius:50%;
+  background:rgba(201,168,76,0.85); border:none;
+  color:var(--dark); font-size:11px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  align-self:center; transition:transform .2s;
+  font-weight:700; letter-spacing:.02em;
+  flex-shrink:0;
+  title: "Bande-annonce";
+}
+.trailer-btn-card:hover { transform:scale(1.12); background:var(--gold); }
 
 .film-modal-desc {
   font-size:.93rem; color:rgba(232,228,216,0.88);
@@ -2818,7 +2842,7 @@ const allContent = [
   {id:231,title:"Le Livre de la Jungle (2016)",genre:"Disney",type:"film",thumb:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=600,height=800/image/538896219/124f3f66-48e0-4f25-a926-d97092ab246c.png",src:"https://hlsplayer.net/embed?type=m3u8&src=https://zebi.senpai-stream.club/movie/278927/premium-ikcepa/master.m3u8",embed:true},
   {id:232,title:"Le Manoir Hanté",genre:"Disney",type:"film",thumb:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=768,height=1024/image/538896285/eaafea0c-741f-4550-87ed-607e4d05ceb8.png",src:"https://hlsplayer.net/embed?type=m3u8&src=https://zebi.senpai-stream.club/movie/616747/premium-zk0g5a/master.m3u8",embed:true},
   {id:233,title:"Blanche-Neige (2025)",genre:"Disney",type:"film",thumb:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=768,height=1024/image/538895302/0fe55627-44c1-4045-8365-0ce22a17c164.png",backdrop:"https://image.tmdb.org/t/p/original/mfwq2nMBzArzQ7Y9RKE8SKeeTkg.jpg",logo:"https://lumiere-a.akamaihd.net/v1/images/snow_white_logo_en_us_1_f8d4e7b3.png?region=0,0,1280,640",src:"https://hlsplayer.net/embed?type=m3u8&src=https://zebi.senpai-stream.club/movie/447273/premium-x0xkuq/master.m3u8",embed:true},
-  {id:235,title:"Il Était une Fois un Studio",genre:"Disney",type:"film",thumb:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=768,height=1024/image/538894851/3e3088b4-fced-47b4-b96c-2fc7b74bdb9d.png",src:"https://uqload.is/embed-vwytjxszir2v.html",embed:true},
+  {id:235,title:"Il Était une Fois un Studio",genre:"Disney",type:"film",thumb:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=768,height=1024/image/538894851/3e3088b4-fced-47b4-b96c-2fc7b74bdb9d.png",src:"https://youtu.be/_aF8-6Mqb7I?si=ETahk29d36OkEjYz",embed:true},
   // PIXAR
   {id:300,title:"Toy Story",genre:"Pixar",type:"film",thumb:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=600,height=800/image/538899142/5a2bb2fc-9eb2-4e50-9f76-5b0dc885c4a2.png",backdrop:"https://image.tmdb.org/t/p/original/dji4Fm0gCDVb9DQQMRvAI8YNnTz.jpg",logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Toy_story_logo.svg/1280px-Toy_story_logo.svg.png",src:"https://hlsplayer.net/embed?type=m3u8&src=https://zebi.senpai-stream.club/movie/862/premium-wx3p5z/master.m3u8",embed:true},
   {id:301,title:"1001 Pattes",genre:"Pixar",type:"film",thumb:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=768,height=1024/image/538898746/b693f137-6301-4409-8e00-d9a1ad5756c9.png",src:"https://hlsplayer.net/embed?type=m3u8&src=https://zebi.senpai-stream.club/movie/9487/premium-6d54i7/master.m3u8",embed:true},
@@ -3561,6 +3585,11 @@ function showFilmModal(m) {
   }
   const inList = isInListe(m.id);
   actionsHTML += `<button class="btn-vof wishlist-modal-btn" style="border-color:${inList?'var(--gold)':'rgba(255,255,255,0.2)'};color:${inList?'var(--gold)':'white'}" onclick="toggleListeModal(${m.id},this)">${inList?'♥ Ma Liste':'♡ Ma Liste'}</button>`;
+  // Bouton bande-annonce uniquement si trailer disponible
+  const trailerYtId = getTrailerYtId(m.id);
+  if (trailerYtId) {
+    actionsHTML += `<button class="btn-trailer" onclick="closeFilmModal();openTrailer(allContent.find(x=>x.id===${m.id}),'${trailerYtId}')">🎬 Bande-annonce</button>`;
+  }
   document.getElementById('filmModalActions').innerHTML = actionsHTML;
 
   // ── DESCRIPTION ──
@@ -3788,10 +3817,15 @@ function createCard(m){
   const card=document.createElement('div');
   card.className='movie-card';
   const inList=isInListe(m.id);
-  card.innerHTML=`<img src="${m.thumb}" alt="${m.title}" loading="lazy"><div class="movie-card-overlay"><div class="movie-card-title">${m.title}</div><button class="play-btn-small">▶</button></div><button class="wishlist-btn ${inList?'in-list':''}" title="${inList?'Retirer':'Ajouter'}">${inList?'♥':'♡'}</button>`;
+  const trailerYtId = getTrailerYtId(m.id);
+  const trailerBtn = trailerYtId ? `<button class="trailer-btn-card" title="Bande-annonce">🎬</button>` : '';
+  card.innerHTML=`<img src="${m.thumb}" alt="${m.title}" loading="lazy"><div class="movie-card-overlay"><div class="movie-card-title">${m.title}</div><div style="display:flex;gap:6px;align-items:center;justify-content:center;">${trailerBtn}<button class="play-btn-small">▶</button></div></div><button class="wishlist-btn ${inList?'in-list':''}" title="${inList?'Retirer':'Ajouter'}">${inList?'♥':'♡'}</button>`;
   card.onclick = () => showFilmModal(m);
   card.querySelector('.play-btn-small').onclick = (e) => { e.stopPropagation(); handleCardPlay(m); };
   card.querySelector('.wishlist-btn').onclick = (e) => toggleListe(m.id, card.querySelector('.wishlist-btn'), e);
+  if (trailerYtId) {
+    card.querySelector('.trailer-btn-card').onclick = (e) => { e.stopPropagation(); openTrailer(m, trailerYtId); };
+  }
   return card;
 }
 
@@ -4129,8 +4163,220 @@ function showTvBtns(close,ep){
 }
 function loadEpisode(ep){loadMedia(document.getElementById('playerFrame'),ep.src,ep.embed);}
 function loadMedia(frame,src,isEmbed){
-  if(isEmbed)frame.innerHTML=`<iframe src="${src}" allowfullscreen allow="autoplay"></iframe>`;
-  else frame.innerHTML=`<video controls autoplay><source src="${src}" type="application/x-mpegURL"><source src="${src}" type="video/mp4"></video>`;
+  // Détection YouTube
+  const ytMatch = src && src.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) {
+    const ytId = ytMatch[1];
+    frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>`;
+  } else if(isEmbed) {
+    frame.innerHTML=`<iframe src="${src}" allowfullscreen allow="autoplay"></iframe>`;
+  } else {
+    frame.innerHTML=`<video controls autoplay><source src="${src}" type="application/x-mpegURL"><source src="${src}" type="video/mp4"></video>`;
+  }
+}
+
+// ══════════════════════════════════════════
+//  BANDES-ANNONCES YOUTUBE
+// ══════════════════════════════════════════
+// Table des bandes-annonces : id_film → YouTube video ID
+const trailerMap = {
+  // ── Films & Comédies ──────────────────────────────────────────
+  0:   'Zegl3vxOPjM', // Avatar: De Feu et De Cendres
+  1:   'sdPlkUZE98I', // Les 4 Fantastiques: Premiers Pas
+  2:   '-kGmpcYwUPw', // F1 Le Film
+  3:   'u0YnbsyvGS0', // Le Comte de Monte-Cristo
+  5:   '0illlpw6TZ0', // Épouse-Moi Mon Pote
+  7:   'fBYp1DtdHuE', // Lilo & Stitch
+  8:   'k3m3pYa_APg', // Mission: Impossible – The Final Reckoning
+  9:   'e2dBROp482E', // Stars 80
+  10:  'cwbms11jTjY', // Stars 80: La Suite
+  11:  'R59ZeaOcUbY', // Minecraft Le Film
+  12:  '-CN_nvsDggI', // Dalida
+  16:  'PPSe39Wslu8', // Bridget Jones: Folle de Lui
+  17:  '79TAYeADle8', // Les Aventures de Tintin
+  18:  'WGtBtV7GkUA', // Tom & Jerry
+  20:  'bSbA6Aeydbs', // L'Amour Ouf
+  23:  'T8xjeDuhq14', // Space Jam
+  24:  'PUh8ky8peCg', // Space Jam: Nouvelle Ère
+  25:  'ltHWSzuq_hY', // Beetlejuice Beetlejuice
+  26:  'wx0mwd9l93Q', // Le Dîner de Cons
+  27:  '_MPJs0vD_oQ', // Astérix & Obélix: Mission Cléopâtre
+  28:  '5gYCov0Q0qo', // Alibi.com
+  29:  'TNvXaQrS-e0', // Alibi.com 2
+  30:  '0xvw5oX028I', // Super Mario Bros Le Film
+  31:  'y0nsQpecXMA', // Ticket to Paradise
+  32:  'YY-l4YMDIwY', // Le Clan
+  33:  '4Fdzp-pnCcY', // Back to Black
+  37:  'LQE2Wke1YbY', // Whitney Houston: I Wanna Dance With Somebody
+  38:  'Jva4IWuDYLM', // E.T. L'Extra-Terrestre
+  // ── Disney Classiques ─────────────────────────────────────────
+  200: 'eyjc8txuG44', // Blanche-Neige et les 7 Nains
+  202: 'y8N86SuB5EM', // Fantasia
+  209: 'vLDG-clwUpw', // Les 101 Dalmatiens
+  211: 'a7_xUAeMFdA', // Les Aristochats
+  212: 'MM8GOli-DIg', // Le Livre de la Jungle (1967)
+  213: '363URFzzCgg', // La Petite Sirène
+  214: 'lXmvFs0LL58', // La Belle et la Bête
+  218: 'y8N86SuB5EM', // Fantasia 2000
+  219: 'usknkMx8Dk0', // La Princesse et la Grenouille
+  220: 'O_fxAwUcEkA', // Raiponce
+  221: 'igpNoKG_QO0', // Les Mondes de Ralph
+  222: 'uyP70r9PS6A', // La Reine des Neiges
+  224: 'JIl74jge_Wg', // Vaiana
+  225: '5YFUYRZ8XqE', // Ralph 2.0
+  226: 'bdH6itLQ9-0', // Encanto
+  227: 'gal12ijI3Xk', // Wish
+  228: 'HrVJe2P9Uuk', // Vaiana 2
+  229: '2rWXguw0S-k', // Mufasa: Le Roi Lion
+  231: 'nahgbLygyRU', // Le Livre de la Jungle (2016)
+  232: 'kqmS6hnThcc', // Le Manoir Hanté
+  233: 'bpOj1TSOK9Q', // Blanche-Neige (2025)
+  235: 'uZ0KdxVTEjU', // Il Était une Fois un Studio
+  // ── Pixar ─────────────────────────────────────────────────────
+  304: 'TKi8VJmBuLs', // Le Monde de Nemo
+  309: 'p-TdCD6DBfM', // Là-Haut
+  310: 'Pjudwd-uxtg', // Toy Story 3
+  311: 'X0d0KwNGZnY', // Cars 2
+  312: 'I2xI3iviy8k', // Rebelle
+  313: 'Q_v3EKuypuc', // Monstres Academy
+  314: 'J4_8jijwNs0', // Vice-Versa
+  315: 'oQHSWKwZ0PI', // Le Voyage d'Arlo
+  316: 'S_dHUHYv3z0', // Le Monde de Dory
+  317: 'UPe4x4dhtIc', // Cars 3
+  318: 'N3chVJm1XYI', // Coco
+  319: 'sXsr_7Una_A', // Les Indestructibles 2
+  320: 'ZoIxOE74wBw', // Toy Story 4
+  321: 'XRF6uuubGcI', // En Avant
+  322: '3IZkCUGGhgY', // Soul
+  323: 'RA4s_BgzFII', // Luca
+  324: 'cMAiO2X12tk', // Alerte Rouge
+  325: 'q41VoF95fmI', // Buzz l'Éclair
+  326: 'C_oyIKvo5_A', // Élémentaire
+  327: 'Jlme9-wFQxk', // Vice-Versa 2
+  885: 'YFf11ls4fPI', // Elio
+  // ── Marvel ────────────────────────────────────────────────────
+  400: 'b-kTeJhHOhc', // Avengers
+  401: 'ANbZ-zJ7Ig8', // Avengers: L'Ère d'Ultron
+  402: 'wV-Q0o2OQjQ', // Avengers: Endgame
+  403: 'MOwkseguLXQ', // Captain America: Brave New World
+  // ── Star Wars ─────────────────────────────────────────────────
+  506: 'mH9Ygfs5avo', // Le Réveil de la Force
+  507: 'wY708Ky2SG8', // Les Derniers Jedi
+  508: 'pHgwf2eMFnA', // L'Ascension de Skywalker
+  // ── Films ─────────────────────────────────────────────────────
+  607: 'Quf4qIkD3KY', // Titanic
+  608: '-9WPJ46FdAE', // Bohemian Rhapsody
+  611: 'pLSVEs5aT60', // Ferdinand
+  614: '51o_vzq-nwc', // Rio
+  615: '_Gw9owNMFSA', // Rio 2
+  616: 'BPSw48CJamE', // Un Parfait Inconnu
+  618: '30PQMw7TU6M', // Babysitting
+  619: 'EOlk67dEqEk', // Babysitting 2
+  // ── Séries ────────────────────────────────────────────────────
+  702: 'l7nzodXfVsg', // Stranger Things
+  703: 'X7UoGHx7MDI', // Mercredi
+  704: 'GYoD8oOH31M', // Squid Game
+  705: 'ZmX3view-FU', // La Casa de Papel
+  706: 'K0ux91xz-2w', // Tulsa King
+  707: 'uRSr9QlgWA0', // Zorro
+  708: 'Q6iIbLEuHhw', // Ed Gein
+  // ── Harry Potter ──────────────────────────────────────────────
+  800: 'P1BGgqhVGAI', // HP 1 - École des Sorciers
+  801: 'Z3T8PuWuoL0', // HP 2 - Chambre des Secrets
+  802: 'CLncEeVf4ks', // HP 3 - Prisonnier d'Azkaban
+  803: 'XO9rqIgzDL0', // HP 4 - Coupe de Feu
+  804: 'S8-SXEGMmi4', // HP 5 - Ordre du Phénix
+  805: 'yb-VYG3x5E8', // HP 6 - Prince de Sang-Mêlé
+  806: 'HgZZsnleZJQ', // HP 7 - Reliques Partie 1
+  807: 'aiaIfICU-Tk', // HP 8 - Reliques Partie 2
+  808: '-6lMRysFhrM', // La Cité de la Peur
+  809: 'QJwYQt8dHi4', // Gremlins
+  812: 'qmqp7y1e2_E', // Charlie et la Chocolaterie
+  814: 'S2nQInzyqvM', // Elvis
+  816: 'NCZTYdAP6w0', // Sonic le Film
+  817: 'AXuhIwEz1qI', // Sonic 2 le Film
+  819: 'MNXRV-OspoY', // Top Gun Maverick
+  823: 'agCFmyKHWk8', // Bob Marley: One Love
+  824: 'g_Fm4x4UpAY', // Thriller 40
+  832: 'HPfkQ9gMLMY', // Sous la Seine
+  833: 'utrypQUs4yw', // Loups-Garous
+  835: '-jCLr7ncrdI', // Frankenstein
+  838: 'CBy5_81vBP4', // Mylène Farmer Live 2019
+  839: 'JkZzWDaId-s', // Shining
+  847: 'Ldxda5cqQh4', // Full Metal Jacket
+  848: 'OeBVtCT6HW8', // L'Arme Fatale
+  849: '5AdW-ShY9T4', // L'Arme Fatale 2
+  850: 'w0Y6L5Y9M3s', // L'Arme Fatale 3
+  855: 'SqpAO9DbRgU', // La Gloire de mon Père
+  856: '4fPZzPutSVs', // Le Château de ma Mère
+  857: 'AhIJMuPHWVQ', // Bodyguard
+  859: 'b061n9YMVRI', // 1492: Christophe Colomb
+  861: 'lliLY89jdyw', // Zootopie 2
+  862: 'AD1Zb1rz3K4', // Michael Jackson's This Is It
+  863: 'HsPP6xSzQoE', // Interstellar
+  865: 'WsfDNPFfxYM', // Suicide Squad
+  866: 'Ac3pcqUmybQ', // West Side Story 2021
+  868: 'qab4EQDYC-E', // Un Monstre A Paris
+  869: 'Nx2naUGho1k', // Cloclo
+  870: 'AgzoDtfiS_U', // Un P'tit Truc En Plus
+  873: 'U-KPgNsEtIY', // Rocketman
+  874: 'RTZlzdHuIQQ', // Zootopie
+  875: 'XpVndzHUcLA', // Sur la piste du Marsupilami
+  876: 'jcfYjOEiddY', // Nicky Larson et le parfum de cupidon
+  877: 'IeZrKyyXYjY', // Troie
+  883: 'uQUyXgQhbzI', // Apex
+  885: 'YFf11ls4fPI', // Elio
+  889: 'ETX7eodmvyg', // Mylène Farmer Nevermore Le Film
+  890: 'bkGiQajLaH8', // Marsupilami
+  // ── Autres confirmés ──────────────────────────────────────────
+  878: 'G8YArer2Z9k', // Berlin (La Casa de Papel)
+  103: 'zLII-VUbAl0', // La Flamme
+  104: 'qm9_NQIpvhA', // Le Flambeau
+  36:  '7rzmiE-pESk', // Le Cinquième Élément
+  600: 'O1CzgULNRGs', // Avatar
+  601: 'V_pb0BT2USk', // Avatar: La Voie de l'Eau
+};
+
+function getTrailerYtId(filmId) {
+  return trailerMap[filmId] || null;
+}
+
+function handleTrailerClick(m) {
+  const ytId = getTrailerYtId(m.id);
+  if (ytId) {
+    openTrailer(m, ytId);
+  } else {
+    // Ouvrir le player avec un message "bientôt disponible"
+    const overlay = document.getElementById('playerOverlay');
+    const frame = document.getElementById('playerFrame');
+    document.getElementById('playerTitle').textContent = (m ? m.title : '') + ' — Bande-annonce';
+    document.getElementById('episodesPanel').style.display = 'none';
+    document.getElementById('mobileEpUi').style.display = 'none';
+    frame.innerHTML = `
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d0d14;gap:18px;padding:30px;text-align:center;">
+        <div style="font-size:3rem;">🎬</div>
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:#c9a84c;letter-spacing:.2em;text-transform:uppercase;">Bande-annonce</div>
+        <div style="font-family:'Raleway',sans-serif;font-size:1rem;color:#e8e4d8;font-weight:600;">${m ? m.title : ''}</div>
+        <div style="font-family:'Raleway',sans-serif;font-size:.82rem;color:rgba(232,228,216,0.5);max-width:340px;line-height:1.7;">La bande-annonce n'est pas encore configurée pour ce contenu.<br>Ajoutez l'ID YouTube dans <code style="color:#c9a84c;background:rgba(201,168,76,0.1);padding:2px 8px;border-radius:3px;">trailerMap</code> pour l'activer.</div>
+        <div style="font-family:'Cinzel',serif;font-size:.7rem;color:rgba(201,168,76,0.4);letter-spacing:.3em;margin-top:8px;">ID CONTENU : ${m ? m.id : '?'}</div>
+      </div>`;
+    if (isTVMode()) { document.body.classList.add('tv-mode'); showTvBtns(true, false); }
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function openTrailer(m, ytId) {
+  const overlay = document.getElementById('playerOverlay');
+  const frame = document.getElementById('playerFrame');
+  document.getElementById('playerTitle').textContent = (m ? m.title : 'Bande-annonce') + ' — Bande-annonce';
+  document.getElementById('episodesPanel').style.display = 'none';
+  document.getElementById('mobileEpUi').style.display = 'none';
+  frame.innerHTML = '';
+  if (isTVMode()) { document.body.classList.add('tv-mode'); showTvBtns(true, false); }
+  frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>`;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 function closePlayer(){
   document.getElementById('playerOverlay').classList.remove('open');
