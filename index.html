@@ -118,8 +118,51 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 
 /* HERO */
 .hero { height:100vh; position:relative; display:flex; align-items:flex-end; padding:0 60px 80px; overflow:hidden; }
-.hero-bg { position:absolute; inset:0; background:url('https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/b889732f-6372-4c55-86ca-96657e478a7a/compose?aspectRatio=1.78&format=webp&width=1200') center/cover; transition:background-image 0.8s ease; }
+.hero-bg { position:absolute; inset:0; background:url('https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/b889732f-6372-4c55-86ca-96657e478a7a/compose?aspectRatio=1.78&format=webp&width=1200') center/cover; transition:background-image 0s; }
+.hero-bg.fade-out { opacity:0; transition:opacity 0.5s ease; }
+.hero-bg.fade-in  { opacity:1; transition:opacity 0.5s ease; }
 .hero-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(to top,var(--dark) 0%,rgba(5,5,8,0.4) 40%,rgba(5,5,8,0.2) 100%); }
+
+/* HERO SLIDESHOW CONTROLS */
+.hero-slideshow-bar {
+  position:absolute;
+  bottom:28px;
+  right:60px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  z-index:2;
+}
+.hero-dot {
+  width:28px;
+  height:3px;
+  background:rgba(255,255,255,0.25);
+  border-radius:2px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:background .3s;
+  position:relative;
+}
+.hero-dot.active {
+  background:rgba(255,255,255,0.2);
+}
+.hero-dot-fill {
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:0%;
+  background:var(--gold);
+  border-radius:2px;
+  transition:none;
+}
+.hero-dot.active .hero-dot-fill {
+  transition:width linear;
+}
+.hero-content { opacity:1; transition:opacity 0.4s ease; }
+.hero-content.fade-out { opacity:0; }
+@media(max-width:768px){
+  .hero-slideshow-bar { bottom:20px; right:20px; }
+  .hero { padding:0 20px 70px; }
+}
 .hero-content { position:relative; z-index:1; max-width:600px; }
 .hero-badge { display:inline-block; background:var(--gold); color:var(--dark); font-size:.65rem; letter-spacing:.3em; text-transform:uppercase; padding:4px 14px; margin-bottom:18px; font-weight:700; }
 .hero-logo-img { max-width:340px; max-height:130px; object-fit:contain; margin-bottom:18px; display:none; filter:drop-shadow(0 4px 20px rgba(0,0,0,0.8)); }
@@ -1082,7 +1125,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <!-- HERO -->
   <div class="hero" id="heroSection">
     <div class="hero-bg" id="heroBg"></div>
-    <div class="hero-content">
+    <div class="hero-content" id="heroContent">
       <div class="hero-badge">✦ Nouveauté</div>
       <img class="hero-logo-img" id="heroLogoImg" src="" alt="">
       <div class="hero-title" id="heroTitle"></div>
@@ -1092,6 +1135,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
         <button class="btn-more" onclick="showFilmModal(heroFilm)">ℹ Plus d'infos</button>
       </div>
     </div>
+    <div class="hero-slideshow-bar" id="heroSlideshowBar"></div>
   </div>
 
   <!-- PLATEFORMES DE STREAMING -->
@@ -2743,6 +2787,26 @@ const filmMeta = {
   logo:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/9f044032-0b29-4e39-a6fd-9e2f0961ccb7/trim?format=webp&max=800%7C300",
   backdrop:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/23af1150-7a61-4730-8bcd-0865fbfb62dc/compose?format=webp&width=2880"
 },
+894:{
+  desc:"Après avoir reçu un mystérieux appel à l'aide, Mario et Luigi, les célèbres frères plombiers, se retrouvent contraints de se lancer dans un périple intergalactique.",
+  director:"Aaron Horvath, Michael Jelenic",
+  cast:"",
+  year:"2026",
+  duration:"1h38",
+  country:"États-Unis, Japon, France",
+  logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/43474650/canal-ouah/TITLELOGO/MARIO2_myCANAL_Logo_Fiche_Programme_1920x1080-xgAE",
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/43474650/canal-ouah/STD169/MARIO2_myCANAL_16x9_MEA_1920x1080_jpg80_-Bsu6"
+},
+895:{
+  desc:"Mabel, une adolescente passionnée par les animaux, saute sur l'occasion d'essayer une nouvelle technologie révolutionnaire permettant de communiquer avec eux d'une manière totalement inédite… en se glissant dans la peau d'une adorable femelle castor.",
+  director:"Daniel Chong",
+  cast:"",
+  year:"2026",
+  duration:"1h44",
+  country:"États-Unis",
+  logo:"https://lumiere-a.akamaihd.net/v1/images/image_7596de15.png",
+  backdrop:"https://images.justwatch.com/backdrop/343660245/s1440/image.png"
+},
 };
 
 // ══════════════════════════════════════════
@@ -2774,7 +2838,9 @@ const avatarData = {
 // ══════════════════════════════════════════
 const allContent = [
 
+  {id:895,title:"Jumpers",genre:"Pixar",type:"film",thumb:"https://images.justwatch.com/poster/345632216/s718/hoppers.jpg",backdrop:"https://image.tmdb.org/t/p/original/eHLyHCqWMxkLDGrd1IQxPlTSuKD.jpg",logo:"https://lumiere-a.akamaihd.net/v1/images/avatar_3_logo_en_us_1_f8d4e7b3.png?region=0,0,1280,640",src:"https://hlsplayer.net/embed?type=m3u8&src=https://zebi.senpai-stream.club/movie/1327819/premium-w2gipt/master.m3u8",embed:true,hero:true},
   {id:890,title:"Marsupilami",genre:"Comédie",type:"film",thumb:"https://images.justwatch.com/poster/338950783/s718/marsupilami.jpg",backdrop:"https://image.tmdb.org/t/p/original/eHLyHCqWMxkLDGrd1IQxPlTSuKD.jpg",logo:"https://lumiere-a.akamaihd.net/v1/images/avatar_3_logo_en_us_1_f8d4e7b3.png?region=0,0,1280,640",src:"https://hlsplayer.net/embed?type=m3u8&src=https://zebi.senpai-stream.club/movie/1145899/premium-9b5j12/master.m3u8",embed:true,hero:true},
+  {id:894,title:"Super Mario Galaxy Le Film",genre:"Animation",type:"film",thumb:"https://m.media-amazon.com/images/S/pv-target-images/1b68ee50ff8242848f4d5ac211d7aaf3d103661a1455815d558a46c0ceed092c.jpg",backdrop:"https://image.tmdb.org/t/p/original/eHLyHCqWMxkLDGrd1IQxPlTSuKD.jpg",logo:"https://lumiere-a.akamaihd.net/v1/images/avatar_3_logo_en_us_1_f8d4e7b3.png?region=0,0,1280,640",src:"https://hlsplayer.net/embed?type=m3u8&src=https://zebi.senpai-stream.club/movie/1226863/premium-kxl3c9/master.m3u8",embed:true,hero:true},
   {id:891,title:"Michael Jackson: Live at Wembley July 16, 1988 (Live at Wembley July 16, 1988)",genre:"Musique",type:"film",thumb:"https://m.media-amazon.com/images/S/pv-target-images/530b55db55b564a92e18f9827d40efb6010f1bdae2ee34de5381e114b6a07b6d.jpg",backdrop:"https://image.tmdb.org/t/p/original/b9eGWFkNFMxMEhWYnBqMkfCBKxe.jpg",logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Fantastic_Four_logo.svg/1280px-Fantastic_Four_logo.svg.png",src:"https://youtu.be/fSJESeNxmnE?si=hZcrsVg_HixyTOxr",embed:true},
   {id:892,title:"Michael Jackson: Live in Bucharest: The Dangerous Tour",genre:"Musique",type:"film",thumb:"https://m.media-amazon.com/images/S/pv-target-images/821fe88c1424b016abd25d2f8b03b3104518881a29d3ad9de876cd509143bbdd.jpg",backdrop:"https://image.tmdb.org/t/p/original/b9eGWFkNFMxMEhWYnBqMkfCBKxe.jpg",logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Fantastic_Four_logo.svg/1280px-Fantastic_Four_logo.svg.png",src:"https://youtu.be/0gLYAO23Uuo?si=YYXIAC8sJc2lY8Nz",embed:true},
   {id:893,title:"Steamboat Willie",genre:"Disney",type:"film",thumb:"https://files.catbox.moe/a4954e.jpg",backdrop:"https://image.tmdb.org/t/p/original/b9eGWFkNFMxMEhWYnBqMkfCBKxe.jpg",logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Fantastic_Four_logo.svg/1280px-Fantastic_Four_logo.svg.png",src:"https://youtu.be/I5pG1wbRKOg?si=vSYi-Utt6mX9kxm3",embed:true},
@@ -3754,6 +3820,8 @@ function showTab(tab, el){
   document.getElementById('searchResultsSection').style.display='none';
   document.getElementById('maListeSection').style.display='none';
   document.getElementById('searchInput').value='';
+  // Stop slideshow when leaving accueil
+  if(tab !== 'accueil') clearSlideshowTimers();
 
   if(tab==='tv'){
     document.getElementById('tvSection').style.display='block';
@@ -3779,19 +3847,83 @@ function showTab(tab, el){
 // ══════════════════════════════════════════
 //  HERO — logo avec chargement robuste
 // ══════════════════════════════════════════
-function setHero(){
-  const meta = filmMeta[heroFilm.id] || {};
-  // Backdrop
-  const backdropUrl = meta.backdrop || heroFilm.backdrop || heroFilm.thumb;
-  document.getElementById('heroBg').style.backgroundImage = "url('" + backdropUrl + "')";
-  // Logo avec preload robuste
-  const logoUrl = meta.logo || heroFilm.logo || '';
+
+// Slideshow state
+let heroSlides = [];
+let heroSlideIndex = 0;
+let heroSlideshowTimer = null;
+let heroProgressTimer = null;
+const HERO_DURATION = 5000; // 5 secondes
+
+function initHeroSlideshow() {
+  // Les 3 premiers contenus de allContent
+  heroSlides = allContent.slice(0, 3);
+  heroFilm = heroSlides[0];
+  heroSlideIndex = 0;
+  buildSlideshowDots();
+  setHeroSlide(0, true);
+  startSlideshowTimer();
+}
+
+function buildSlideshowDots() {
+  const bar = document.getElementById('heroSlideshowBar');
+  if (!bar) return;
+  bar.innerHTML = heroSlides.map((_, i) => `<div class="hero-dot${i===0?' active':''}" id="hero-dot-${i}" onclick="goToHeroSlide(${i})"><div class="hero-dot-fill" id="hero-fill-${i}"></div></div>`).join('');
+}
+
+function setHeroSlide(idx, instant) {
+  const film = heroSlides[idx];
+  if (!film) return;
+  heroFilm = film;
+
+  const meta = filmMeta[film.id] || {};
+  const backdropUrl = meta.backdrop || film.backdrop || film.thumb;
+  const logoUrl = meta.logo || film.logo || '';
+  const desc = meta.desc ? meta.desc.substring(0,130)+'…' : film.genre + ' · Disponible maintenant sur Flavio Home';
+
+  const bgEl = document.getElementById('heroBg');
+  const contentEl = document.getElementById('heroContent');
   const logoEl = document.getElementById('heroLogoImg');
   const titleEl = document.getElementById('heroTitle');
+  const descEl = document.getElementById('heroDesc');
+
+  if (instant) {
+    bgEl.style.backgroundImage = "url('" + backdropUrl + "')";
+    bgEl.style.opacity = '1';
+    applyHeroLogo(logoEl, titleEl, logoUrl, film.title);
+    descEl.textContent = desc;
+  } else {
+    // Fade out content
+    contentEl.classList.add('fade-out');
+    bgEl.classList.add('fade-out');
+    setTimeout(() => {
+      bgEl.style.backgroundImage = "url('" + backdropUrl + "')";
+      applyHeroLogo(logoEl, titleEl, logoUrl, film.title);
+      descEl.textContent = desc;
+      bgEl.classList.remove('fade-out');
+      bgEl.classList.add('fade-in');
+      contentEl.classList.remove('fade-out');
+      setTimeout(() => bgEl.classList.remove('fade-in'), 500);
+    }, 450);
+  }
+
+  // Update dots
+  heroSlides.forEach((_, i) => {
+    const dot = document.getElementById('hero-dot-'+i);
+    const fill = document.getElementById('hero-fill-'+i);
+    if (!dot || !fill) return;
+    dot.classList.toggle('active', i === idx);
+    // Reset fill
+    fill.style.transition = 'none';
+    fill.style.width = i < idx ? '100%' : '0%';
+  });
+}
+
+function applyHeroLogo(logoEl, titleEl, logoUrl, title) {
   logoEl.style.display = 'none';
   logoEl.src = '';
   titleEl.style.display = 'none';
-  titleEl.textContent = heroFilm.title;
+  titleEl.textContent = title;
   if (logoUrl) {
     const hImg = new Image();
     hImg.onload = () => { logoEl.src = logoUrl; logoEl.style.display = 'block'; };
@@ -3800,8 +3932,45 @@ function setHero(){
   } else {
     titleEl.style.display = 'block';
   }
-  document.getElementById('heroDesc').textContent = (meta.desc ? meta.desc.substring(0,130)+'…' : heroFilm.genre + ' · Disponible maintenant sur Flavio Home');
 }
+
+function startSlideshowTimer() {
+  clearSlideshowTimers();
+  // Animate current dot fill
+  const fill = document.getElementById('hero-fill-'+heroSlideIndex);
+  if (fill) {
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        fill.style.transition = `width ${HERO_DURATION}ms linear`;
+        fill.style.width = '100%';
+      });
+    });
+  }
+  heroSlideshowTimer = setTimeout(() => {
+    const next = (heroSlideIndex + 1) % heroSlides.length;
+    goToHeroSlide(next);
+  }, HERO_DURATION);
+}
+
+function clearSlideshowTimers() {
+  if (heroSlideshowTimer) { clearTimeout(heroSlideshowTimer); heroSlideshowTimer = null; }
+  if (heroProgressTimer) { clearInterval(heroProgressTimer); heroProgressTimer = null; }
+}
+
+function goToHeroSlide(idx) {
+  if (idx === heroSlideIndex) return;
+  heroSlideIndex = idx;
+  setHeroSlide(idx, false);
+  startSlideshowTimer();
+}
+
+function setHero(){
+  // Réinitialise le diaporama quand on revient à l'accueil
+  initHeroSlideshow();
+}
+
 function playHeroFilm(){showFilmModal(heroFilm);}
 
 // ══════════════════════════════════════════
@@ -4368,7 +4537,9 @@ const trailerMap = {
   36:  '7rzmiE-pESk', // Le Cinquième Élément
   600: 'O1CzgULNRGs', // Avatar
   601: 'V_pb0BT2USk', // Avatar: La Voie de l'Eau
-};
+  894: 'BHRN7Oufjw4', // Super Mario Galaxy Le Film
+  895: 'K2tl-7DCb8o', // Jumpers
+  };
 
 function getTrailerYtId(filmId) {
   return trailerMap[filmId] || null;
@@ -4649,7 +4820,8 @@ const platformContent = {
   ],
   // Pixar — tous les films Pixar (ids 300-327) + Luxo Jr
   pixar: [300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,
-          845,885 // Luxo Jr, Elio
+          845,885, // Luxo Jr, Elio
+          895 // Jumpers
   ],
   // Marvel — tous les films Marvel (ids 400-403)
   marvel: [400,401,402,403,
