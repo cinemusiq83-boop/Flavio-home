@@ -1143,6 +1143,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       <a onclick="showTab('tv',this);closeBurger()">TV Direct</a>
       <a onclick="showTab('maliste',this);closeBurger()">Ma Liste</a>
       <a onclick="showTab('chaines',this);closeBurger()">Chaînes</a>
+      <a onclick="showTab('coupedumonde',this);closeBurger()">⚽ Coupe du Monde</a>
     </div>
     <div class="nav-search">
       <span class="nav-search-icon">🔍</span>
@@ -1292,6 +1293,89 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       <div style="font-size:.8rem;color:var(--muted);margin-top:10px;opacity:.6;">Ajoutez des films et séries en cliquant sur ♥</div>
     </div>
   </div>
+
+  <!-- COUPE DU MONDE -->
+  <div id="coupedumondeSection" style="display:none; padding-top:80px; padding-bottom:80px; background:var(--dark);">
+
+    <!-- Bloc 1 : C'est le grand jour ! -->
+    <div style="text-align:center; padding:60px 40px 0;">
+      <h2 style="font-family:'Cinzel',serif; font-size:clamp(1.8rem,4vw,3rem); font-weight:900; letter-spacing:.1em; background:linear-gradient(135deg,var(--gold),var(--gold-light),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">C'est le grand jour !</h2>
+    </div>
+    <div style="padding:40px 40px 0; max-width:1100px; margin:0 auto;">
+      <img src="https://images-fio.6play.fr/v2/images/4956418/raw?auto=avif&blur=0&fit=scale_crop&height=853&interlace=1&optimize=high&width=2560&hash=2fa97e3074214a749481959a67372da83bcf880d" alt="Coupe du Monde" style="width:100%; border-radius:12px; object-fit:cover; max-height:480px; display:block; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    </div>
+
+    <!-- Séparateur -->
+    <div style="height:1px; background:linear-gradient(to right,transparent,rgba(201,168,76,0.25),transparent); margin:70px 40px 0;"></div>
+
+    <!-- Bloc 2 : Suivez le match en direct -->
+    <div style="text-align:center; padding:70px 40px 0;">
+      <h2 style="font-family:'Cinzel',serif; font-size:clamp(1.3rem,2.8vw,2rem); font-weight:700; letter-spacing:.12em; color:var(--text);">Suivez le match en direct</h2>
+    </div>
+    <div style="padding:40px 40px 0; max-width:520px; margin:0 auto;">
+      <a href="https://ffmpeg-m3u.vercel.app/m3u8?url=https%3A%2F%2Fstreaming.videos.lequipe.fr%2Fhls%2Flive%2F2108491%2Fm6%2Fmaster.m3u8" target="_blank" style="text-decoration:none; display:block;" onmouseover="this.querySelector('.cdm-m6-card').style.borderColor='var(--gold)';this.querySelector('.cdm-m6-card').style.transform='translateY(-4px)';this.querySelector('.cdm-m6-card').style.boxShadow='0 16px 48px rgba(201,168,76,0.2)'" onmouseout="this.querySelector('.cdm-m6-card').style.borderColor='var(--glass-border)';this.querySelector('.cdm-m6-card').style.transform='none';this.querySelector('.cdm-m6-card').style.boxShadow='none'">
+        <div class="cdm-m6-card" style="background:var(--glass); border:1px solid var(--glass-border); border-radius:12px; padding:28px 32px; display:flex; align-items:center; gap:28px; transition:all .3s; cursor:pointer;">
+          <img src="https://img2.oqee.net/pictures/875911/wide_generic/h300" alt="M6" style="width:90px; height:60px; object-fit:contain; flex-shrink:0; filter:drop-shadow(0 2px 10px rgba(0,0,0,0.5));">
+          <div style="flex:1; min-width:0;">
+            <div id="cdmM6Program" style="font-size:.9rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:6px;">Chargement…</div>
+            <div id="cdmM6Time" style="font-size:.72rem; color:var(--muted); letter-spacing:.08em;"></div>
+            <div style="margin-top:10px; height:3px; background:rgba(255,255,255,0.07); border-radius:2px; overflow:hidden;">
+              <div id="cdmM6Bar" style="height:100%; width:0%; background:var(--gold); border-radius:2px; transition:width .5s;"></div>
+            </div>
+          </div>
+          <div style="flex-shrink:0; font-size:.72rem; letter-spacing:.15em; text-transform:uppercase; color:var(--gold); font-family:'Cinzel',serif;">Direct ↗</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Séparateur -->
+    <div style="height:1px; background:linear-gradient(to right,transparent,rgba(201,168,76,0.25),transparent); margin:70px 40px 0;"></div>
+
+    <!-- Bloc 3 : Rendez-vous demain -->
+    <div style="text-align:center; padding:70px 40px 0;">
+      <h2 style="font-family:'Cinzel',serif; font-size:clamp(1.3rem,2.8vw,2rem); font-weight:700; letter-spacing:.1em; color:var(--text);">Rendez-vous demain pour votre dose matinale de foot</h2>
+    </div>
+    <div style="padding:40px 40px 0; max-width:1100px; margin:0 auto;">
+      <img src="https://images-fio.6play.fr/v2/images/4958932/raw?auto=avif&blur=0&fit=scale_crop&height=853&interlace=1&optimize=high&width=2560&hash=ec45c1795790ee27cd90cd6d2844a7cb4cb5249d" alt="Dose matinale de foot" style="width:100%; border-radius:12px; object-fit:cover; max-height:480px; display:block; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    </div>
+
+    <!-- Séparateur -->
+    <div style="height:1px; background:linear-gradient(to right,transparent,rgba(201,168,76,0.25),transparent); margin:70px 40px 0;"></div>
+
+    <!-- Bloc 4 : Préparez votre match parfait -->
+    <div style="text-align:center; padding:70px 40px 0;">
+      <h2 style="font-family:'Cinzel',serif; font-size:clamp(1.3rem,2.8vw,2rem); font-weight:700; letter-spacing:.1em; color:var(--text);">Préparez votre match parfait !</h2>
+    </div>
+    <div style="padding:40px 40px 0; max-width:1100px; margin:0 auto;">
+      <a href="https://prf.hn/click/camref:1101l5Kr7t/pubref:CDM_Deliveroo-mcdo/ar:deliveroo/destination:https%3A%2F%2Fdeliveroo.fr%2Ffr%2F" target="_blank" style="display:block; cursor:pointer; transition:transform .3s;" onmouseover="this.style.transform='scale(1.02) translateY(-4px)'" onmouseout="this.style.transform='none'">
+        <img src="https://images-fio.6play.fr/v2/images/4959251/raw?auto=avif&blur=0&fit=scale_crop&height=853&interlace=1&optimize=high&width=2560&hash=267f71420f3176863cb258ecc88bfbe003396936" alt="Préparez votre match parfait" style="width:100%; border-radius:12px; object-fit:cover; max-height:480px; display:block; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+      </a>
+    </div>
+
+    <!-- Séparateur -->
+    <div style="height:1px; background:linear-gradient(to right,transparent,rgba(201,168,76,0.25),transparent); margin:70px 40px 0;"></div>
+
+    <!-- Bloc 5 : Pour ne rien louper -->
+    <div style="text-align:center; padding:70px 40px 0;">
+      <h2 style="font-family:'Cinzel',serif; font-size:clamp(1.3rem,2.8vw,2rem); font-weight:700; letter-spacing:.1em; color:var(--text);">Pour ne rien louper de la compétition :</h2>
+    </div>
+    <div style="padding:40px 40px 0; max-width:1100px; margin:0 auto;">
+      <a href="https://www.rtl.fr/sport/football/resultats/coupe-du-monde" target="_blank" style="display:block; cursor:pointer; transition:transform .3s;" onmouseover="this.style.transform='scale(1.02) translateY(-4px)'" onmouseout="this.style.transform='none'">
+        <img src="https://images-fio.6play.fr/v2/images/4959034/raw?auto=avif&blur=0&fit=scale_crop&height=853&interlace=1&optimize=high&width=2560&hash=e7125435928e06251e77de19b9b4937f22a8fab3" alt="Résultats Coupe du Monde" style="width:100%; border-radius:12px; object-fit:cover; max-height:480px; display:block; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+        <div style="text-align:center; margin-top:16px; font-size:.75rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); font-family:'Cinzel',serif;">Voir les résultats sur RTL ↗</div>
+      </a>
+    </div>
+
+    <!-- Séparateur -->
+    <div style="height:1px; background:linear-gradient(to right,transparent,rgba(201,168,76,0.25),transparent); margin:70px 40px 0;"></div>
+
+    <!-- Bloc 6 : Les premiers matchs de l'Équipe de France -->
+    <div style="text-align:center; padding:70px 40px 0;">
+      <h2 style="font-family:'Cinzel',serif; font-size:clamp(1.3rem,2.8vw,2rem); font-weight:700; letter-spacing:.1em; color:var(--text);">Les premiers matchs de l'Équipe de France</h2>
+    </div>
+    <div style="padding:40px 40px 80px; max-width:1100px; margin:0 auto;">
+      <img src="https://images-fio.6play.fr/v2/images/4927729/raw?auto=avif&blur=0&fit=scale_crop&height=853&interlace=1&optimize=high&width=2560&hash=b6289de2adc4f6820b1ecb281504812856f6c882" alt="Équipe de France" style="width:100%; border-radius:12px; object-fit:cover; max-height:480px; display:block; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    </div>
 
   <!-- SEARCH RESULTS -->
   <div id="searchResultsSection" style="display:none; padding-top:80px;">
@@ -3925,6 +4009,7 @@ function showTab(tab, el){
   document.getElementById('chainesSection').style.display='none';
   document.getElementById('searchResultsSection').style.display='none';
   document.getElementById('maListeSection').style.display='none';
+  document.getElementById('coupedumondeSection').style.display='none';
   document.getElementById('searchInput').value='';
   // Stop slideshow when leaving accueil
   if(tab !== 'accueil') clearSlideshowTimers();
@@ -3937,6 +4022,9 @@ function showTab(tab, el){
     renderTV('Tous');
   } else if(tab==='chaines'){
     document.getElementById('chainesSection').style.display='block';
+  } else if(tab==='coupedumonde'){
+    document.getElementById('coupedumondeSection').style.display='block';
+    cdmLoadM6EPG();
   } else if(tab==='maliste'){
     document.getElementById('maListeSection').style.display='block';
     renderMaListe();
@@ -5044,6 +5132,31 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
   makeRow('Films', films);
   makeRow('Séries', series);
   ps.scrollTo(0, 0);
+}
+
+// ══════════════════════════════════════════
+//  COUPE DU MONDE — EPG M6
+// ══════════════════════════════════════════
+async function cdmLoadM6EPG() {
+  const M6_CH_ID = '6'; // clé dans epgChannelIds → 485681
+  const data = await epgFetch(M6_CH_ID);
+  const prog = epgGetCurrent(data);
+  const progEl = document.getElementById('cdmM6Program');
+  const timeEl = document.getElementById('cdmM6Time');
+  const barEl  = document.getElementById('cdmM6Bar');
+  if (!progEl) return;
+  if (prog) {
+    progEl.textContent = prog.title;
+    const start = new Date(prog.start_date);
+    const end   = new Date(prog.end_date);
+    timeEl.textContent = epgFormatTime(prog.start_date) + ' – ' + epgFormatTime(prog.end_date);
+    const now = new Date();
+    const pct = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100));
+    if (barEl) barEl.style.width = pct + '%';
+  } else {
+    progEl.textContent = 'Programme indisponible';
+    timeEl.textContent = '';
+  }
 }
 
 function closePlatformPage() {
