@@ -718,6 +718,38 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 }
 .film-meta-value { color:var(--text); line-height:1.5; }
 
+/* ── SUGGESTION MINI-CARDS ── */
+.suggestion-card {
+  flex-shrink:0; width:110px; cursor:pointer;
+  transition:transform .25s; position:relative;
+  border-radius:6px; overflow:hidden;
+}
+.suggestion-card:hover { transform:scale(1.07) translateY(-3px); }
+.suggestion-card img {
+  width:100%; aspect-ratio:2/3; object-fit:cover;
+  display:block; border-radius:6px; background:#1a1a2e;
+  min-height:165px;
+}
+.suggestion-card-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(5,5,8,0.92) 0%, transparent 55%);
+  border-radius:6px; opacity:0; transition:opacity .25s;
+  display:flex; align-items:flex-end; padding:8px;
+}
+.suggestion-card:hover .suggestion-card-overlay { opacity:1; }
+.suggestion-card-title {
+  font-size:.62rem; color:var(--text); line-height:1.3;
+  text-align:center; width:100%;
+}
+.suggestion-card-badge {
+  position:absolute; top:6px; left:6px;
+  background:rgba(201,168,76,0.85); color:var(--dark);
+  font-size:.52rem; letter-spacing:.1em; text-transform:uppercase;
+  padding:2px 6px; border-radius:2px; font-weight:700;
+  opacity:0; transition:opacity .25s;
+}
+.suggestion-card:hover .suggestion-card-badge { opacity:1; }
+
 /* version choice modal */
 .version-choice-overlay {
   display:none; position:fixed; inset:0; z-index:600;
@@ -1315,6 +1347,15 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       <div class="film-modal-desc" id="filmModalDesc"></div>
       <div class="film-modal-divider"></div>
       <div class="film-modal-meta" id="filmModalMeta"></div>
+
+      <!-- ── SUGGESTIONS ── -->
+      <div id="filmModalSuggestionsWrap" style="display:none; margin-top:36px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+          <div style="font-family:'Cinzel',serif; font-size:.78rem; letter-spacing:.35em; text-transform:uppercase; color:var(--text);">Suggestions</div>
+          <div style="flex:1; height:1px; background:linear-gradient(to right,rgba(201,168,76,0.3),transparent);"></div>
+        </div>
+        <div id="filmModalSuggestionsRow" style="display:flex; gap:12px; overflow-x:auto; padding-bottom:10px; scrollbar-width:thin; scrollbar-color:rgba(201,168,76,0.3) transparent;"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -3713,6 +3754,60 @@ function showFilmModal(m) {
   if (meta.duration) metaRows.push(`<div class="film-meta-row"><span class="film-meta-label">Durée</span><span class="film-meta-value">${meta.duration}</span></div>`);
   if (meta.country)  metaRows.push(`<div class="film-meta-row"><span class="film-meta-label">Pays</span><span class="film-meta-value">${meta.country}</span></div>`);
   document.getElementById('filmModalMeta').innerHTML = metaRows.join('');
+
+  // ── SUGGESTIONS (8 contenus similaires) ──
+  (function buildSuggestions(current) {
+    const wrap = document.getElementById('filmModalSuggestionsWrap');
+    const row  = document.getElementById('filmModalSuggestionsRow');
+    row.innerHTML = '';
+
+    // Score de similarité : même genre = +3, même type = +2, même réalisateur = +2, même pays = +1
+    const curMeta = filmMeta[current.id] || {};
+    const scored = allContent
+      .filter(x => x.id !== current.id && x.thumb)
+      .map(x => {
+        let score = 0;
+        const xMeta = filmMeta[x.id] || {};
+        if (x.genre && current.genre && x.genre === current.genre) score += 3;
+        if (x.type === current.type) score += 2;
+        if (curMeta.director && xMeta.director && curMeta.director === xMeta.director) score += 2;
+        if (curMeta.country && xMeta.country && curMeta.country === xMeta.country) score += 1;
+        return { item: x, score };
+      })
+      .filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score);
+
+    // Si pas assez de résultats avec score > 0, compléter avec des films du même type
+    let suggestions = scored.slice(0, 8).map(x => x.item);
+    if (suggestions.length < 8) {
+      const ids = new Set(suggestions.map(x => x.id));
+      ids.add(current.id);
+      const fallback = allContent
+        .filter(x => !ids.has(x.id) && x.thumb && x.type === current.type)
+        .slice(0, 8 - suggestions.length);
+      suggestions = suggestions.concat(fallback);
+    }
+
+    if (suggestions.length === 0) { wrap.style.display = 'none'; return; }
+
+    suggestions.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'suggestion-card';
+      card.title = s.title;
+      card.innerHTML = `
+        <img src="${s.thumb}" alt="${s.title}" loading="lazy">
+        <div class="suggestion-card-badge">${s.type === 'serie' ? 'Série' : 'Film'}</div>
+        <div class="suggestion-card-overlay"><div class="suggestion-card-title">${s.title}</div></div>
+      `;
+      card.onclick = () => {
+        closeFilmModal();
+        setTimeout(() => showFilmModal(s), 200);
+      };
+      row.appendChild(card);
+    });
+
+    wrap.style.display = 'block';
+  })(m);
 
   // ── OUVRIR LA MODAL ──
   document.getElementById('filmModal').classList.add('open');
