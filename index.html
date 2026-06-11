@@ -5090,7 +5090,9 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
   const ids = platformContent[platform] || [];
 
   // Cacher homeScreen, afficher platformScreen
-  document.getElementById('homeScreen').style.display = 'none';
+  const hs = document.getElementById('homeScreen');
+  hs.classList.remove('active');
+  hs.style.display = '';
   const ps = document.getElementById('platformScreen');
   ps.style.display = 'flex';
 
@@ -5166,7 +5168,9 @@ function closePlatformPage() {
   heroVid.pause();
   heroVid.src = '';
   document.getElementById('platformScreen').style.display = 'none';
-  document.getElementById('homeScreen').style.display = 'flex';
+  const hs = document.getElementById('homeScreen');
+  hs.style.display = '';
+  hs.classList.add('active');
   leavePlatform();
 }
 </script>
