@@ -4153,8 +4153,60 @@ const epgChannelIds = {
   "138":516421,"141":443250,"142":55732,"143":56003,"144":56008,"146":443252,
   "152":55718,"153":55950,"154":55856,"156":54862,"158":443152,"159":448598,
   "160":459210,"177":55952,"180":494423,"181":516403,"183":443214,"184":55944,
-  "186":55845,"188":55876,"200":451926,"201":55821,"250":430106
+  "186":55845,"188":55876,"200":451926,"201":55821,"250":430106,
+  "499":516394
 };
+
+// ══════════════════════════════════════════
+//  SECTIONS "EN DIRECT" POUR LES PAGES PLATEFORME
+// ══════════════════════════════════════════
+function buildLiveSection(title, namesOrFilter) {
+  let chans;
+  if (typeof namesOrFilter === 'function') {
+    chans = tvChannels.filter(namesOrFilter);
+  } else {
+    chans = tvChannels.filter(c => namesOrFilter.some(n => c.name.toLowerCase() === n.toLowerCase()));
+  }
+  if (!chans.length) return null;
+  const sec = document.createElement('div');
+  sec.className = 'catalog-section';
+  sec.innerHTML = `<div class="section-header"><div class="section-title">${title}</div><div class="section-line"></div></div>`;
+  const grid = document.createElement('div');
+  grid.className = 'tv-channels-grid';
+  sec.appendChild(grid);
+  chans.forEach(ch => {
+    const div = document.createElement('div');
+    div.className = 'tv-channel';
+    div.innerHTML = `
+      <div class="tv-channel-logo-wrap">
+        <img src="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
+      </div>
+      <div class="tv-channel-info">
+        <div class="tv-channel-program loading">Chargement…</div>
+        <div class="tv-channel-time"></div>
+        <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
+      </div>`;
+    div.onclick = () => window.open(ch.src, '_blank');
+    grid.appendChild(div);
+    epgUpdateCard(div, ch.id);
+  });
+  return sec;
+}
+
+function buildExternalAppButtons(buttons) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;justify-content:center;gap:16px;flex-wrap:wrap;padding:30px 0 10px;';
+  buttons.forEach(b => {
+    const btn = document.createElement('button');
+    btn.textContent = b.label;
+    btn.style.cssText = 'padding:13px 34px;background:linear-gradient(135deg,#b8903c,var(--gold),#d4a84c);border:none;border-radius:3px;color:var(--dark);font-family:\'Cinzel\',serif;font-size:.78rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;transition:opacity .3s,transform .2s;';
+    btn.onmouseover = () => btn.style.transform = 'translateY(-2px)';
+    btn.onmouseout = () => btn.style.transform = 'none';
+    btn.onclick = () => window.open(b.url, '_blank');
+    wrap.appendChild(btn);
+  });
+  return wrap;
+}
 
 const epgCache = {};
 
@@ -4888,7 +4940,7 @@ const platformContent = {
               706   // Tulsa King
   ],
   // Prime Video
-  prime: [826,827,828,829,830,831], // Rocky 1-6
+  prime: [826,827,828,829,830,831,867], // Rocky 1-6
   // Netflix
   netflix: [883,  // Apex
             832,  // Sous La Seine
@@ -4985,6 +5037,7 @@ const disneyPlusBrands = [
   { platform:'pixar',    label:'Pixar',     video:'https://files.catbox.moe/t9y278.mp4', heroVideo:'https://files.catbox.moe/29xjt7.mp4', logo:'https://storage.googleapis.com/endurance-apps-liip/media/cache/disney_no_filter_grid_fs/65cf18095a1d87d7e4022e89' },
   { platform:'marvel',   label:'Marvel',    video:'https://files.catbox.moe/n9fjsr.mp4', heroVideo:'https://files.catbox.moe/x85ppi.mp4', logo:'https://upload.wikimedia.org/wikipedia/commons/b/b9/Marvel_Logo.svg' },
   { platform:'starwars', label:'Star Wars', video:'https://files.catbox.moe/irn6ay.mp4', heroVideo:'https://files.catbox.moe/1s5cvl.mp4', logo:'https://storage.googleapis.com/endurance-apps-liip/media/cache/disney_no_filter_grid_fs/65cf1806e7be6986d90f30ce' },
+  { platform:'natgeo',   label:'National Geographic', video:'https://files.catbox.moe/7h9vn9.mp4', heroVideo:'https://files.catbox.moe/j0utes.mp4', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/National-Geographic-Logo.svg/3840px-National-Geographic-Logo.svg.png', stream:'http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/490.m3u8' },
   { platform:'hulu',     label:'Hulu',      video:'https://files.catbox.moe/01bk7c.mp4', heroVideo:'https://files.catbox.moe/01bk7c.mp4', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Hulu_logo_%282018%29.svg/3840px-Hulu_logo_%282018%29.svg.png' }
 ];
 
@@ -5033,6 +5086,37 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
     });
     sec.appendChild(row);
     area.appendChild(sec);
+    const liveSec = buildLiveSection('En Direct', ["L'Équipe"]);
+    if (liveSec) area.appendChild(liveSec);
+    ps.scrollTo(0, 0);
+    return;
+  }
+
+  // Cas spécial : National Geographic (fond vidéo + carte chaîne en direct, comme dans TV en Direct)
+  if (platform === 'natgeo') {
+    area.innerHTML = '';
+    const sec = document.createElement('div');
+    sec.className = 'catalog-section';
+    sec.innerHTML = `<div class="section-header"><div class="section-title">En Direct</div><div class="section-line"></div></div>`;
+    const grid = document.createElement('div');
+    grid.className = 'tv-channels-grid';
+    sec.appendChild(grid);
+    const ngChannel = { id:"499", name:"National Geographic", logo:"https://img2.oqee.net/pictures/1527841/wide_generic/h300", src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/490.m3u8" };
+    const div = document.createElement('div');
+    div.className = 'tv-channel';
+    div.innerHTML = `
+      <div class="tv-channel-logo-wrap">
+        <img src="${ngChannel.logo}" alt="${ngChannel.name}" onerror="this.style.opacity='0'">
+      </div>
+      <div class="tv-channel-info">
+        <div class="tv-channel-program loading">Chargement…</div>
+        <div class="tv-channel-time"></div>
+        <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
+      </div>`;
+    div.onclick = () => window.open(ngChannel.src, '_blank');
+    grid.appendChild(div);
+    epgUpdateCard(div, ngChannel.id);
+    area.appendChild(sec);
     ps.scrollTo(0, 0);
     return;
   }
@@ -5059,8 +5143,36 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
     items.forEach(m => row.appendChild(createCard(m)));
   }
 
+  // Boutons d'applications externes selon la plateforme
+  if (platform === 'netflix') {
+    area.appendChild(buildExternalAppButtons([{ label: 'TF1+ ↗', url: 'https://www.tf1.fr' }]));
+  }
+  if (platform === 'prime') {
+    area.appendChild(buildExternalAppButtons([
+      { label: 'France.tv ↗', url: 'https://www.france.tv' },
+      { label: 'M6+ ↗', url: 'https://www.m6.fr' }
+    ]));
+  }
+
   makeRow('Films', films);
   makeRow('Séries', series);
+
+  // Sections "En Direct" selon la plateforme
+  let liveSec = null;
+  if (platform === 'netflix') {
+    liveSec = buildLiveSection('En Direct', ["TF1","TMC","TFX","TF1 Séries Films","LCI","Histoire TV","TV Breizh","Ushuaïa TV","SérieClub"]);
+  } else if (platform === 'canal') {
+    liveSec = buildLiveSection('En Direct', c => c.cat === 'Canal+' || c.cat === 'Cinéma' ||
+      ["CNews","CStar","Comédie+","Europe 2 Pop TV","Olympia TV","Piwi+","Planète+","Planète+ Crime","Planète+ Aventure","Polar+","Seasons","Télétoon+","Télétoon+1","Mezzo","Mezzo Live HD"].some(n => n.toLowerCase() === c.name.toLowerCase()));
+  } else if (platform === 'prime') {
+    liveSec = buildLiveSection('En Direct', ["France 2","France 3","France 4","France 5","France Info","M6","W9","6ter","Gulli","Paris Première","Teva","Tiji","Canal J","RFM TV","M6 Music","MCM"]);
+  } else if (platform === 'hbo') {
+    liveSec = buildLiveSection('En Direct', ["Cartoon Network","Cartoonito","Boomerang","TCM Cinéma","Eurosport 1","Eurosport 2","Discovery Channel","Discovery Investigation","Warner TV","Warner TV Next","CNN"]);
+  } else if (platform === 'paramount') {
+    liveSec = buildLiveSection('En Direct', ["Comedy Central","MTV","Nickelodeon","Nickelodeon+1","Nickelodeon Junior","Nick Toons"]);
+  }
+  if (liveSec) area.appendChild(liveSec);
+
   ps.scrollTo(0, 0);
 }
 
