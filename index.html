@@ -1190,44 +1190,12 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
         <img class="card-logo" src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix">
       </div>
 
-      <div class="platform-card" id="platform-disney"
-        data-platform="disney" data-video="https://files.catbox.moe/ayhcjs.mp4" data-hero-video="https://files.catbox.moe/gduobr.mp4"
-        data-logo="https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg"
+      <div class="platform-card" id="platform-disneyplus"
+        data-platform="disneyplus" data-video="https://files.catbox.moe/586vat.mp4" data-hero-video="https://files.catbox.moe/586vat.mp4"
+        data-logo="https://logos-marques.com/wp-content/uploads/2022/03/Disney-Plus-Logo.png"
         onmouseenter="hoverPlatform(this)" onmouseleave="leavePlatform()" onclick="clickPlatform(this)">
         <video class="card-video" muted loop playsinline preload="none"></video>
-        <img class="card-logo" src="https://upload.wikimedia.org/wikipedia/commons/8/8f/Disney_logo.png" alt="Disney">
-      </div>
-
-      <div class="platform-card" id="platform-pixar"
-        data-platform="pixar" data-video="https://files.catbox.moe/t9y278.mp4" data-hero-video="https://files.catbox.moe/29xjt7.mp4"
-        data-logo="https://upload.wikimedia.org/wikipedia/commons/8/80/Pixar_Animation_Studios_logo.svg"
-        onmouseenter="hoverPlatform(this)" onmouseleave="leavePlatform()" onclick="clickPlatform(this)">
-        <video class="card-video" muted loop playsinline preload="none"></video>
-        <img class="card-logo" src="https://storage.googleapis.com/endurance-apps-liip/media/cache/disney_no_filter_grid_fs/65cf18095a1d87d7e4022e89" alt="Pixar">
-      </div>
-
-      <div class="platform-card" id="platform-marvel"
-        data-platform="marvel" data-video="https://files.catbox.moe/n9fjsr.mp4" data-hero-video="https://files.catbox.moe/x85ppi.mp4"
-        data-logo="https://upload.wikimedia.org/wikipedia/commons/b/b9/Marvel_Logo.svg"
-        onmouseenter="hoverPlatform(this)" onmouseleave="leavePlatform()" onclick="clickPlatform(this)">
-        <video class="card-video" muted loop playsinline preload="none"></video>
-        <img class="card-logo" src="https://upload.wikimedia.org/wikipedia/commons/b/b9/Marvel_Logo.svg" alt="Marvel">
-      </div>
-
-      <div class="platform-card" id="platform-starwars"
-        data-platform="starwars" data-video="https://files.catbox.moe/irn6ay.mp4" data-hero-video="https://files.catbox.moe/1s5cvl.mp4"
-        data-logo="https://upload.wikimedia.org/wikipedia/commons/6/6c/Star_Wars_Logo.svg"
-        onmouseenter="hoverPlatform(this)" onmouseleave="leavePlatform()" onclick="clickPlatform(this)">
-        <video class="card-video" muted loop playsinline preload="none"></video>
-        <img class="card-logo" src="https://storage.googleapis.com/endurance-apps-liip/media/cache/disney_no_filter_grid_fs/65cf1806e7be6986d90f30ce" alt="Star Wars">
-      </div>
-
-      <div class="platform-card" id="platform-hulu"
-        data-platform="hulu" data-video="https://files.catbox.moe/01bk7c.mp4" data-hero-video="https://files.catbox.moe/01bk7c.mp4"
-        data-logo="https://upload.wikimedia.org/wikipedia/commons/e/e4/Hulu_Logo.svg"
-        onmouseenter="hoverPlatform(this)" onmouseleave="leavePlatform()" onclick="clickPlatform(this)">
-        <video class="card-video" muted loop playsinline preload="none"></video>
-        <img class="card-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Hulu_logo_%282018%29.svg/3840px-Hulu_logo_%282018%29.svg.png" alt="Hulu">
+        <img class="card-logo" src="https://logos-marques.com/wp-content/uploads/2022/03/Disney-Plus-Logo.png" alt="Disney+">
       </div>
 
       <div class="platform-card" id="platform-canal"
@@ -5011,9 +4979,16 @@ function clickPlatform(card) {
   openPlatformPage(platform, logoSrc, heroVideo);
 }
 
-function openPlatformPage(platform, logoSrc, videoSrc) {
-  const ids = platformContent[platform] || [];
+// Marques regroupées sous Disney+
+const disneyPlusBrands = [
+  { platform:'disney',   label:'Disney',    video:'https://files.catbox.moe/ayhcjs.mp4', heroVideo:'https://files.catbox.moe/gduobr.mp4', logo:'https://upload.wikimedia.org/wikipedia/commons/8/8f/Disney_logo.png' },
+  { platform:'pixar',    label:'Pixar',     video:'https://files.catbox.moe/t9y278.mp4', heroVideo:'https://files.catbox.moe/29xjt7.mp4', logo:'https://storage.googleapis.com/endurance-apps-liip/media/cache/disney_no_filter_grid_fs/65cf18095a1d87d7e4022e89' },
+  { platform:'marvel',   label:'Marvel',    video:'https://files.catbox.moe/n9fjsr.mp4', heroVideo:'https://files.catbox.moe/x85ppi.mp4', logo:'https://upload.wikimedia.org/wikipedia/commons/b/b9/Marvel_Logo.svg' },
+  { platform:'starwars', label:'Star Wars', video:'https://files.catbox.moe/irn6ay.mp4', heroVideo:'https://files.catbox.moe/1s5cvl.mp4', logo:'https://storage.googleapis.com/endurance-apps-liip/media/cache/disney_no_filter_grid_fs/65cf1806e7be6986d90f30ce' },
+  { platform:'hulu',     label:'Hulu',      video:'https://files.catbox.moe/01bk7c.mp4', heroVideo:'https://files.catbox.moe/01bk7c.mp4', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Hulu_logo_%282018%29.svg/3840px-Hulu_logo_%282018%29.svg.png' }
+];
 
+function openPlatformPage(platform, logoSrc, videoSrc) {
   // Cacher homeScreen, afficher platformScreen
   document.getElementById('homeScreen').style.display = 'none';
   const ps = document.getElementById('platformScreen');
@@ -5032,9 +5007,37 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
     heroVid.style.display = 'none';
   }
 
-  // Contenu
   const area = document.getElementById('platformContentArea');
   area.innerHTML = '';
+
+  // Cas spécial : Disney+ regroupe Disney, Pixar, Marvel, Star Wars et Hulu
+  if (platform === 'disneyplus') {
+    const sec = document.createElement('div');
+    sec.className = 'catalog-section';
+    sec.innerHTML = `<div class="section-header"><div class="section-title">Univers Disney+</div><div class="section-line"></div></div>`;
+    const row = document.createElement('div');
+    row.className = 'streaming-platforms';
+    row.style.padding = '4px 0 10px';
+    disneyPlusBrands.forEach(b => {
+      const card = document.createElement('div');
+      card.className = 'platform-card';
+      card.dataset.platform = b.platform;
+      card.dataset.video = b.video;
+      card.dataset.heroVideo = b.heroVideo;
+      card.dataset.logo = b.logo;
+      card.setAttribute('onmouseenter', 'hoverPlatform(this)');
+      card.setAttribute('onmouseleave', 'leavePlatform()');
+      card.setAttribute('onclick', 'clickPlatform(this)');
+      card.innerHTML = `<video class="card-video" muted loop playsinline preload="none"></video><img class="card-logo" src="${b.logo}" alt="${b.label}">`;
+      row.appendChild(card);
+    });
+    sec.appendChild(row);
+    area.appendChild(sec);
+    ps.scrollTo(0, 0);
+    return;
+  }
+
+  const ids = platformContent[platform] || [];
 
   if (!ids || ids.length === 0) {
     area.innerHTML = '<p style="color:var(--muted);text-align:center;padding:60px 0;letter-spacing:.2em;font-size:.8rem;">CONTENU BIENTÔT DISPONIBLE</p>';
