@@ -5170,6 +5170,26 @@ function hoverPlatform(card) {
   // Même sans vidéo, pas d'effet (logo reste visible)
 }
 
+function hoverPlatformCard(card) {
+  // Joue la vidéo sur la carte et cache le logo (même logique que hoverPlatform mais sans changer le hero)
+  const video = card.querySelector('.card-video');
+  const src = card.dataset.video;
+  if (video && src) {
+    if (!video.src || !video.src.includes(src.split('/').pop())) {
+      video.src = src;
+      video.load();
+    }
+    video.play().catch(() => {});
+    card.classList.add('playing');
+  }
+}
+
+function leavePlatformCard(card) {
+  card.classList.remove('playing');
+  const v = card.querySelector('.card-video');
+  if (v) v.pause();
+}
+
 function leavePlatform() {
   currentHoveredPlatform = null;
   clearTimeout(hoverTimer);
@@ -5187,6 +5207,11 @@ function clickPlatform(card) {
   const heroVideo  = card.dataset.heroVideo; // vidéo du hero de la page (différente du survol)
   openPlatformPage(platform, logoSrc, heroVideo);
 }
+
+// Marques regroupées sous Paramount+
+const paramountBrands = [
+  { platform:'mtv', label:'MTV', video:'https://files.catbox.moe/gov91f.mp4', heroVideo:'https://files.catbox.moe/43bfns.mp4', logo:'https://wherecreativityworks.com/wp-content/uploads/2021/01/mtv-logo.png' }
+];
 
 // Marques regroupées sous Disney+
 const disneyPlusBrands = [
@@ -5246,6 +5271,60 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
     area.appendChild(sec);
     const liveSec = buildLiveSection('En Direct', ["L'Équipe"]);
     if (liveSec) area.appendChild(liveSec);
+    ps.scrollTo(0, 0);
+    return;
+  }
+
+  // Cas spécial : Paramount+ — section Univers avec la card MTV (qui ouvre la page MTV)
+  if (platform === 'paramount') {
+    const sec = document.createElement('div');
+    sec.className = 'catalog-section';
+    sec.innerHTML = `<div class="section-header"><div class="section-title">Univers Paramount+</div><div class="section-line"></div></div>`;
+    const row = document.createElement('div');
+    row.className = 'streaming-platforms';
+    row.style.padding = '4px 0 10px';
+    paramountBrands.forEach(b => {
+      const card = document.createElement('div');
+      card.className = 'platform-card';
+      card.dataset.platform = b.platform;
+      card.dataset.video = b.video;
+      card.dataset.heroVideo = b.heroVideo;
+      card.dataset.logo = b.logo;
+      card.setAttribute('onmouseenter', 'hoverPlatform(this)');
+      card.setAttribute('onmouseleave', 'leavePlatform()');
+      card.setAttribute('onclick', 'clickPlatform(this)');
+      card.innerHTML = `<video class="card-video" muted loop playsinline preload="none"></video><img class="card-logo" src="${b.logo}" alt="${b.label}" style="max-width:110px;max-height:60px;">`;
+      row.appendChild(card);
+    });
+    sec.appendChild(row);
+    area.appendChild(sec);
+    // Chaînes en direct
+    const liveSec = buildLiveSection('En Direct', ["Comedy Central","MTV","Nickelodeon","Nickelodeon+1","Nickelodeon Junior","Nick Toons"]);
+    if (liveSec) area.appendChild(liveSec);
+    ps.scrollTo(0, 0);
+    return;
+  }
+
+  // Cas spécial : page MTV (accessible depuis Univers Paramount+)
+  if (platform === 'mtv') {
+    const mtvSec = document.createElement('div');
+    mtvSec.className = 'catalog-section';
+    mtvSec.innerHTML = `<div class="section-header"><div class="section-title">MTV</div><div class="section-line"></div></div>`;
+    const mtvRow = document.createElement('div');
+    mtvRow.className = 'cards-row';
+    const mtvCard = document.createElement('div');
+    mtvCard.className = 'movie-card';
+    mtvCard.style.cssText = 'width:220px;cursor:pointer;flex-shrink:0;';
+    mtvCard.innerHTML = `
+      <img src="https://cdn.mos.cms.futurecdn.net/W96aAppRU6DJnoLVnbR7DC-1920-80.jpg" alt="MTV" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:4px;min-height:auto;">
+      <div class="movie-card-overlay" style="align-items:center;justify-content:center;gap:8px;">
+        <div class="movie-card-title" style="text-align:center;font-size:.75rem;">MTV</div>
+        <div class="play-btn-small" style="pointer-events:none;">▶</div>
+      </div>`;
+    mtvCard.onclick = () => { window.location.href = 'https://luminor-home.neocities.org/HitChansonTV_jingles'; };
+    mtvRow.appendChild(mtvCard);
+    mtvSec.appendChild(mtvRow);
+    area.appendChild(mtvSec);
     ps.scrollTo(0, 0);
     return;
   }
