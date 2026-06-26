@@ -5277,6 +5277,7 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
 
   // Cas spécial : Paramount+ — section Univers avec la card MTV (qui ouvre la page MTV)
   if (platform === 'paramount') {
+    // Section Univers Paramount+
     const sec = document.createElement('div');
     sec.className = 'catalog-section';
     sec.innerHTML = `<div class="section-header"><div class="section-title">Univers Paramount+</div><div class="section-line"></div></div>`;
@@ -5298,6 +5299,26 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
     });
     sec.appendChild(row);
     area.appendChild(sec);
+
+    // Films & Séries Paramount+
+    const paramIds = platformContent['paramount'] || [];
+    const paramFiltered = allContent.filter(m => paramIds.includes(m.id));
+    const paramFilms  = paramFiltered.filter(m => m.type !== 'serie');
+    const paramSeries = paramFiltered.filter(m => m.type === 'serie');
+
+    function makeParamRow(title, items) {
+      if (!items.length) return;
+      const s = document.createElement('div');
+      s.className = 'catalog-section';
+      const safeId = title.replace(/[^a-z0-9]/gi,'_');
+      s.innerHTML = `<div class="section-header"><div class="section-title">${title}</div><div class="section-line"></div></div><div class="cards-row" id="prow_${safeId}"></div>`;
+      area.appendChild(s);
+      const r = s.querySelector('.cards-row');
+      items.forEach(m => r.appendChild(createCard(m)));
+    }
+    makeParamRow('Films', paramFilms);
+    makeParamRow('Séries', paramSeries);
+
     // Chaînes en direct
     const liveSec = buildLiveSection('En Direct', ["Comedy Central","MTV","Nickelodeon","Nickelodeon+1","Nickelodeon Junior","Nick Toons"]);
     if (liveSec) area.appendChild(liveSec);
@@ -5417,8 +5438,6 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
     liveSec = buildLiveSection('En Direct', ["France 2","France 3","France 4","France 5","France Info","M6","W9","6ter","Gulli","Paris Première","Teva","Tiji","Canal J","RFM TV","M6 Music","MCM"]);
   } else if (platform === 'hbo') {
     liveSec = buildLiveSection('En Direct', ["Cartoon Network","Cartoonito","Boomerang","TCM Cinéma","Eurosport 1","Eurosport 2","Discovery Channel","Discovery Investigation","Warner TV","Warner TV Next","CNN"]);
-  } else if (platform === 'paramount') {
-    liveSec = buildLiveSection('En Direct', ["Comedy Central","MTV","Nickelodeon","Nickelodeon+1","Nickelodeon Junior","Nick Toons"]);
   }
   if (liveSec) area.appendChild(liveSec);
 
