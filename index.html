@@ -3988,6 +3988,63 @@ function renderMaListe(){
 }
 
 // ══════════════════════════════════════════
+//  REPRENDRE LA LECTURE
+// ══════════════════════════════════════════
+function getContinueWatching(){
+  try{ return JSON.parse(localStorage.getItem('luminor_continue_watching')||'[]'); }
+  catch(e){ return []; }
+}
+function saveContinueWatchingList(list){
+  localStorage.setItem('luminor_continue_watching', JSON.stringify(list));
+}
+function trackContinueWatching(m, seasonLabel, epIdx, epLabel){
+  if(!m) return;
+  let list = getContinueWatching().filter(x=>x.id!==m.id);
+  const entry = { id:m.id, type:m.type, ts:Date.now() };
+  if(m.type==='serie'){
+    entry.seasonLabel = seasonLabel || (m.seasons && m.seasons[0] ? m.seasons[0].label : '');
+    entry.epIdx = (typeof epIdx==='number') ? epIdx : 0;
+    entry.epLabel = epLabel || '';
+  }
+  list.unshift(entry);
+  if(list.length>20) list = list.slice(0,20);
+  saveContinueWatchingList(list);
+}
+function removeContinueWatching(id){
+  saveContinueWatchingList(getContinueWatching().filter(x=>x.id!==id));
+  showToast('Retiré de Reprendre la lecture');
+  if(currentTab==='accueil') renderCatalog('accueil');
+}
+function resumeContinueWatching(entry){
+  const m = allContent.find(x=>x.id===entry.id);
+  if(!m) return;
+  if(m.type==='serie' && m.seasons){
+    let sIdx = m.seasons.findIndex(s=>s.label===entry.seasonLabel);
+    if(sIdx<0) sIdx = 0;
+    let eIdx = (typeof entry.epIdx==='number') ? entry.epIdx : 0;
+    if(!m.seasons[sIdx] || !m.seasons[sIdx].episodes[eIdx]) eIdx = 0;
+    openPlayer(m, sIdx, eIdx);
+  } else {
+    openPlayer(m);
+  }
+}
+function createContinueCard(entry){
+  const m = allContent.find(x=>x.id===entry.id);
+  if(!m) return document.createElement('div');
+  const card=document.createElement('div');
+  card.className='movie-card';
+  let resumeLabel = 'Reprendre la lecture';
+  if(entry.type==='serie' && entry.seasonLabel){
+    resumeLabel = 'Reprendre '+entry.seasonLabel+(entry.epLabel?' '+entry.epLabel:'');
+  }
+  card.innerHTML=`<img src="${m.thumb}" alt="${m.title}" loading="lazy"><div class="movie-card-overlay" style="opacity:1;background:linear-gradient(to top,rgba(5,5,8,0.95) 0%,rgba(5,5,8,0.15) 55%,transparent 80%);"><div class="movie-card-title">${m.title}</div><div style="font-size:.6rem;color:var(--gold);letter-spacing:.06em;text-align:center;">${resumeLabel}</div><button class="play-btn-small">▶</button></div><button class="wishlist-btn continue-remove-btn" title="Retirer de Reprendre la lecture" style="opacity:1;">✕</button>`;
+  card.onclick = () => resumeContinueWatching(entry);
+  card.querySelector('.play-btn-small').onclick = (e) => { e.stopPropagation(); resumeContinueWatching(entry); };
+  card.querySelector('.continue-remove-btn').onclick = (e) => { e.stopPropagation(); removeContinueWatching(entry.id); };
+  return card;
+}
+
+// ══════════════════════════════════════════
 //  VERSION CHOICE (VF / VO)
 // ══════════════════════════════════════════
 function handleLectureClick(filmId) {
@@ -4029,6 +4086,7 @@ function openPlayerDirect(m, titleOverride) {
   document.getElementById('playerOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
   if (isTVMode()) showTvBtns(true, false);
+  trackContinueWatching(m);
 }
 
 // ══════════════════════════════════════════
@@ -4207,8 +4265,12 @@ function renderCatalog(tab){
   el.innerHTML='';
   let sections=[];
   if(tab==='accueil'){
-    sections=[
-      {title:'✦ En Vedette',items:allContent.filter(m=>m.id<=3||m.id===0)},
+    sections=[];
+    const continueList=getContinueWatching().filter(e=>allContent.find(x=>x.id===e.id));
+    if(continueList.length){
+      sections.push({title:'↻ Reprendre la lecture',items:continueList,special:'continue'});
+    }
+    sections.push(
       {title:'📺 Séries',items:allContent.filter(m=>m.type==='serie')},
       {title:'🏰 Disney',items:allContent.filter(m=>m.genre==='Disney'&&m.type==='film').slice(0,12)},
       {title:'💡 Pixar',items:allContent.filter(m=>m.genre==='Pixar'&&m.type==='film').slice(0,10)},
@@ -4219,8 +4281,8 @@ function renderCatalog(tab){
       {title:'💥 Action',items:allContent.filter(m=>m.genre==='Action'&&m.type==='film')},
       {title:'🎪 Animation & Famille',items:allContent.filter(m=>(m.genre==='Animation'||m.genre==='Famille')&&m.type==='film')},
       {title:'💕 Romance & Musique',items:allContent.filter(m=>(m.genre==='Romance'||m.genre==='Musique')&&m.type==='film')},
-      {title:'🔬 Sci-Fi & Fantastique',items:allContent.filter(m=>(m.genre==='Sci-Fi'||m.genre==='Fantastique')&&m.type==='film')},
-    ];
+      {title:'🔬 Sci-Fi & Fantastique',items:allContent.filter(m=>(m.genre==='Sci-Fi'||m.genre==='Fantastique')&&m.type==='film')}
+    );
   } else if(tab==='films'){
     const allGenres=[...new Set(allContent.filter(m=>m.type==='film').map(m=>m.genre))];
     const genreIcons={'Action':'💥','Comédie':'😂','Drame':'🎭','Animation':'🎪','Romance':'💕','Musique':'🎵','Thriller':'🔪','Horreur':'👻','Sci-Fi':'🚀','Famille':'👨‍👩‍👧','Fantastique':'✨','Disney':'🏰','Pixar':'💡','Marvel':'⚡','Star Wars':'⭐'};
@@ -4235,7 +4297,11 @@ function renderCatalog(tab){
     div.innerHTML=`<div class="section-header"><div class="section-title">${sec.title}</div><div class="section-line"></div></div>`;
     const row=document.createElement('div');
     row.className='cards-row';
-    sec.items.forEach(m=>row.appendChild(createCard(m)));
+    if(sec.special==='continue'){
+      sec.items.forEach(entry=>row.appendChild(createContinueCard(entry)));
+    } else {
+      sec.items.forEach(m=>row.appendChild(createCard(m)));
+    }
     div.appendChild(row);
     el.appendChild(div);
   });
@@ -4540,7 +4606,9 @@ async function epgUpdateCardCeSoir(chId) {
 function isTVMode(){
   return window.innerWidth>=1200 && window.matchMedia('(hover:hover)').matches && !('ontouchstart' in window);
 }
-function openPlayer(m){
+function openPlayer(m,startSeason,startEp){
+  startSeason = startSeason || 0;
+  startEp = startEp || 0;
   const overlay=document.getElementById('playerOverlay');
   const frame=document.getElementById('playerFrame');
   const epPanel=document.getElementById('episodesPanel');
@@ -4552,40 +4620,47 @@ function openPlayer(m){
   const tvMode=isTVMode();
   if(m.type==='serie'&&m.seasons){
     currentSerieData=m;
+    const sIdx = m.seasons[startSeason] ? startSeason : 0;
+    const season = m.seasons[sIdx];
+    const eIdx = (season && season.episodes[startEp]) ? startEp : 0;
     if(tvMode){
       document.body.classList.add('tv-mode');
-      buildTvPanel(m,0);
+      buildTvPanel(m,sIdx,eIdx);
       showTvBtns(true,true);
-      loadEpisode(m.seasons[0].episodes[0]);
+      loadEpisode(season.episodes[eIdx]);
     } else if(window.innerWidth<=768){
-      buildMobileEpUi(m,0);
+      buildMobileEpUi(m,sIdx,eIdx);
       mobileUi.style.display='block';
-      loadEpisode(m.seasons[0].episodes[0]);
+      loadEpisode(season.episodes[eIdx]);
     } else {
       epPanel.style.display='block';
-      buildSeasonTabs(m,0);
-      loadEpisode(m.seasons[0].episodes[0]);
+      buildSeasonTabs(m,sIdx,eIdx);
+      loadEpisode(season.episodes[eIdx]);
     }
+    trackContinueWatching(m, season.label, eIdx, season.episodes[eIdx].label);
   } else {
     if(tvMode){
       document.body.classList.add('tv-mode');
       showTvBtns(true,false);
     }
     loadMedia(frame,m.src,m.embed);
+    trackContinueWatching(m);
   }
   overlay.classList.add('open');
   document.body.style.overflow='hidden';
 }
-function buildSeasonTabs(m,activeSeason){
+function buildSeasonTabs(m,activeSeason,activeEp){
+  activeEp = activeEp || 0;
   const tabs=document.getElementById('seasonsTabs');
   tabs.innerHTML=m.seasons.map((s,i)=>`<button class="season-tab ${i===activeSeason?'active':''}" onclick="selectSeason(${i})">${s.label}</button>`).join('');
-  buildEpisodeList(m.seasons[activeSeason],0);
+  buildEpisodeList(m.seasons[activeSeason],activeEp);
 }
 function selectSeason(idx){
   if(!currentSerieData)return;
   document.querySelectorAll('.season-tab').forEach((b,i)=>b.classList.toggle('active',i===idx));
   buildEpisodeList(currentSerieData.seasons[idx],0);
   loadEpisode(currentSerieData.seasons[idx].episodes[0]);
+  trackContinueWatching(currentSerieData,currentSerieData.seasons[idx].label,0,currentSerieData.seasons[idx].episodes[0].label);
 }
 function buildEpisodeList(season,activeEp){
   const list=document.getElementById('episodeList');
@@ -4596,12 +4671,16 @@ function selectEp(btn,seasonLabel,epIdx){
   btn.classList.add('active');
   if(!currentSerieData)return;
   const season=currentSerieData.seasons.find(s=>s.label===seasonLabel);
-  if(season)loadEpisode(season.episodes[epIdx]);
+  if(season){
+    loadEpisode(season.episodes[epIdx]);
+    trackContinueWatching(currentSerieData,seasonLabel,epIdx,season.episodes[epIdx].label);
+  }
 }
-function buildMobileEpUi(m,activeSeason){
+function buildMobileEpUi(m,activeSeason,activeEp){
+  activeEp = activeEp || 0;
   const sel=document.getElementById('mobileSeasonSelect');
   sel.innerHTML=m.seasons.map((s,i)=>`<option value="${i}" ${i===activeSeason?'selected':''}>${s.label}</option>`).join('');
-  buildMobileEpList(m.seasons[activeSeason],0);
+  buildMobileEpList(m.seasons[activeSeason],activeEp);
 }
 function buildMobileEpList(season,activeEp){
   const scroll=document.getElementById('mobileEpScroll');
@@ -4611,20 +4690,25 @@ function mobileSelectSeason(idx){
   if(!currentSerieData)return;
   buildMobileEpList(currentSerieData.seasons[idx],0);
   loadEpisode(currentSerieData.seasons[idx].episodes[0]);
+  trackContinueWatching(currentSerieData,currentSerieData.seasons[idx].label,0,currentSerieData.seasons[idx].episodes[0].label);
 }
 function mobileSelectEp(row,seasonLabel,epIdx){
   document.querySelectorAll('.mobile-ep-row').forEach(r=>r.classList.remove('active'));
   row.classList.add('active');
   if(!currentSerieData)return;
   const season=currentSerieData.seasons.find(s=>s.label===seasonLabel);
-  if(season)loadEpisode(season.episodes[epIdx]);
+  if(season){
+    loadEpisode(season.episodes[epIdx]);
+    trackContinueWatching(currentSerieData,seasonLabel,epIdx,season.episodes[epIdx].label);
+  }
   document.getElementById('mobileEpUi').style.display='none';
 }
-function buildTvPanel(m,activeSeason){
+function buildTvPanel(m,activeSeason,activeEp){
+  activeEp = activeEp || 0;
   document.getElementById('tvEpPanelTitle').textContent=m.title;
   const sel=document.getElementById('tvSeasonSelect');
   sel.innerHTML=m.seasons.map((s,i)=>`<option value="${i}" ${i===activeSeason?'selected':''}>${s.label}</option>`).join('');
-  buildTvEpList(m.seasons[activeSeason],0);
+  buildTvEpList(m.seasons[activeSeason],activeEp);
 }
 function buildTvEpList(season,activeEp){
   const list=document.getElementById('tvEpList');
@@ -4634,13 +4718,17 @@ function tvSelectSeason(idx){
   if(!currentSerieData)return;
   buildTvEpList(currentSerieData.seasons[idx],0);
   loadEpisode(currentSerieData.seasons[idx].episodes[0]);
+  trackContinueWatching(currentSerieData,currentSerieData.seasons[idx].label,0,currentSerieData.seasons[idx].episodes[0].label);
 }
 function tvSelectEp(el,seasonLabel,epIdx){
   document.querySelectorAll('.tv-ep-item').forEach(e=>e.classList.remove('active'));
   el.classList.add('active');
   if(!currentSerieData)return;
   const season=currentSerieData.seasons.find(s=>s.label===seasonLabel);
-  if(season)loadEpisode(season.episodes[epIdx]);
+  if(season){
+    loadEpisode(season.episodes[epIdx]);
+    trackContinueWatching(currentSerieData,seasonLabel,epIdx,season.episodes[epIdx].label);
+  }
   document.getElementById('tvEpPanel').classList.remove('open');
 }
 function toggleTvEpPanel(){document.getElementById('tvEpPanel').classList.toggle('open');}
@@ -4887,6 +4975,7 @@ function closePlayer(){
   document.getElementById('tvEpPanel').classList.remove('open');
   showTvBtns(false,false);
   currentSerieData=null;
+  if(currentTab==='accueil') renderCatalog('accueil');
 }
 
 // ══════════════════════════════════════════
