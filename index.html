@@ -4030,6 +4030,33 @@ function trackContinueWatching(m, seasonLabel, epIdx, epLabel){
   if(list.length>20) list = list.slice(0,20);
   saveContinueWatchingList(list);
 }
+// ══════════════════════════════════════════
+//  RECOMMANDÉ POUR VOUS (basé sur le(s) dernier(s) genre(s) regardés)
+// ══════════════════════════════════════════
+function getRecommendedForYou(){
+  const history = getContinueWatching();
+  if(!history.length) return [];
+  // On récupère les genres des 3 derniers contenus regardés (du plus récent au plus ancien), sans doublon
+  const recentGenres = [];
+  const seenIds = new Set();
+  history.forEach(entry=>seenIds.add(entry.id));
+  for(const entry of history){
+    const m = allContent.find(x=>x.id===entry.id);
+    if(m && m.genre && !recentGenres.includes(m.genre)){
+      recentGenres.push(m.genre);
+    }
+    if(recentGenres.length>=3) break;
+  }
+  if(!recentGenres.length) return [];
+  const recs=[];
+  const addedIds=new Set();
+  recentGenres.forEach(genre=>{
+    allContent
+      .filter(m=>m.genre===genre && !seenIds.has(m.id) && !addedIds.has(m.id))
+      .forEach(m=>{ if(recs.length<14){ recs.push(m); addedIds.add(m.id); } });
+  });
+  return recs;
+}
 function removeContinueWatching(id){
   saveContinueWatchingList(getContinueWatching().filter(x=>x.id!==id));
   showToast('Retiré de Reprendre la lecture');
@@ -4289,6 +4316,10 @@ function renderCatalog(tab){
     const continueList=getContinueWatching().filter(e=>allContent.find(x=>x.id===e.id));
     if(continueList.length){
       sections.push({title:'↻ Reprendre la lecture',items:continueList,special:'continue'});
+    }
+    const recommended = getRecommendedForYou();
+    if(recommended.length){
+      sections.push({title:'🎯 Recommandé pour vous',items:recommended});
     }
     sections.push(
       {title:'📺 Séries',items:allContent.filter(m=>m.type==='serie')},
