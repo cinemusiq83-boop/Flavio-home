@@ -1231,6 +1231,14 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
         <img class="card-logo" src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Paramount_Plus.svg" alt="Paramount+">
       </div>
 
+      <div class="platform-card" id="platform-ligue1"
+        data-platform="ligue1" data-video="https://files.catbox.moe/9ychp1.mp4" data-hero-video="https://files.catbox.moe/9ychp1.mp4"
+        data-logo="https://www.lfp.fr/assets/LFP_LOGOTYPE_L1_MASTER_ELECTRIC_BLUE_RVB_fdd5c15fd3.png"
+        onmouseenter="hoverPlatform(this)" onmouseleave="leavePlatform()" onclick="clickPlatform(this)">
+        <video class="card-video" muted loop playsinline preload="none"></video>
+        <img class="card-logo" src="https://www.lfp.fr/assets/LFP_LOGOTYPE_L1_MASTER_ELECTRIC_BLUE_RVB_fdd5c15fd3.png" alt="Ligue 1+">
+      </div>
+
       <!-- COUPE DU MONDE FIFA 2026 -->
       <div class="platform-card" id="platform-coupedumonde"
         style="background:linear-gradient(135deg,#0a3d1f 0%,#1a6b38 50%,#0a3d1f 100%);width:200px;"
@@ -3614,6 +3622,17 @@ const tvChannels = [
     ,{id:"75",name:"Sport en France",cat:"Sport",logo:"https://img2.oqee.net/pictures/425583/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/669.m3u8"}
     ,{id:"76",name:"Cheval TV",cat:"Sport",logo:"https://img1.oqee.net/pictures/1127668/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1214031.m3u8"}
     ,{id:"79",name:"L'Équipe",cat:"Sport",logo:"https://img1.oqee.net/pictures/1334914/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/235.m3u8"}
+    ,{id:"555",name:"Disney Channel",cat:"Jeunesse",logo:"https://img2.oqee.net/pictures/1584917/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/555.m3u8"}
+    ,{id:"1205685",name:"Ligue 1+",cat:"Sport",logo:"https://freebox.cdn.scw.iliad.fr/ligue1_Plus_placeholder_afcfc4454c.jpeg",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205685.m3u8"}
+    ,{id:"1205684",name:"Ligue 1+ 2",cat:"Sport",logo:"https://img1.oqee.net/pictures/4527022/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205684.m3u8"}
+    ,{id:"1205683",name:"Ligue 1+ 3",cat:"Sport",logo:"https://img2.oqee.net/pictures/4527021/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205683.m3u8"}
+    ,{id:"1205682",name:"Ligue 1+ 4",cat:"Sport",logo:"https://img2.oqee.net/pictures/4527825/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205682.m3u8"}
+    ,{id:"1205681",name:"Ligue 1+ 5",cat:"Sport",logo:"https://img1.oqee.net/pictures/4527026/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205681.m3u8"}
+    ,{id:"1205680",name:"Ligue 1+ 6",cat:"Sport",logo:"https://img1.oqee.net/pictures/5061526/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205680.m3u8"}
+    ,{id:"1205679",name:"Ligue 1+ 7",cat:"Sport",logo:"https://img2.oqee.net/pictures/4570023/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205679.m3u8"}
+    ,{id:"1205678",name:"Ligue 1+ 8",cat:"Sport",logo:"https://img2.oqee.net/pictures/4570025/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205678.m3u8"}
+    ,{id:"1205677",name:"Ligue 1+ 9",cat:"Sport",logo:"https://img1.oqee.net/pictures/4570026/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205677.m3u8"}
+    ,{id:"1205676",name:"Ligue 1+ 10",cat:"Sport",logo:"https://img2.oqee.net/pictures/4527025/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205676.m3u8"}
     ,{id:"80",name:"Comédie+",cat:"Divertissement",logo:"https://img2.oqee.net/pictures/151529/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/340.m3u8"}
     ,{id:"83",name:"Paris Première",cat:"Divertissement",logo:"https://img2.oqee.net/pictures/1334901/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/167.m3u8"}
     ,{id:"84",name:"Teva",cat:"Séries",logo:"https://img2.oqee.net/pictures/1334905/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/341.m3u8"}
@@ -4409,7 +4428,7 @@ const epgChannelIds = {
   "152":55718,"154":55856,"156":54862,"158":443152,"159":448598,
   "160":459210,"177":55952,"180":494423,"181":516403,"183":443214,"184":55944,
   "186":55845,"188":55876,"200":451926,"201":55821,"250":430106,
-  "499":516394
+  "499":516394,"555":516400
 };
 
 // ══════════════════════════════════════════
@@ -4558,7 +4577,8 @@ function renderTV(cat){
   catsEl.innerHTML=cats.map(c=>`<button class="tv-cat-btn ${c===cat?'active':''}" onclick="renderTV('${c}')">${c}</button>`).join('');
   const grid=document.getElementById('tvGrid');
   grid.innerHTML='';
-  const list=cat==='Tous'?tvChannels:tvChannels.filter(c=>c.cat===cat);
+  const baseList = tvChannels.filter(c => !(c.name === 'Ligue 1+' || /^Ligue 1\+ \d+$/.test(c.name)));
+  const list=cat==='Tous'?baseList:baseList.filter(c=>c.cat===cat);
 
   if(currentTvTimeTab === 'cesoir') {
     renderTVCeSoir(list);
@@ -5410,8 +5430,6 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
     });
     sec.appendChild(row);
     area.appendChild(sec);
-    const liveSec = buildLiveSection('En Direct', ["L'Équipe"]);
-    if (liveSec) area.appendChild(liveSec);
     ps.scrollTo(0, 0);
     return;
   }
@@ -5491,14 +5509,23 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
     return;
   }
 
-  // Cas spécial : ESPN (fond vidéo + bouton replay de L'Équipe, comme dans Chaînes en Replay)
+  // Cas spécial : Ligue 1+ (grille des 10 chaînes en direct, comme les autres chaînes)
+  if (platform === 'ligue1') {
+    area.innerHTML = '';
+    const liveSec = buildLiveSection('En Direct', c => c.name === 'Ligue 1+' || /^Ligue 1\+ \d+$/.test(c.name));
+    if (liveSec) area.appendChild(liveSec);
+    ps.scrollTo(0, 0);
+    return;
+  }
+
+  // Cas spécial : ESPN (carte de la chaîne L'Équipe en direct + bouton replay, comme les autres chaînes)
   if (platform === 'espn') {
     area.innerHTML = '';
-    const sec = document.createElement('div');
-    sec.className = 'catalog-section';
-    sec.innerHTML = `<div class="section-header"><div class="section-title">En Direct</div><div class="section-line"></div></div>`;
-    sec.appendChild(buildExternalAppButtons([{ label: "L'Équipe ↗", url: 'https://www.lequipe.fr', logo: 'https://thumb.canalplus.pro/http/unsafe/320x240/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/40254/canal-ouah/CHN43FN/CHN43FN_40254_20240412-bzN1' }]));
-    area.appendChild(sec);
+    const liveSec = buildLiveSection('En Direct', ["L'Équipe"]);
+    if (liveSec) {
+      liveSec.appendChild(buildExternalAppButtons([{ label: "L'Équipe Replay ↗", url: 'https://www.lequipe.fr', logo: 'https://thumb.canalplus.pro/http/unsafe/320x240/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/40254/canal-ouah/CHN43FN/CHN43FN_40254_20240412-bzN1' }]));
+      area.appendChild(liveSec);
+    }
     ps.scrollTo(0, 0);
     return;
   }
@@ -5579,6 +5606,8 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
     liveSec = buildLiveSection('En Direct', ["France 2","France 3","France 4","France 5","France Info","M6","W9","6ter","Gulli","Paris Première","Teva","Tiji","Canal J","RFM TV","M6 Music","MCM"]);
   } else if (platform === 'hbo') {
     liveSec = buildLiveSection('En Direct', ["Cartoon Network","Cartoonito","Boomerang","TCM Cinéma","Eurosport 1","Eurosport 2","Discovery Channel","Discovery Investigation","Warner TV","Warner TV Next","CNN"]);
+  } else if (platform === 'disney') {
+    liveSec = buildLiveSection('En Direct', ["Disney Channel"]);
   }
   if (liveSec) area.appendChild(liveSec);
 
