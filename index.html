@@ -4577,7 +4577,7 @@ function renderTV(cat){
   catsEl.innerHTML=cats.map(c=>`<button class="tv-cat-btn ${c===cat?'active':''}" onclick="renderTV('${c}')">${c}</button>`).join('');
   const grid=document.getElementById('tvGrid');
   grid.innerHTML='';
-  const baseList = tvChannels.filter(c => !(c.name === 'Ligue 1+' || /^Ligue 1\+ \d+$/.test(c.name)));
+  const baseList = tvChannels.filter(c => !(c.name === 'Ligue 1+' || /^Ligue 1\+ \d+$/.test(c.name) || c.name === 'Disney Channel'));
   const list=cat==='Tous'?baseList:baseList.filter(c=>c.cat===cat);
 
   if(currentTvTimeTab === 'cesoir') {
