@@ -4598,7 +4598,7 @@ const radioEpgSources = {
   "603": { type:"radiofrance",   url:"https://www.radiofrance.fr/_app/remote/di23tz/getLive?payload=W1siX19za3JhbyIsMV0seyJicmFuZE5hbWUiOjIsInZlcnNpb24iOjN9LCJmcmFuY2VpbmZvIiwiMjAyNi0wNS0xMiJd" }, // France Info
   "612": { type:"rfm",           url:"https://directradio.rfm.fr/rfm/now/3" }, // RFM
   "630": { type:"skyrock",       url:"https://skyrock.fm/api/v3/player/onair" }, // Skyrock
-  "632": { type:"nostalgiemichaeljackson",       url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=840&fmt=json&sg_memory" }, // Skyrock
+  "632": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=840&fmt=json&sg_memory" }, // Nostalgie Michael Jackson
 };
 
 const radioNpCache = {};
@@ -4653,8 +4653,15 @@ function radioCleanJsonText(text){
 // Les entrées NRJAUDIODEFAULT sont des placeholders génériques (ex: "NOSTALGIE") à ignorer.
 function nrjParseNowPlaying(data){
   if(!data || !Array.isArray(data.itms)) return null;
-  const song = data.itms.find(it => it.type === 'SINGLE' && it.art && it.tit);
-  if(song) return { artist: song.art, title: song.tit };
+  // On tolère la casse du champ "type" (SINGLE / single / Single...) et on accepte
+  // un morceau même si un seul des deux champs (art/tit) est présent.
+  const isSong = it => it && typeof it.type === 'string' && it.type.toUpperCase() === 'SINGLE' && (it.art || it.tit);
+  let song = data.itms.find(isSong);
+  // Repli : si aucun item explicitement typé SINGLE n'a de titre/artiste exploitable,
+  // on prend le premier item du flux qui possède au moins un titre, quel que soit son type
+  // (certaines webradios thématiques ne renvoient pas de type "SINGLE" strict).
+  if(!song) song = data.itms.find(it => it && it.tit && String(it.tit).trim());
+  if(song && (song.art || song.tit)) return { artist: song.art || null, title: song.tit || null };
   return null;
 }
 
