@@ -377,7 +377,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   border-right:1px solid rgba(201,168,76,0.08);
   position:relative;
 }
-.tv-channel-logo-wrap img { width:80px; height:52px; object-fit:contain; }
+.tv-channel-logo-wrap img { width:100%; height:100%; object-fit:cover; }
 .tv-channel-info {
   flex:1;
   padding:0 14px;
@@ -473,14 +473,13 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
     position:relative;
   }
   .tv-channel-logo-wrap img {
-    width:72px;
-    height:46px;
-    object-fit:contain;
+    width:100%;
+    height:100%;
+    object-fit:cover;
     position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    opacity:0.92;
+    top:0;
+    left:0;
+    opacity:1;
   }
 
   /* Infos à droite */
@@ -956,7 +955,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   .tv-categories { padding:0 14px 14px; gap:8px; }
   .tv-cat-btn { padding:6px 14px; font-size:.68rem; }
   .tv-channels-grid { padding:10px 14px 60px; grid-template-columns:repeat(auto-fill,minmax(85px,1fr)); gap:10px; }
-  .tv-channel img { width:60px; height:45px; }
+  .tv-channel img { width:100%; height:100%; object-fit:cover; }
   .tv-channel { padding:10px 8px; }
   .tv-channel-num { font-size:.6rem; }
   .player-overlay { padding:10px; justify-content:flex-start; padding-top:12px; }
