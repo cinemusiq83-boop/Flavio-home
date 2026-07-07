@@ -4662,7 +4662,13 @@ async function radioFetchNowPlaying(chId){
   const cached = radioNpCache[chId];
   if(cached && (Date.now()-cached.ts) < 20000) return cached.data;
   // sg_memory sans valeur fait planter certains proxies CORS
-  const targetUrl = src.url.replace(/&sg_memory(?!=)/, '&sg_memory=1');
+  let targetUrl = src.url.replace(/&sg_memory(?!=)/, '&sg_memory=1');
+  // Cache-buster : certains proxies CORS (allorigins, corsproxy.io, codetabs...) mettent en cache
+  // la réponse PAR URL pendant plusieurs minutes. Comme targetUrl était toujours identique,
+  // on recevait systématiquement une réponse figée même quand la source changeait vraiment.
+  // On ajoute donc un paramètre unique à chaque appel pour forcer une requête fraîche.
+  const cacheBuster = '_cb='+Date.now();
+  targetUrl += (targetUrl.includes('?') ? '&' : '?') + cacheBuster;
   const proxies=[
     'https://api.allorigins.win/get?url='+encodeURIComponent(targetUrl),
     'https://api.allorigins.win/raw?url='+encodeURIComponent(targetUrl),
@@ -4677,7 +4683,8 @@ async function radioFetchNowPlaying(chId){
     try{
       const controller=new AbortController();
       const timer=setTimeout(()=>controller.abort(),7000);
-      const r=await fetch(proxies[i],{signal:controller.signal});
+      // cache:'no-store' empêche aussi le navigateur de servir une réponse mise en cache localement
+      const r=await fetch(proxies[i],{signal:controller.signal, cache:'no-store'});
       clearTimeout(timer);
       if(!r.ok){ console.warn('[EPG Radio]',chId,'HTTP',r.status,'via',proxies[i]); continue; }
       let text=await r.text();
