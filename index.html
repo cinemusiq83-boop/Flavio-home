@@ -4471,6 +4471,7 @@ function buildLiveSection(title, namesOrFilter) {
   chans.forEach(ch => {
     const div = document.createElement('div');
     div.className = 'tv-channel';
+    if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
     div.innerHTML = `
       <div class="tv-channel-logo-wrap">
         <img src="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
@@ -4482,8 +4483,10 @@ function buildLiveSection(title, namesOrFilter) {
       </div>`;
     div.onclick = () => window.open(ch.src, '_blank');
     grid.appendChild(div);
-    epgUpdateCard(div, ch.id);
+    if(ch.cat==='Radio') radioEpgUpdateCard(div, ch.id);
+    else epgUpdateCard(div, ch.id);
   });
+  radioStartAutoRefresh();
   return sec;
 }
 
@@ -4578,6 +4581,171 @@ async function epgUpdateCard(el, chId){
 }
 
 // ══════════════════════════════════════════
+//  EPG RADIOS — Artiste / Titre en cours
+// ══════════════════════════════════════════
+// Sources "now playing" fournies pour les radios id 600 à 631.
+// Certaines radios (Ici, Mouv, France Inter, Europe 1/2, Sud Radio, TSF Jazz,
+// Radio Nova, Melody, Jazz Radio, Radio Classique) n'ont pas de source connue :
+// elles afficheront simplement "🔴 En direct".
+const radioEpgSources = {
+  "619": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=197&fmt=json&sg_memory" }, // Nostalgie
+  "616": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=158&fmt=json&sg_memory" }, // NRJ
+  "618": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=200&fmt=json&sg_memory" }, // Rire & Chansons
+  "617": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=190&fmt=json&sg_memory" }, // Chérie FM
+  "601": { type:"radiofrance",   url:"https://www.radiofrance.fr/_app/remote/kln6g2/loadTracks?payload=W1siX19za3JhbyIsMV0seyJkYXRlIjoyLCJsaW1pdCI6Mywic2x1ZyI6NCwidGltZXNsb3QiOi0xfSwiMjAyNi0wNy0wNyIsMTAsImZyYW5jZW11c2lxdWUvdGl0cmVzLWRpZmZ1c2VzIl0" }, // France Musique
+  "600": { type:"radiofrance",   url:"https://api.radiofrance.fr/livemeta/live/5/transistor_culture_player" }, // France Culture
+  "603": { type:"radiofrance",   url:"https://www.radiofrance.fr/_app/remote/di23tz/getLive?payload=W1siX19za3JhbyIsMV0seyJicmFuZE5hbWUiOjIsInZlcnNpb24iOjN9LCJmcmFuY2VpbmZvIiwiMjAyNi0wNS0xMiJd" }, // France Info
+  "612": { type:"rfm",           url:"https://directradio.rfm.fr/rfm/now/3" }, // RFM
+  "630": { type:"skyrock",       url:"https://skyrock.fm/api/v3/player/onair" } // Skyrock
+};
+
+const radioNpCache = {};
+const RADIO_TITLE_KEYS  = ['title','trackTitle','songTitle','track_title','song_title','track','titre','morceau','chanson'];
+const RADIO_ARTIST_KEYS = ['artist','interpret','author','performer','singer','artistName','author_name','artiste','interprete','chanteur'];
+
+// Si la valeur trouvée est un objet (ex: {name:"..."}) plutôt qu'une chaîne, on essaie d'en extraire un libellé.
+function radioValueToLabel(v){
+  if(typeof v==='string') return v.trim() || null;
+  if(v && typeof v==='object'){
+    for(const sub of ['name','label','fullName','title','value']){
+      if(typeof v[sub]==='string' && v[sub].trim()) return v[sub].trim();
+    }
+  }
+  return null;
+}
+
+// Recherche récursive d'une clé (title/artist ...) dans un JSON de forme inconnue.
+function radioDeepFind(obj, keys, seen){
+  seen = seen || new Set();
+  if(!obj || typeof obj!=='object' || seen.has(obj)) return null;
+  seen.add(obj);
+  if(!Array.isArray(obj)){
+    for(const k of Object.keys(obj)){
+      if(keys.some(kk=>kk.toLowerCase()===k.toLowerCase())){
+        const label = radioValueToLabel(obj[k]);
+        if(label) return label;
+      }
+    }
+  }
+  const entries = Array.isArray(obj) ? obj : Object.values(obj);
+  for(const v of entries){
+    if(v && typeof v==='object'){
+      const r = radioDeepFind(v, keys, seen);
+      if(r) return r;
+    }
+  }
+  return null;
+}
+
+// Nettoie une réponse potentiellement JSONP / préfixée avant de tenter le JSON.parse.
+function radioCleanJsonText(text){
+  let t = text.trim();
+  t = t.replace(/^\)\]\}',?\s*/,''); // préfixe anti-hijacking éventuel
+  const jsonpMatch = t.match(/^[a-zA-Z0-9_$.]+\((.*)\);?\s*$/s);
+  if(jsonpMatch) t = jsonpMatch[1];
+  return t;
+}
+
+// Parseur dédié au format NRJ Group (players.nrjaudio.fm)
+// Réponse de forme { itms:[ {type:"SINGLE", art:"ARTISTE", tit:"TITRE", ...}, {type:"NRJAUDIODEFAULT", ...}, ... ] }
+// Les entrées NRJAUDIODEFAULT sont des placeholders génériques (ex: "NOSTALGIE") à ignorer.
+function nrjParseNowPlaying(data){
+  if(!data || !Array.isArray(data.itms)) return null;
+  const song = data.itms.find(it => it.type === 'SINGLE' && it.art && it.tit);
+  if(song) return { artist: song.art, title: song.tit };
+  return null;
+}
+
+async function radioFetchNowPlaying(chId){
+  const src = radioEpgSources[String(chId)];
+  if(!src) return null;
+  const cached = radioNpCache[chId];
+  if(cached && (Date.now()-cached.ts) < 20000) return cached.data;
+  // sg_memory sans valeur fait planter certains proxies CORS
+  const targetUrl = src.url.replace(/&sg_memory(?!=)/, '&sg_memory=1');
+  const proxies=[
+    'https://api.allorigins.win/get?url='+encodeURIComponent(targetUrl),
+    'https://api.allorigins.win/raw?url='+encodeURIComponent(targetUrl),
+    'https://corsproxy.io/?url='+encodeURIComponent(targetUrl),
+    'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(targetUrl),
+    'https://thingproxy.freeboard.io/fetch/'+targetUrl,
+    'https://proxy.cors.sh/'+targetUrl,
+    targetUrl
+  ];
+  let lastRawText = null;
+  for(let i=0;i<proxies.length;i++){
+    try{
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),7000);
+      const r=await fetch(proxies[i],{signal:controller.signal});
+      clearTimeout(timer);
+      if(!r.ok){ console.warn('[EPG Radio]',chId,'HTTP',r.status,'via',proxies[i]); continue; }
+      let text=await r.text();
+      // allorigins /get enveloppe la réponse réelle dans {contents:"..."}
+      if(proxies[i].includes('allorigins.win/get')){
+        try{ text = JSON.parse(text).contents; }
+        catch(e){ continue; }
+      }
+      lastRawText = text;
+      let data;
+      try{ data=JSON.parse(radioCleanJsonText(text)); }
+      catch(e){ console.warn('[EPG Radio]',chId,'réponse non-JSON via',proxies[i],text.slice(0,300)); continue; }
+
+      let result = null;
+      if(src.type === 'nrj'){
+        result = nrjParseNowPlaying(data);
+      } else {
+        const title  = radioDeepFind(data, RADIO_TITLE_KEYS);
+        const artist = radioDeepFind(data, RADIO_ARTIST_KEYS);
+        if(title || artist) result = { title, artist };
+      }
+
+      if(result){
+        radioNpCache[chId]={ts:Date.now(),data:result};
+        return result;
+      } else {
+        console.warn('[EPG Radio]',chId,'JSON reçu mais aucun morceau exploitable trouvé via',proxies[i],JSON.stringify(data).slice(0,500));
+      }
+    }catch(e){ console.warn('[EPG Radio]',chId,'échec via',proxies[i],e.message); continue; }
+  }
+  if(lastRawText) console.warn('[EPG Radio]',chId,'dernière réponse brute reçue (aucune source exploitable) :',lastRawText.slice(0,500));
+  return null;
+}
+
+async function radioEpgUpdateCard(el, chId){
+  const progEl=el.querySelector('.tv-channel-program');
+  const timeEl=el.querySelector('.tv-channel-time');
+  const barWrap=el.querySelector('.tv-channel-progress-bar');
+  if(barWrap) barWrap.style.display='none';
+  if(!radioEpgSources[String(chId)]){
+    progEl.textContent='🔴 En direct';
+    progEl.classList.remove('loading');
+    timeEl.textContent='';
+    return;
+  }
+  const np=await radioFetchNowPlaying(chId);
+  if(np && (np.title || np.artist)){
+    progEl.textContent = (np.artist && np.title) ? `${np.artist} — ${np.title}` : (np.title || np.artist);
+    progEl.classList.remove('loading');
+    timeEl.textContent='🔴 En direct';
+  } else {
+    progEl.textContent='🔴 En direct';
+    progEl.classList.remove('loading');
+    timeEl.textContent='';
+  }
+}
+
+let radioRefreshTimer=null;
+function radioStartAutoRefresh(){
+  if(radioRefreshTimer) clearInterval(radioRefreshTimer);
+  radioRefreshTimer=setInterval(()=>{
+    document.querySelectorAll('.tv-channel[data-radio-id]').forEach(el=>{
+      radioEpgUpdateCard(el, el.getAttribute('data-radio-id'));
+    });
+  },20000);
+}
+
+// ══════════════════════════════════════════
 //  TV TIME TAB SWITCH
 // ══════════════════════════════════════════
 function switchTvTimeTab(tab) {
@@ -4592,7 +4760,7 @@ function switchTvTimeTab(tab) {
 // ══════════════════════════════════════════
 function renderTV(cat){
   currentTvCat=cat;
-  const cats=['Tous','Généralistes','Canal+','Cinéma','Séries','Sport','Jeunesse','Info','Docs','Musique','Divertissement'];
+  const cats=['Tous','Généralistes','Canal+','Cinéma','Séries','Sport','Jeunesse','Info','Docs','Musique','Divertissement','Radio'];
   const catsEl=document.getElementById('tvCats');
   catsEl.innerHTML=cats.map(c=>`<button class="tv-cat-btn ${c===cat?'active':''}" onclick="renderTV('${c}')">${c}</button>`).join('');
   const grid=document.getElementById('tvGrid');
@@ -4606,6 +4774,7 @@ function renderTV(cat){
     list.forEach(ch=>{
       const div=document.createElement('div');
       div.className='tv-channel';
+      if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
       div.innerHTML=`
         <div class="tv-channel-logo-wrap">
           <img src="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
@@ -4617,8 +4786,10 @@ function renderTV(cat){
         </div>`;
       div.onclick=()=>window.open(ch.src,'_blank');
       grid.appendChild(div);
-      epgUpdateCard(div, ch.id);
+      if(ch.cat==='Radio') radioEpgUpdateCard(div, ch.id);
+      else epgUpdateCard(div, ch.id);
     });
+    radioStartAutoRefresh();
   }
 }
 
@@ -4632,6 +4803,7 @@ async function renderTVCeSoir(list) {
     const div = document.createElement('div');
     div.className = 'tv-channel';
     div.id = `cesoir-ch-${ch.id}`;
+    if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
     div.innerHTML = `
       <div class="tv-channel-logo-wrap">
         <img src="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
@@ -4645,8 +4817,12 @@ async function renderTVCeSoir(list) {
     grid.appendChild(div);
   });
 
-  // Charger EPG ce soir pour chaque chaîne
-  list.forEach(ch => epgUpdateCardCeSoir(ch.id));
+  // Charger EPG ce soir pour chaque chaîne (radios = artiste/titre en direct)
+  list.forEach(ch => {
+    if(ch.cat==='Radio') radioEpgUpdateCard(document.getElementById(`cesoir-ch-${ch.id}`), ch.id);
+    else epgUpdateCardCeSoir(ch.id);
+  });
+  radioStartAutoRefresh();
 }
 
 function epgGetEveningSoon(data) {
