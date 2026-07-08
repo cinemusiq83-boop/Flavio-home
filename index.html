@@ -4511,7 +4511,7 @@ function buildLiveSection(title, namesOrFilter) {
     if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
     div.innerHTML = `
       <div class="tv-channel-logo-wrap">
-        <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" referrerpolicy="no-referrer" onerror="radioImgError(this)">
+        <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
       </div>
       <div class="tv-channel-info">
         <div class="tv-channel-program loading">Chargement…</div>
@@ -4660,20 +4660,6 @@ const radioEpgSources = {
 const radioNpCache = {};
 const RADIO_TITLE_KEYS  = ['title','trackTitle','songTitle','track_title','song_title','track','titre','morceau','chanson'];
 const RADIO_ARTIST_KEYS = ['artist','interpret','author','performer','singer','artistName','author_name','artiste','interprete','chanteur'];
-// Clés possibles pour la pochette d'album directement fournie par le flux EPG de la radio
-// (ex: groupe NRJ, RFM). On les essaie AVANT de retomber sur une recherche iTunes.
-const RADIO_COVER_KEYS  = ['cover','visual','image','img','picture','pict','photo','thumbnail','thumb','artwork','pochette','visuel','cover_url','coverurl','imageurl','image_url','url_cover','urlcover'];
-
-// Vérifie qu'une valeur ressemble bien à une URL d'image exploitable.
-function radioLooksLikeUrl(v){
-  return typeof v==='string' && /^(https?:)?\/\//i.test(v.trim());
-}
-function radioNormalizeUrl(v){
-  const t=v.trim();
-  if(t.startsWith('//')) return 'https:'+t;
-  if(t.startsWith('http://')) return 'https://'+t.slice(7);
-  return t;
-}
 
 // Si la valeur trouvée est un objet (ex: {name:"..."}) plutôt qu'une chaîne, on essaie d'en extraire un libellé.
 function radioValueToLabel(v){
@@ -4681,18 +4667,6 @@ function radioValueToLabel(v){
   if(v && typeof v==='object'){
     for(const sub of ['name','label','fullName','title','value']){
       if(typeof v[sub]==='string' && v[sub].trim()) return v[sub].trim();
-    }
-  }
-  return null;
-}
-
-// Comme radioValueToLabel mais pour extraire une URL d'image (chaîne directe, ou objet du type
-// {url:"..."} / {src:"..."} / {href:"..."}).
-function radioValueToUrl(v){
-  if(radioLooksLikeUrl(v)) return radioNormalizeUrl(v);
-  if(v && typeof v==='object'){
-    for(const sub of ['url','src','href','large','medium','default']){
-      if(radioLooksLikeUrl(v[sub])) return radioNormalizeUrl(v[sub]);
     }
   }
   return null;
@@ -4721,29 +4695,6 @@ function radioDeepFind(obj, keys, seen){
   return null;
 }
 
-// Recherche récursive d'une clé pointant vers une URL d'image (pochette) dans un JSON de forme inconnue.
-function radioDeepFindUrl(obj, keys, seen){
-  seen = seen || new Set();
-  if(!obj || typeof obj!=='object' || seen.has(obj)) return null;
-  seen.add(obj);
-  if(!Array.isArray(obj)){
-    for(const k of Object.keys(obj)){
-      if(keys.some(kk=>kk.toLowerCase()===k.toLowerCase())){
-        const url = radioValueToUrl(obj[k]);
-        if(url) return url;
-      }
-    }
-  }
-  const entries = Array.isArray(obj) ? obj : Object.values(obj);
-  for(const v of entries){
-    if(v && typeof v==='object'){
-      const r = radioDeepFindUrl(v, keys, seen);
-      if(r) return r;
-    }
-  }
-  return null;
-}
-
 // Nettoie une réponse potentiellement JSONP / préfixée avant de tenter le JSON.parse.
 function radioCleanJsonText(text){
   let t = text.trim();
@@ -4766,11 +4717,7 @@ function nrjParseNowPlaying(data){
   // on prend le premier item du flux qui possède au moins un titre, quel que soit son type
   // (certaines webradios thématiques ne renvoient pas de type "SINGLE" strict).
   if(!song) song = data.itms.find(it => it && it.tit && String(it.tit).trim());
-  if(song && (song.art || song.tit)){
-    // La pochette est parfois fournie directement par NRJ (ex: champ "visual"/"cover"/"img"...).
-    const cover = radioDeepFindUrl(song, RADIO_COVER_KEYS) || radioDeepFindUrl(data, RADIO_COVER_KEYS);
-    return { artist: song.art || null, title: song.tit || null, cover: cover || null };
-  }
+  if(song && (song.art || song.tit)) return { artist: song.art || null, title: song.tit || null };
   return null;
 }
 
@@ -4853,13 +4800,11 @@ async function radioFetchNowPlaying(chId){
       } else {
         const title  = radioDeepFind(data, RADIO_TITLE_KEYS);
         const artist = radioDeepFind(data, RADIO_ARTIST_KEYS);
-        const cover  = radioDeepFindUrl(data, RADIO_COVER_KEYS);
-        if(title || artist) result = { title, artist, cover: cover || null };
+        if(title || artist) result = { title, artist };
       }
 
       if(result){
-        // On ne fait la recherche iTunes que si la radio n'a pas déjà fourni sa propre pochette.
-        if(!result.cover) result.cover = await radioFetchCover(result.artist, result.title);
+        result.cover = await radioFetchCover(result.artist, result.title);
         radioNpCache[chId]={ts:Date.now(),data:result};
         return result;
       } else {
@@ -4890,23 +4835,6 @@ function radioApplyCover(el, coverUrl){
       imgEl.style.opacity = '1';
     }
     wrapEl.classList.remove('has-cover');
-  }
-}
-
-// Gestionnaire d'erreur global pour les vignettes chaîne/radio : si l'image qui vient d'échouer
-// est une pochette d'album, on retombe proprement sur le logo de la radio (au lieu de juste
-// masquer la vignette). Certaines pochettes échouent uniquement dans le contexte "app"
-// (webview avec un referer/entête différent d'un navigateur desktop, protection anti-hotlink
-// de l'hébergeur d'image, etc.) : ce fallback évite les vignettes vides dans ce cas.
-function radioImgError(imgEl){
-  const wrapEl = imgEl.closest('.tv-channel-logo-wrap');
-  const defaultLogo = imgEl.getAttribute('data-logo');
-  if(defaultLogo && imgEl.src !== defaultLogo){
-    if(wrapEl) wrapEl.classList.remove('has-cover');
-    imgEl.style.opacity = '1';
-    imgEl.src = defaultLogo;
-  } else {
-    imgEl.style.opacity = '0';
   }
 }
 
@@ -4978,7 +4906,7 @@ function renderTV(cat){
       if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
       div.innerHTML=`
         <div class="tv-channel-logo-wrap">
-          <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" referrerpolicy="no-referrer" onerror="radioImgError(this)">
+          <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
         </div>
         <div class="tv-channel-info">
           <div class="tv-channel-program loading">Chargement…</div>
@@ -5007,7 +4935,7 @@ async function renderTVCeSoir(list) {
     if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
     div.innerHTML = `
       <div class="tv-channel-logo-wrap">
-        <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" referrerpolicy="no-referrer" onerror="radioImgError(this)">
+        <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
       </div>
       <div class="tv-channel-info">
         <div class="tv-channel-program loading">Chargement…</div>
