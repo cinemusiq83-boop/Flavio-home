@@ -378,6 +378,9 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   position:relative;
 }
 .tv-channel-logo-wrap img { width:100%; height:100%; object-fit:cover; }
+/* Pochette d'album radio : affichée en taille normale (non recadrée/adaptée au 16:9) */
+.tv-channel-logo-wrap.has-cover { background:#0d0d14; }
+.tv-channel-logo-wrap.has-cover img { width:auto; height:auto; max-width:100%; max-height:100%; object-fit:contain; }
 .tv-channel-info {
   flex:1;
   padding:0 14px;
@@ -480,6 +483,19 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
     top:0;
     left:0;
     opacity:1;
+  }
+  /* Pochette d'album radio : affichée en taille normale (non recadrée/adaptée au 16:9) */
+  .tv-channel-logo-wrap.has-cover { background:#0d0d14; }
+  .tv-channel-logo-wrap.has-cover img {
+    width:auto;
+    height:auto;
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
   }
 
   /* Infos à droite */
@@ -4495,7 +4511,7 @@ function buildLiveSection(title, namesOrFilter) {
     if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
     div.innerHTML = `
       <div class="tv-channel-logo-wrap">
-        <img src="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
+        <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
       </div>
       <div class="tv-channel-info">
         <div class="tv-channel-program loading">Chargement…</div>
@@ -4644,6 +4660,18 @@ const radioEpgSources = {
 const radioNpCache = {};
 const RADIO_TITLE_KEYS  = ['title','trackTitle','songTitle','track_title','song_title','track','titre','morceau','chanson'];
 const RADIO_ARTIST_KEYS = ['artist','interpret','author','performer','singer','artistName','author_name','artiste','interprete','chanteur'];
+// Clés possibles pour la pochette d'album directement fournie par le flux EPG de la radio
+// (ex: groupe NRJ, RFM). On les essaie AVANT de retomber sur une recherche iTunes.
+const RADIO_COVER_KEYS  = ['cover','visual','image','img','picture','pict','photo','thumbnail','thumb','artwork','pochette','visuel','cover_url','coverurl','imageurl','image_url','url_cover','urlcover'];
+
+// Vérifie qu'une valeur ressemble bien à une URL d'image exploitable.
+function radioLooksLikeUrl(v){
+  return typeof v==='string' && /^(https?:)?\/\//i.test(v.trim());
+}
+function radioNormalizeUrl(v){
+  const t=v.trim();
+  return t.startsWith('//') ? 'https:'+t : t;
+}
 
 // Si la valeur trouvée est un objet (ex: {name:"..."}) plutôt qu'une chaîne, on essaie d'en extraire un libellé.
 function radioValueToLabel(v){
@@ -4651,6 +4679,18 @@ function radioValueToLabel(v){
   if(v && typeof v==='object'){
     for(const sub of ['name','label','fullName','title','value']){
       if(typeof v[sub]==='string' && v[sub].trim()) return v[sub].trim();
+    }
+  }
+  return null;
+}
+
+// Comme radioValueToLabel mais pour extraire une URL d'image (chaîne directe, ou objet du type
+// {url:"..."} / {src:"..."} / {href:"..."}).
+function radioValueToUrl(v){
+  if(radioLooksLikeUrl(v)) return radioNormalizeUrl(v);
+  if(v && typeof v==='object'){
+    for(const sub of ['url','src','href','large','medium','default']){
+      if(radioLooksLikeUrl(v[sub])) return radioNormalizeUrl(v[sub]);
     }
   }
   return null;
@@ -4679,6 +4719,29 @@ function radioDeepFind(obj, keys, seen){
   return null;
 }
 
+// Recherche récursive d'une clé pointant vers une URL d'image (pochette) dans un JSON de forme inconnue.
+function radioDeepFindUrl(obj, keys, seen){
+  seen = seen || new Set();
+  if(!obj || typeof obj!=='object' || seen.has(obj)) return null;
+  seen.add(obj);
+  if(!Array.isArray(obj)){
+    for(const k of Object.keys(obj)){
+      if(keys.some(kk=>kk.toLowerCase()===k.toLowerCase())){
+        const url = radioValueToUrl(obj[k]);
+        if(url) return url;
+      }
+    }
+  }
+  const entries = Array.isArray(obj) ? obj : Object.values(obj);
+  for(const v of entries){
+    if(v && typeof v==='object'){
+      const r = radioDeepFindUrl(v, keys, seen);
+      if(r) return r;
+    }
+  }
+  return null;
+}
+
 // Nettoie une réponse potentiellement JSONP / préfixée avant de tenter le JSON.parse.
 function radioCleanJsonText(text){
   let t = text.trim();
@@ -4701,8 +4764,43 @@ function nrjParseNowPlaying(data){
   // on prend le premier item du flux qui possède au moins un titre, quel que soit son type
   // (certaines webradios thématiques ne renvoient pas de type "SINGLE" strict).
   if(!song) song = data.itms.find(it => it && it.tit && String(it.tit).trim());
-  if(song && (song.art || song.tit)) return { artist: song.art || null, title: song.tit || null };
+  if(song && (song.art || song.tit)){
+    // La pochette est parfois fournie directement par NRJ (ex: champ "visual"/"cover"/"img"...).
+    const cover = radioDeepFindUrl(song, RADIO_COVER_KEYS) || radioDeepFindUrl(data, RADIO_COVER_KEYS);
+    return { artist: song.art || null, title: song.tit || null, cover: cover || null };
+  }
   return null;
+}
+
+// ── Pochette d'album (via iTunes Search API, public et sans clé) ──
+// Cache par couple artiste/titre car la pochette d'un même morceau ne change pas.
+const radioCoverCache = {};
+const RADIO_COVER_TTL = 6*60*60*1000; // 6h
+async function radioFetchCover(artist, title){
+  if(!artist && !title) return null;
+  const key = (artist||'')+'|||'+(title||'');
+  const cached = radioCoverCache[key];
+  if(cached && (Date.now()-cached.ts) < RADIO_COVER_TTL) return cached.url;
+  const term = [artist,title].filter(Boolean).join(' ');
+  try{
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),6000);
+    const r = await fetch('https://itunes.apple.com/search?term='+encodeURIComponent(term)+'&media=music&entity=song&limit=1', {signal:controller.signal});
+    clearTimeout(timer);
+    if(!r.ok){ radioCoverCache[key]={ts:Date.now(),url:null}; return null; }
+    const data = await r.json();
+    let url = null;
+    if(data && Array.isArray(data.results) && data.results.length && data.results[0].artworkUrl100){
+      // On demande une résolution plus grande que la vignette 100x100 par défaut.
+      url = data.results[0].artworkUrl100.replace('100x100bb','600x600bb');
+    }
+    radioCoverCache[key]={ts:Date.now(),url};
+    return url;
+  }catch(e){
+    console.warn('[EPG Radio] pochette introuvable pour',term,e.message);
+    radioCoverCache[key]={ts:Date.now(),url:null};
+    return null;
+  }
 }
 
 async function radioFetchNowPlaying(chId){
@@ -4753,10 +4851,13 @@ async function radioFetchNowPlaying(chId){
       } else {
         const title  = radioDeepFind(data, RADIO_TITLE_KEYS);
         const artist = radioDeepFind(data, RADIO_ARTIST_KEYS);
-        if(title || artist) result = { title, artist };
+        const cover  = radioDeepFindUrl(data, RADIO_COVER_KEYS);
+        if(title || artist) result = { title, artist, cover: cover || null };
       }
 
       if(result){
+        // On ne fait la recherche iTunes que si la radio n'a pas déjà fourni sa propre pochette.
+        if(!result.cover) result.cover = await radioFetchCover(result.artist, result.title);
         radioNpCache[chId]={ts:Date.now(),data:result};
         return result;
       } else {
@@ -4768,6 +4869,28 @@ async function radioFetchNowPlaying(chId){
   return null;
 }
 
+// Affiche la pochette d'album à la place du logo si elle est disponible ;
+// sinon restaure le logo de la radio (taille normale pour la pochette, non recadrée en 16:9).
+function radioApplyCover(el, coverUrl){
+  const wrapEl = el.querySelector('.tv-channel-logo-wrap');
+  const imgEl = wrapEl ? wrapEl.querySelector('img') : null;
+  if(!wrapEl || !imgEl) return;
+  const defaultLogo = imgEl.getAttribute('data-logo') || imgEl.src;
+  if(coverUrl){
+    if(imgEl.src !== coverUrl){
+      imgEl.src = coverUrl;
+      imgEl.style.opacity = '1';
+    }
+    wrapEl.classList.add('has-cover');
+  } else {
+    if(imgEl.src !== defaultLogo){
+      imgEl.src = defaultLogo;
+      imgEl.style.opacity = '1';
+    }
+    wrapEl.classList.remove('has-cover');
+  }
+}
+
 async function radioEpgUpdateCard(el, chId){
   const progEl=el.querySelector('.tv-channel-program');
   const timeEl=el.querySelector('.tv-channel-time');
@@ -4777,6 +4900,7 @@ async function radioEpgUpdateCard(el, chId){
     progEl.textContent='🔴 En direct';
     progEl.classList.remove('loading');
     timeEl.textContent='';
+    radioApplyCover(el, null);
     return;
   }
   const np=await radioFetchNowPlaying(chId);
@@ -4784,10 +4908,12 @@ async function radioEpgUpdateCard(el, chId){
     progEl.textContent = (np.artist && np.title) ? `${np.artist} — ${np.title}` : (np.title || np.artist);
     progEl.classList.remove('loading');
     timeEl.textContent='🔴 En direct';
+    radioApplyCover(el, np.cover || null);
   } else {
     progEl.textContent='🔴 En direct';
     progEl.classList.remove('loading');
     timeEl.textContent='';
+    radioApplyCover(el, null);
   }
 }
 
@@ -4833,7 +4959,7 @@ function renderTV(cat){
       if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
       div.innerHTML=`
         <div class="tv-channel-logo-wrap">
-          <img src="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
+          <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
         </div>
         <div class="tv-channel-info">
           <div class="tv-channel-program loading">Chargement…</div>
@@ -4862,7 +4988,7 @@ async function renderTVCeSoir(list) {
     if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
     div.innerHTML = `
       <div class="tv-channel-logo-wrap">
-        <img src="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
+        <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
       </div>
       <div class="tv-channel-info">
         <div class="tv-channel-program loading">Chargement…</div>
