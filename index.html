@@ -4511,7 +4511,7 @@ function buildLiveSection(title, namesOrFilter) {
     if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
     div.innerHTML = `
       <div class="tv-channel-logo-wrap">
-        <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
+        <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" referrerpolicy="no-referrer" onerror="radioImgError(this)">
       </div>
       <div class="tv-channel-info">
         <div class="tv-channel-program loading">Chargement…</div>
@@ -4670,7 +4670,9 @@ function radioLooksLikeUrl(v){
 }
 function radioNormalizeUrl(v){
   const t=v.trim();
-  return t.startsWith('//') ? 'https:'+t : t;
+  if(t.startsWith('//')) return 'https:'+t;
+  if(t.startsWith('http://')) return 'https://'+t.slice(7);
+  return t;
 }
 
 // Si la valeur trouvée est un objet (ex: {name:"..."}) plutôt qu'une chaîne, on essaie d'en extraire un libellé.
@@ -4891,6 +4893,23 @@ function radioApplyCover(el, coverUrl){
   }
 }
 
+// Gestionnaire d'erreur global pour les vignettes chaîne/radio : si l'image qui vient d'échouer
+// est une pochette d'album, on retombe proprement sur le logo de la radio (au lieu de juste
+// masquer la vignette). Certaines pochettes échouent uniquement dans le contexte "app"
+// (webview avec un referer/entête différent d'un navigateur desktop, protection anti-hotlink
+// de l'hébergeur d'image, etc.) : ce fallback évite les vignettes vides dans ce cas.
+function radioImgError(imgEl){
+  const wrapEl = imgEl.closest('.tv-channel-logo-wrap');
+  const defaultLogo = imgEl.getAttribute('data-logo');
+  if(defaultLogo && imgEl.src !== defaultLogo){
+    if(wrapEl) wrapEl.classList.remove('has-cover');
+    imgEl.style.opacity = '1';
+    imgEl.src = defaultLogo;
+  } else {
+    imgEl.style.opacity = '0';
+  }
+}
+
 async function radioEpgUpdateCard(el, chId){
   const progEl=el.querySelector('.tv-channel-program');
   const timeEl=el.querySelector('.tv-channel-time');
@@ -4959,7 +4978,7 @@ function renderTV(cat){
       if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
       div.innerHTML=`
         <div class="tv-channel-logo-wrap">
-          <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
+          <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" referrerpolicy="no-referrer" onerror="radioImgError(this)">
         </div>
         <div class="tv-channel-info">
           <div class="tv-channel-program loading">Chargement…</div>
@@ -4988,7 +5007,7 @@ async function renderTVCeSoir(list) {
     if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
     div.innerHTML = `
       <div class="tv-channel-logo-wrap">
-        <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
+        <img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" referrerpolicy="no-referrer" onerror="radioImgError(this)">
       </div>
       <div class="tv-channel-info">
         <div class="tv-channel-program loading">Chargement…</div>
