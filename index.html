@@ -820,6 +820,68 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .player-frame { position:relative; width:100%; max-width:960px; aspect-ratio:16/9; border-radius:4px; overflow:hidden; border:1px solid var(--glass-border); background:#000; }
 .player-frame iframe,.player-frame video { width:100%; height:100%; border:none; }
 
+/* ══════════════════════════════════════════
+   RADIO PLAYER — mini barre + plein écran
+   ══════════════════════════════════════════ */
+#radioAudioEl { display:none; }
+
+/* ── MINI PLAYER (barre basse type Spotify) ── */
+.radio-mini-player {
+  position:fixed; left:0; right:0; bottom:0; z-index:2400;
+  display:flex; align-items:center; gap:12px;
+  height:64px; padding:0 12px;
+  background:linear-gradient(180deg, rgba(20,20,31,0.98), rgba(5,5,8,0.99));
+  border-top:1px solid var(--glass-border);
+  backdrop-filter:blur(16px);
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 -6px 24px rgba(0,0,0,0.4);
+}
+.radio-mini-player.open { transform:translateY(0); }
+.radio-mini-content { display:flex; align-items:center; gap:12px; flex:1; min-width:0; cursor:pointer; }
+.radio-mini-cover { width:44px; height:44px; border-radius:4px; overflow:hidden; flex-shrink:0; background:#0d0d14; border:1px solid var(--glass-border); }
+.radio-mini-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+.radio-mini-info { min-width:0; }
+.radio-mini-title { font-size:.82rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.radio-mini-subtitle { font-size:.7rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+.radio-mini-controls { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.radio-mini-btn { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid var(--glass-border); color:var(--text); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+.radio-mini-btn:hover { border-color:var(--gold); color:var(--gold); }
+.radio-mini-close { font-size:.8rem; color:var(--muted); }
+
+/* ── FULL PLAYER (plein écran, comme un lecteur radio dédié) ── */
+.radio-full-player {
+  position:fixed; inset:0; z-index:2600;
+  display:flex; flex-direction:column; align-items:center;
+  background:radial-gradient(ellipse at 50% 0%, #1a1228 0%, var(--dark) 65%);
+  transform:translateY(100%);
+  transition:transform .4s cubic-bezier(.4,0,.2,1);
+  padding:14px 24px 34px;
+  overflow-y:auto;
+}
+.radio-full-player.open { transform:translateY(0); }
+.radio-full-drag { width:40px; height:4px; border-radius:2px; background:rgba(255,255,255,0.2); margin:6px auto 10px; cursor:grab; flex-shrink:0; }
+.radio-full-header { display:flex; align-items:center; justify-content:space-between; width:100%; max-width:420px; margin-bottom:30px; }
+.radio-full-collapse { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid var(--glass-border); color:var(--text); font-size:1.3rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+.radio-full-collapse:hover { border-color:var(--gold); color:var(--gold); }
+.radio-full-station { font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); text-align:center; flex:1; }
+.radio-full-artwork-wrap { width:min(78vw,320px); aspect-ratio:1; border-radius:10px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.55); border:1px solid var(--glass-border); background:#0d0d14; margin-bottom:34px; flex-shrink:0; }
+.radio-full-artwork { width:100%; height:100%; object-fit:cover; display:block; }
+.radio-full-meta { text-align:center; width:100%; max-width:420px; margin-bottom:14px; }
+.radio-full-title { font-size:1.15rem; color:var(--text); font-weight:600; line-height:1.35; }
+.radio-full-artist { font-size:.88rem; color:var(--muted); margin-top:6px; }
+.radio-full-live-badge { font-size:.72rem; letter-spacing:.15em; color:var(--gold); text-transform:uppercase; margin-bottom:36px; }
+.radio-full-controls { display:flex; align-items:center; justify-content:center; gap:34px; }
+.radio-full-ctrl-btn { background:transparent; border:none; color:var(--text); font-size:1.5rem; cursor:pointer; opacity:.85; transition:opacity .2s,transform .2s; display:flex; align-items:center; justify-content:center; }
+.radio-full-ctrl-btn:hover { opacity:1; transform:scale(1.08); }
+.radio-full-play { width:70px; height:70px; border-radius:50%; background:var(--text); color:var(--dark); font-size:1.7rem; }
+.radio-full-play:hover { transform:scale(1.05); }
+
+@media(max-width:480px){
+  .radio-full-artwork-wrap { width:80vw; margin-bottom:24px; }
+  .radio-full-controls { gap:28px; }
+}
+
 /* EPISODES PANEL */
 .episodes-panel { width:100%; max-width:960px; margin-top:14px; background:var(--dark3); border:1px solid var(--glass-border); border-radius:4px; padding:16px; }
 .seasons-tabs { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
@@ -1469,6 +1531,43 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <div class="mobile-ep-ui" id="mobileEpUi" style="display:none">
     <select class="mobile-season-select" id="mobileSeasonSelect" onchange="mobileSelectSeason(this.value)"></select>
     <div class="mobile-ep-scroll" id="mobileEpScroll"></div>
+  </div>
+</div>
+
+<!-- ═══ RADIO PLAYER (mini barre + plein écran, type Spotify) ═══ -->
+<audio id="radioAudioEl" preload="none"></audio>
+
+<div class="radio-mini-player" id="radioMiniPlayer">
+  <div class="radio-mini-content" onclick="expandRadioPlayer()">
+    <div class="radio-mini-cover"><img id="radioMiniCover" src="" alt=""></div>
+    <div class="radio-mini-info">
+      <div class="radio-mini-title" id="radioMiniTitle">—</div>
+      <div class="radio-mini-subtitle" id="radioMiniSubtitle">—</div>
+    </div>
+  </div>
+  <div class="radio-mini-controls">
+    <button class="radio-mini-btn" id="radioMiniPlayBtn" onclick="toggleRadioPlay()">⏸</button>
+    <button class="radio-mini-btn radio-mini-close" onclick="closeRadioPlayer()">✕</button>
+  </div>
+</div>
+
+<div class="radio-full-player" id="radioFullPlayer">
+  <div class="radio-full-drag" id="radioFullDragHandle"></div>
+  <div class="radio-full-header">
+    <button class="radio-full-collapse" onclick="collapseRadioPlayer()">⌄</button>
+    <div class="radio-full-station" id="radioFullStation">—</div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="radio-full-artwork-wrap"><img class="radio-full-artwork" id="radioFullCover" src="" alt=""></div>
+  <div class="radio-full-meta">
+    <div class="radio-full-title" id="radioFullTitle">—</div>
+    <div class="radio-full-artist" id="radioFullArtist">—</div>
+  </div>
+  <div class="radio-full-live-badge" id="radioFullLiveBadge">🔴 En direct</div>
+  <div class="radio-full-controls">
+    <button class="radio-full-ctrl-btn" onclick="prevRadio()">⏮</button>
+    <button class="radio-full-ctrl-btn radio-full-play" id="radioFullPlayBtn" onclick="toggleRadioPlay()">⏸</button>
+    <button class="radio-full-ctrl-btn" onclick="nextRadio()">⏭</button>
   </div>
 </div>
 
@@ -4526,7 +4625,7 @@ function buildLiveSection(title, namesOrFilter) {
         <div class="tv-channel-time"></div>
         <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
       </div>`;
-    div.onclick = () => window.open(ch.src, '_blank');
+    div.onclick = () => ch.cat==='Radio' ? openRadioPlayer(ch) : window.open(ch.src, '_blank');
     grid.appendChild(div);
     if(ch.cat==='Radio') radioEpgUpdateCard(div, ch.id);
     else epgUpdateCard(div, ch.id);
@@ -4891,6 +4990,220 @@ function radioStartAutoRefresh(){
 }
 
 // ══════════════════════════════════════════
+//  RADIO PLAYER — mini barre + plein écran (type Spotify)
+//  + infos "à l'écoute" sur l'écran de verrouillage du téléphone
+// ══════════════════════════════════════════
+let radioPlayerChannel = null;      // radio actuellement chargée ({id,name,logo,src,cat})
+let radioPlayerActive  = false;     // une radio est chargée (mini ou plein écran visible)
+let radioPlayerExpanded = false;    // plein écran ouvert (sinon mini barre)
+let radioPlayerNpTimer  = null;     // timer de rafraîchissement artiste/titre/pochette
+let radioPlayerCurrentNp = null;    // dernier {artist,title,cover} connu
+
+function getRadioAudioEl(){ return document.getElementById('radioAudioEl'); }
+
+function getAllRadioChannels(){
+  return (typeof tvChannels !== 'undefined') ? tvChannels.filter(c=>c.cat==='Radio') : [];
+}
+
+// Ouvre (ou change de) radio et lance la lecture. Ouvre le lecteur en plein écran,
+// comme lorsqu'on choisit une station dans une app radio.
+function openRadioPlayer(ch){
+  if(!ch || !ch.src) return;
+  const audio = getRadioAudioEl();
+  radioPlayerChannel = ch;
+  radioPlayerActive = true;
+  radioPlayerExpanded = true;
+  radioPlayerCurrentNp = null;
+
+  // Affichage immédiat (logo de la radio en attendant la pochette du morceau en cours)
+  renderRadioPlayerMeta(ch, null);
+  renderRadioPlayerUI();
+
+  audio.pause();
+  audio.src = ch.src;
+  audio.crossOrigin = null;
+  const playPromise = audio.play();
+  if(playPromise && playPromise.catch) playPromise.catch(()=>{ /* lecture bloquée en attente d'interaction */ });
+  updateRadioPlayIcons();
+
+  radioPlayerRefreshNowPlaying();
+  if(radioPlayerNpTimer) clearInterval(radioPlayerNpTimer);
+  radioPlayerNpTimer = setInterval(radioPlayerRefreshNowPlaying, 20000);
+  radioSetupMediaSession();
+}
+
+// Met à jour la pochette / le titre / l'artiste affichés dans la mini-barre et le plein écran.
+function renderRadioPlayerMeta(ch, np){
+  const cover = (np && np.cover) ? np.cover : (ch ? ch.logo : '');
+  const title = (np && np.title) ? np.title : (ch ? ch.name : '—');
+  const artist = (np && np.artist) ? np.artist : (ch ? ch.name : '—');
+  const stationName = ch ? ch.name : '—';
+
+  const miniCover = document.getElementById('radioMiniCover');
+  const miniTitle = document.getElementById('radioMiniTitle');
+  const miniSub   = document.getElementById('radioMiniSubtitle');
+  if(miniCover) miniCover.src = cover || '';
+  if(miniTitle) miniTitle.textContent = title;
+  if(miniSub)   miniSub.textContent = (np && np.artist) ? `${np.artist} • ${stationName}` : stationName;
+
+  const fullCover  = document.getElementById('radioFullCover');
+  const fullStation= document.getElementById('radioFullStation');
+  const fullTitle  = document.getElementById('radioFullTitle');
+  const fullArtist = document.getElementById('radioFullArtist');
+  if(fullCover)  fullCover.src = cover || '';
+  if(fullStation)fullStation.textContent = stationName;
+  if(fullTitle)  fullTitle.textContent = title;
+  if(fullArtist) fullArtist.textContent = artist;
+}
+
+// Interroge la même source "now playing" que les cartes de la grille (EPG radio)
+// pour récupérer artiste / titre / pochette, et met tout à jour (UI + écran verrouillé).
+async function radioPlayerRefreshNowPlaying(){
+  if(!radioPlayerChannel) return;
+  const ch = radioPlayerChannel;
+  let np = null;
+  if(radioEpgSources[String(ch.id)]){
+    np = await radioFetchNowPlaying(ch.id);
+  }
+  // Le canal a pu changer pendant l'appel réseau : on ignore une réponse obsolète.
+  if(!radioPlayerChannel || radioPlayerChannel.id !== ch.id) return;
+  radioPlayerCurrentNp = np;
+  renderRadioPlayerMeta(ch, np);
+  radioUpdateMediaSessionMetadata(ch, np);
+}
+
+function renderRadioPlayerUI(){
+  const mini = document.getElementById('radioMiniPlayer');
+  const full = document.getElementById('radioFullPlayer');
+  if(!mini || !full) return;
+  mini.classList.toggle('open', radioPlayerActive && !radioPlayerExpanded);
+  full.classList.toggle('open', radioPlayerActive && radioPlayerExpanded);
+  document.body.style.overflow = (radioPlayerActive && radioPlayerExpanded) ? 'hidden' : '';
+}
+
+// "Baisser" le lecteur plein écran vers la mini-barre : la radio continue de jouer
+// et on peut de nouveau naviguer / faire une recherche sur le site.
+function collapseRadioPlayer(){
+  radioPlayerExpanded = false;
+  renderRadioPlayerUI();
+}
+function expandRadioPlayer(){
+  if(!radioPlayerActive) return;
+  radioPlayerExpanded = true;
+  renderRadioPlayerUI();
+}
+function closeRadioPlayer(){
+  const audio = getRadioAudioEl();
+  audio.pause();
+  audio.removeAttribute('src');
+  audio.load();
+  radioPlayerActive = false;
+  radioPlayerExpanded = false;
+  radioPlayerChannel = null;
+  radioPlayerCurrentNp = null;
+  if(radioPlayerNpTimer){ clearInterval(radioPlayerNpTimer); radioPlayerNpTimer = null; }
+  renderRadioPlayerUI();
+  if('mediaSession' in navigator){
+    navigator.mediaSession.metadata = null;
+    navigator.mediaSession.playbackState = 'none';
+  }
+}
+function toggleRadioPlay(){
+  const audio = getRadioAudioEl();
+  if(!radioPlayerChannel) return;
+  if(audio.paused){
+    const p = audio.play();
+    if(p && p.catch) p.catch(()=>{});
+  } else {
+    audio.pause();
+  }
+  updateRadioPlayIcons();
+}
+function updateRadioPlayIcons(){
+  const audio = getRadioAudioEl();
+  const icon = audio.paused ? '▶' : '⏸';
+  const miniBtn = document.getElementById('radioMiniPlayBtn');
+  const fullBtn = document.getElementById('radioFullPlayBtn');
+  if(miniBtn) miniBtn.textContent = icon;
+  if(fullBtn) fullBtn.textContent = icon;
+  if('mediaSession' in navigator){
+    navigator.mediaSession.playbackState = audio.paused ? 'paused' : 'playing';
+  }
+}
+function prevRadio(){ radioStepChannel(-1); }
+function nextRadio(){ radioStepChannel(1); }
+function radioStepChannel(dir){
+  const list = getAllRadioChannels();
+  if(!list.length || !radioPlayerChannel) return;
+  const idx = list.findIndex(c=>c.id===radioPlayerChannel.id);
+  const nextIdx = ((idx<0?0:idx) + dir + list.length) % list.length;
+  openRadioPlayer(list[nextIdx]);
+}
+
+// ── Écran de verrouillage / Centre de contrôle (nom radio, artiste, titre, pochette) ──
+function radioSetupMediaSession(){
+  if(!('mediaSession' in navigator)) return;
+  navigator.mediaSession.setActionHandler('play', ()=>{ const a=getRadioAudioEl(); const p=a.play(); if(p&&p.catch)p.catch(()=>{}); updateRadioPlayIcons(); });
+  navigator.mediaSession.setActionHandler('pause', ()=>{ getRadioAudioEl().pause(); updateRadioPlayIcons(); });
+  navigator.mediaSession.setActionHandler('previoustrack', ()=>{ prevRadio(); });
+  navigator.mediaSession.setActionHandler('nexttrack', ()=>{ nextRadio(); });
+  navigator.mediaSession.setActionHandler('stop', ()=>{ closeRadioPlayer(); });
+}
+function radioUpdateMediaSessionMetadata(ch, np){
+  if(!('mediaSession' in navigator) || !ch) return;
+  const cover = (np && np.cover) ? np.cover : ch.logo;
+  const title = (np && np.title) ? np.title : ch.name;
+  const artist = (np && np.artist) ? np.artist : ch.name;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: title,
+    artist: artist,
+    album: ch.name, // nom de la radio, affiché sur l'écran verrouillé
+    artwork: cover ? [
+      { src: cover, sizes: '96x96',   type: 'image/jpeg' },
+      { src: cover, sizes: '256x256', type: 'image/jpeg' },
+      { src: cover, sizes: '512x512', type: 'image/jpeg' }
+    ] : []
+  });
+  navigator.mediaSession.playbackState = getRadioAudioEl().paused ? 'paused' : 'playing';
+}
+
+// Écouteurs de l'élément audio radio
+(function initRadioAudioListeners(){
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const audio = getRadioAudioEl();
+    if(!audio) return;
+    audio.addEventListener('play', updateRadioPlayIcons);
+    audio.addEventListener('pause', updateRadioPlayIcons);
+    audio.addEventListener('error', ()=>{
+      if(radioPlayerActive) showToast("Impossible de lire cette radio pour le moment");
+    });
+  });
+})();
+
+// Geste "glisser vers le bas" sur le plein écran pour le réduire en mini-barre.
+(function initRadioSwipeToCollapse(){
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const full = document.getElementById('radioFullPlayer');
+    const handle = document.getElementById('radioFullDragHandle');
+    if(!full) return;
+    let startY = null;
+    const onStart = e=>{ startY = (e.touches?e.touches[0].clientY:e.clientY); };
+    const onMove  = e=>{
+      if(startY===null) return;
+      const y = (e.touches?e.touches[0].clientY:e.clientY);
+      if(y - startY > 90){ startY=null; collapseRadioPlayer(); }
+    };
+    const onEnd = ()=>{ startY=null; };
+    [full, handle].forEach(elm=>{
+      if(!elm) return;
+      elm.addEventListener('touchstart', onStart, {passive:true});
+      elm.addEventListener('touchmove', onMove, {passive:true});
+      elm.addEventListener('touchend', onEnd, {passive:true});
+    });
+  });
+})();
+
+// ══════════════════════════════════════════
 //  TV TIME TAB SWITCH
 // ══════════════════════════════════════════
 function switchTvTimeTab(tab) {
@@ -4929,7 +5242,7 @@ function renderTV(cat){
           <div class="tv-channel-time"></div>
           <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
         </div>`;
-      div.onclick=()=>window.open(ch.src,'_blank');
+      div.onclick=()=>ch.cat==='Radio' ? openRadioPlayer(ch) : window.open(ch.src,'_blank');
       grid.appendChild(div);
       if(ch.cat==='Radio') radioEpgUpdateCard(div, ch.id);
       else epgUpdateCard(div, ch.id);
@@ -4958,7 +5271,7 @@ async function renderTVCeSoir(list) {
         <div class="tv-channel-time"></div>
         <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
       </div>`;
-    div.onclick = () => window.open(ch.src, '_blank');
+    div.onclick = () => ch.cat==='Radio' ? openRadioPlayer(ch) : window.open(ch.src, '_blank');
     grid.appendChild(div);
   });
 
