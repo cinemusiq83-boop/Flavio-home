@@ -5316,6 +5316,14 @@ let tvChAllChannelsBuilt = false;
 
 function getTvChVideoEl(){ return document.getElementById('tvChVideo'); }
 
+document.addEventListener('DOMContentLoaded', ()=>{
+  const video = getTvChVideoEl();
+  if(!video) return;
+  video.addEventListener('play', updateTvChPlayIcon);
+  video.addEventListener('pause', updateTvChPlayIcon);
+  video.addEventListener('playing', updateTvChPlayIcon);
+});
+
 function getAllTvLiveChannels(){
   return (typeof tvChannels !== 'undefined') ? tvChannels.filter(c=>c.cat!=='Radio') : [];
 }
