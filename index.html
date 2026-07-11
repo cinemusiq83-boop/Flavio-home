@@ -5396,9 +5396,7 @@ function getAllTvLiveChannels(){
 const TVCH_OWN_PROXY = 'https://cinmusiq--e17e34487cf911f1af0f1607ee4eb77e.web.val.run/?url='; // ex: 'https://tv-proxy.tonpseudo.workers.dev/?url='
 
 const TVCH_CORS_PROXIES = [
-  ...(TVCH_OWN_PROXY ? [u => TVCH_OWN_PROXY + encodeURIComponent(u)] : []),
-  u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
-  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u)
+  ...(TVCH_OWN_PROXY ? [u => TVCH_OWN_PROXY + encodeURIComponent(u)] : [])
 ];
 let tvChProxyIndex = 0;
 
