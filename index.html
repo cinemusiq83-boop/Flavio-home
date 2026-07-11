@@ -5945,7 +5945,10 @@ function loadMedia(frame,src,isEmbed){
     const ytId = ytMatch[1];
     frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>`;
   } else if(isEmbed) {
-    frame.innerHTML=`<iframe src="${src}" allowfullscreen allow="autoplay"></iframe>`;
+    // sandbox bloque les popups, popunders et redirections de la page entière
+    // (les techniques les plus utilisées par uqload.is pour afficher des pubs invasives),
+    // tout en laissant le lecteur vidéo fonctionner normalement.
+    frame.innerHTML=`<iframe src="${src}" allowfullscreen allow="autoplay" sandbox="allow-scripts allow-same-origin allow-forms" referrerpolicy="no-referrer"></iframe>`;
   } else {
     frame.innerHTML=`<video controls autoplay><source src="${src}" type="application/x-mpegURL"><source src="${src}" type="video/mp4"></video>`;
   }
