@@ -5427,7 +5427,7 @@ const TVCH_CORS_PROXIES = [
 ];
 let tvChProxyIndex = 0;
 let tvChRetryCount = 0;
-const TVCH_MAX_RETRIES = 2;
+const TVCH_MAX_RETRIES = 4;
 
 function tvChIsProxied(url){
   if(!url) return false;
@@ -5468,6 +5468,10 @@ function tvChLoadStream(ch){
     tvChHls.on(Hls.Events.MANIFEST_PARSED, ()=>{
       const p=video.play();
       if(p&&p.catch) p.catch(()=>{});
+      // Lecture démarrée avec succès : on remet le compteur de réessai à zéro, pour qu'une
+      // coupure plus tard (ex: après quelques secondes) dispose elle aussi d'un budget complet
+      // de tentatives, au lieu d'hériter des essais déjà consommés au tout début.
+      tvChRetryCount = 0;
       if(subEl && tvChCurrentChannel && tvChCurrentChannel.id===ch.id) tvChRefreshProgram();
     });
     tvChHls.on(Hls.Events.ERROR, (evt,data)=>{
@@ -5479,11 +5483,13 @@ function tvChLoadStream(ch){
           tvChProxyIndex++;
           tvChLoadStream(ch);
         } else if(tvChRetryCount < TVCH_MAX_RETRIES){
-          // Erreur probablement passagère (proxy sollicité coup sur coup lors d'un changement
-          // rapide de chaîne) : on réessaie automatiquement avant d'afficher une erreur.
+          // Erreur probablement passagère (proxy surchargé/rate-limité momentanément) :
+          // on réessaie automatiquement, avec un délai un peu plus long à chaque tentative
+          // pour laisser au proxy le temps de se libérer.
           tvChRetryCount++;
+          const delay = 800 * tvChRetryCount;
           if(subEl) subEl.textContent = 'Reconnexion… ('+tvChRetryCount+'/'+TVCH_MAX_RETRIES+')';
-          setTimeout(()=>{ if(tvChCurrentChannel && tvChCurrentChannel.id===ch.id) tvChLoadStream(ch); }, 900);
+          setTimeout(()=>{ if(tvChCurrentChannel && tvChCurrentChannel.id===ch.id) tvChLoadStream(ch); }, delay);
         } else {
           tvChProxyIndex = 0;
           tvChRetryCount = 0;
