@@ -5505,13 +5505,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const videoWrap = document.getElementById('tvChVideoWrap');
   if(videoWrap){
     videoWrap.addEventListener('touchstart', (e)=>{
+      e.preventDefault();
       if(player.classList.contains('controls-hidden')){
         tvChShowControls();
       } else {
         if(tvChHideControlsTimer) clearTimeout(tvChHideControlsTimer);
         player.classList.add('controls-hidden');
       }
-    }, {passive:true});
+    }, {passive:false});
   }
 });
 
