@@ -1644,7 +1644,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     <button class="tvch-fullscreen" id="tvChFullscreenBtn" onclick="tvChToggleFullscreen()">⛶</button>
     <button class="tvch-close" onclick="closeTvChannelPlayer()">✕</button>
   </div>
-  <div class="tvch-video-wrap">
+  <div class="tvch-video-wrap" id="tvChVideoWrap">
     <video id="tvChVideo" playsinline webkit-playsinline></video>
     <div class="tvch-center-controls">
       <button class="tvch-ctrl-btn" onclick="tvChSeek(-10)"><span class="tvch-seek-icon">↺<span class="tvch-seek-num">10</span></span></button>
@@ -5498,9 +5498,21 @@ function tvChShowControls(){
 document.addEventListener('DOMContentLoaded', ()=>{
   const player = document.getElementById('tvChPlayer');
   if(!player) return;
-  ['mousemove','touchstart','click','keydown'].forEach(evt=>{
+  ['mousemove','click','keydown'].forEach(evt=>{
     player.addEventListener(evt, tvChShowControls);
   });
+  // Sur mobile/app: toucher l'écran bascule l'affichage des contrôles (tap pour afficher/masquer).
+  const videoWrap = document.getElementById('tvChVideoWrap');
+  if(videoWrap){
+    videoWrap.addEventListener('touchstart', (e)=>{
+      if(player.classList.contains('controls-hidden')){
+        tvChShowControls();
+      } else {
+        if(tvChHideControlsTimer) clearTimeout(tvChHideControlsTimer);
+        player.classList.add('controls-hidden');
+      }
+    }, {passive:true});
+  }
 });
 
 function tvChTogglePlay(){
