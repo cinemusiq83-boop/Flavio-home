@@ -5399,6 +5399,8 @@ const TVCH_CORS_PROXIES = [
   ...(TVCH_OWN_PROXY ? [u => TVCH_OWN_PROXY + encodeURIComponent(u)] : [])
 ];
 let tvChProxyIndex = 0;
+let tvChRetryCount = 0;
+const TVCH_MAX_RETRIES = 2;
 
 function tvChIsProxied(url){
   if(!url) return false;
@@ -5449,8 +5451,15 @@ function tvChLoadStream(ch){
         if(tvChProxyIndex < TVCH_CORS_PROXIES.length - 1){
           tvChProxyIndex++;
           tvChLoadStream(ch);
+        } else if(tvChRetryCount < TVCH_MAX_RETRIES){
+          // Erreur probablement passagère (proxy sollicité coup sur coup lors d'un changement
+          // rapide de chaîne) : on réessaie automatiquement avant d'afficher une erreur.
+          tvChRetryCount++;
+          if(subEl) subEl.textContent = 'Reconnexion… ('+tvChRetryCount+'/'+TVCH_MAX_RETRIES+')';
+          setTimeout(()=>{ if(tvChCurrentChannel && tvChCurrentChannel.id===ch.id) tvChLoadStream(ch); }, 900);
         } else {
           tvChProxyIndex = 0;
+          tvChRetryCount = 0;
           if(subEl) subEl.textContent = 'Erreur : '+data.details+' — flux inaccessible via les proxys disponibles';
           showToast("Impossible de lire cette chaîne (erreur: "+data.details+")");
         }
@@ -5473,6 +5482,7 @@ function openTvChannelPlayer(ch){
   if(!ch || !ch.src) return;
   tvChCurrentChannel = ch;
   tvChProxyIndex = 0;
+  tvChRetryCount = 0;
   document.getElementById('tvChLogo').src = ch.logo || '';
   document.getElementById('tvChProgTitle').textContent = ch.name;
   document.getElementById('tvChProgSub').textContent = 'Chargement…';
