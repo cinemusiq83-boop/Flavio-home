@@ -882,6 +882,67 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   .radio-full-controls { gap:28px; }
 }
 
+/* ══════════════════════════════════════════
+   LECTEUR CHAÎNES TV EN DIRECT (inspiré de l'appli TF1)
+   ══════════════════════════════════════════ */
+.tvch-player{ position:fixed; inset:0; z-index:2100; background:#000; display:none; flex-direction:column; }
+.tvch-player.open{ display:flex; }
+.tvch-header{ display:flex; align-items:center; gap:14px; padding:18px 24px; background:linear-gradient(to bottom, rgba(0,0,0,0.85), transparent); position:relative; z-index:2; transition:opacity .35s ease; }
+.tvch-logo{ height:34px; width:auto; max-width:90px; object-fit:contain; flex-shrink:0; background:#fff; border-radius:2px; padding:2px 6px; }
+.tvch-titles{ flex:1; min-width:0; }
+.tvch-prog-title{ font-family:'Cinzel',serif; font-weight:700; font-size:1.25rem; color:#fff; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tvch-prog-sub{ font-size:.82rem; color:rgba(255,255,255,0.6); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tvch-fullscreen{ background:transparent;border:none;color:#fff;font-size:1.15rem;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0; opacity:.85; transition:opacity .2s; }
+.tvch-fullscreen:hover{ opacity:1; }
+.tvch-close{ background:transparent;border:none;color:#fff;font-size:1.4rem;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0; opacity:.85; transition:opacity .2s; }
+.tvch-close:hover{ opacity:1; }
+
+.tvch-video-wrap{ position:relative; flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.tvch-video-wrap video{ width:100%; height:100%; object-fit:contain; background:#000; }
+.tvch-center-controls{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:70px; z-index:2; transition:opacity .35s ease; }
+.tvch-ctrl-btn{ background:transparent; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:.9; transition:opacity .2s,transform .2s; }
+.tvch-ctrl-btn:hover{ opacity:1; transform:scale(1.06); }
+.tvch-seek-icon{ font-size:2.3rem; position:relative; display:inline-block; }
+.tvch-seek-icon .tvch-seek-num{ position:absolute; top:56%; left:50%; transform:translate(-50%,-50%); font-size:.6rem; font-weight:700; }
+.tvch-playpause{ font-size:3.4rem; }
+
+.tvch-bottom{ position:relative; z-index:2; padding:0 24px 26px; background:linear-gradient(to top, rgba(0,0,0,0.85), transparent); transition:opacity .35s ease; }
+.tvch-bottom-row{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.tvch-live-badge{ background:#e50914; color:#fff; font-size:.7rem; font-weight:700; letter-spacing:.05em; padding:4px 10px; border-radius:2px; }
+.tvch-progress-row{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.tvch-time-now, .tvch-time-end{ font-size:.78rem; color:rgba(255,255,255,0.75); flex-shrink:0; min-width:38px; }
+.tvch-time-end{ text-align:right; }
+.tvch-progress-bar{ flex:1; height:4px; background:rgba(255,255,255,0.2); border-radius:2px; overflow:hidden; }
+.tvch-progress-fill{ height:100%; background:#e50914; width:0%; transition:width 1s linear; }
+.tvch-allchannels-btn{ display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:10px 18px; border-radius:2px; font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; transition:all .2s; }
+.tvch-allchannels-btn:hover{ background:rgba(255,255,255,0.15); }
+
+.tvch-allchannels-panel{ position:fixed; top:0; right:0; bottom:0; width:min(90vw,380px); background:rgba(10,10,14,0.98); border-left:1px solid var(--glass-border); z-index:2200; transform:translateX(100%); transition:transform .35s ease; display:flex; flex-direction:column; }
+.tvch-allchannels-panel.open{ transform:translateX(0); }
+.tvch-allchannels-header{ display:flex; align-items:center; justify-content:space-between; padding:18px 18px 14px; border-bottom:1px solid var(--glass-border); flex-shrink:0; }
+.tvch-allchannels-title{ font-family:'Cinzel',serif; font-size:.85rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); }
+.tvch-allchannels-close{ background:transparent; border:none; color:var(--muted); font-size:1.1rem; cursor:pointer; }
+.tvch-allchannels-list{ flex:1; overflow-y:auto; padding:8px; }
+.tvch-ach-item{ display:flex; align-items:center; gap:12px; padding:8px; border-radius:4px; cursor:pointer; transition:background .2s; }
+.tvch-ach-item:hover, .tvch-ach-item.active{ background:rgba(201,168,76,0.1); }
+.tvch-ach-thumb{ width:64px; height:64px; border-radius:4px; overflow:hidden; flex-shrink:0; background:#0d0d14; border:1px solid var(--glass-border); position:relative; }
+.tvch-ach-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.tvch-ach-info{ min-width:0; }
+.tvch-ach-name{ font-size:.82rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tvch-ach-prog{ font-size:.72rem; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.tvch-player.controls-hidden .tvch-header,
+.tvch-player.controls-hidden .tvch-center-controls,
+.tvch-player.controls-hidden .tvch-bottom{ opacity:0; pointer-events:none; }
+.tvch-player.controls-hidden{ cursor:none; }
+
+@media(max-width:600px){
+  .tvch-center-controls{ gap:44px; }
+  .tvch-playpause{ font-size:2.7rem; }
+  .tvch-seek-icon{ font-size:1.9rem; }
+  .tvch-prog-title{ font-size:1.02rem; }
+}
+
 /* EPISODES PANEL */
 .episodes-panel { width:100%; max-width:960px; margin-top:14px; background:var(--dark3); border:1px solid var(--glass-border); border-radius:4px; padding:16px; }
 .seasons-tabs { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
@@ -1571,6 +1632,46 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   </div>
 </div>
 
+<!-- ═══ LECTEUR CHAÎNES TV EN DIRECT ═══ -->
+<div class="tvch-player" id="tvChPlayer">
+  <div class="tvch-header">
+    <img class="tvch-logo" id="tvChLogo" src="" alt="">
+    <div class="tvch-titles">
+      <div class="tvch-prog-title" id="tvChProgTitle">—</div>
+      <div class="tvch-prog-sub" id="tvChProgSub">—</div>
+    </div>
+    <button class="tvch-fullscreen" id="tvChFullscreenBtn" onclick="tvChToggleFullscreen()">⛶</button>
+    <button class="tvch-close" onclick="closeTvChannelPlayer()">✕</button>
+  </div>
+  <div class="tvch-video-wrap">
+    <video id="tvChVideo" playsinline webkit-playsinline></video>
+    <div class="tvch-center-controls">
+      <button class="tvch-ctrl-btn" onclick="tvChSeek(-10)"><span class="tvch-seek-icon">↺<span class="tvch-seek-num">10</span></span></button>
+      <button class="tvch-ctrl-btn tvch-playpause" id="tvChPlayBtn" onclick="tvChTogglePlay()">⏸</button>
+      <button class="tvch-ctrl-btn" onclick="tvChSeek(10)"><span class="tvch-seek-icon">↻<span class="tvch-seek-num">10</span></span></button>
+    </div>
+  </div>
+  <div class="tvch-bottom">
+    <div class="tvch-bottom-row">
+      <span class="tvch-live-badge">🔴 LIVE</span>
+    </div>
+    <div class="tvch-progress-row">
+      <span class="tvch-time-now" id="tvChTimeNow">--:--</span>
+      <div class="tvch-progress-bar"><div class="tvch-progress-fill" id="tvChProgressFill"></div></div>
+      <span class="tvch-time-end" id="tvChTimeEnd">--:--</span>
+    </div>
+    <button class="tvch-allchannels-btn" onclick="toggleTvChAllChannels()">📺 Toutes les chaînes</button>
+  </div>
+</div>
+
+<div class="tvch-allchannels-panel" id="tvChAllChannelsPanel">
+  <div class="tvch-allchannels-header">
+    <div class="tvch-allchannels-title">Toutes les chaînes</div>
+    <button class="tvch-allchannels-close" onclick="toggleTvChAllChannels()">✕</button>
+  </div>
+  <div class="tvch-allchannels-list" id="tvChAllChannelsList"></div>
+</div>
+
 <!-- TV mode panels -->
 <button class="tv-float-btn" id="tvCloseBtn" style="display:none" onclick="closePlayer()">✕ Fermer</button>
 <button class="tv-float-btn" id="tvEpBtn" style="display:none" onclick="toggleTvEpPanel()">☰ Épisodes</button>
@@ -1596,6 +1697,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.1/hls.min.js"></script>
 <script>
 // ══════════════════════════════════════════
 //  FILM METADATA
@@ -3896,25 +3998,6 @@ const tvChannels = [
     ,{id:"658",name:"RFM Funk",cat:"Radio",logo:"https://files.catbox.moe/vwx51e.jpg",src:"http://rfm.lmn.fm/rfm-wr27.mp3"}
     ,{id:"659",name:"RFM Cinéma",cat:"Radio",logo:"https://files.catbox.moe/oxbppa.jpg",src:"http://rfm.lmn.fm/rfm-wr19.mp3"}
     ,{id:"660",name:"RFM 70's",cat:"Radio",logo:"https://files.catbox.moe/f0562l.jpg",src:"http://rfm.lmn.fm/rfm-wr16.mp3"}
-    ,{id:"661",name:"Nostalgie Summer 80",cat:"Radio",logo:"https://files.catbox.moe/un23bg.jpg",src:"https://streaming.nrjaudio.fm/ouqitxyoeo8p"}
-    ,{id:"662",name:"Nostalgie French Party 80",cat:"Radio",logo:"https://files.catbox.moe/b7i02e.jpg",src:"https://streaming.nrjaudio.fm/ouamxmw2dqao"}
-    ,{id:"663",name:"Nostalgie French Party 80",cat:"Radio",logo:"https://files.catbox.moe/3kpm9s.jpg",src:"https://streaming.nrjaudio.fm/oufdxmtx4thg"}
-    ,{id:"664",name:"Nostalgie Mix 80",cat:"Radio",logo:"https://files.catbox.moe/boppuv.jpg",src:"https://streaming.nrjaudio.fm/ouagk2w2dqao"}
-    ,{id:"665",name:"Nostalgie Fan Des Années 80",cat:"Radio",logo:"https://files.catbox.moe/qf96ay.jpg",src:"https://streaming.nrjaudio.fm/ouj3qxnxeb5p"}
-    ,{id:"666",name:"Nostalgie Vos Pépites 80",cat:"Radio",logo:"https://files.catbox.moe/15j37h.WEBP",src:"https://streaming.nrjaudio.fm/oumov98fnozc"}
-    ,{id:"667",name:"Nostalgie Tous Les Tubes 80 !",cat:"Radio",logo:"https://files.catbox.moe/vdjte1.jpg",src:"https://streaming.nrjaudio.fm/ougfjarb92oc"}
-    ,{id:"668",name:"Nostalgie Les Tubes 80 N°1",cat:"Radio",logo:"https://files.catbox.moe/d2jrg2.jpg",src:"https://streaming.nrjaudio.fm/ouo6im7nfibk"}
-    ,{id:"669",name:"Nostalgie 500 Tubes 80",cat:"Radio",logo:"https://files.catbox.moe/is9kic.jpg",src:"https://streaming.nrjaudio.fm/ousvgwm4z85f"}
-    ,{id:"670",name:"Nostalgie Les Tubes De 1980",cat:"Radio",logo:"https://files.catbox.moe/zcej8e.jpg",src:"https://streaming.nrjaudio.fm/ou4mqqhtd2ko"}
-    ,{id:"671",name:"Nostalgie Les Tubes De 1981",cat:"Radio",logo:"https://files.catbox.moe/bcfsl5.jpg",src:"https://streaming.nrjaudio.fm/ouqi7tyoeo8p"}
-    ,{id:"672",name:"Nostalgie Les Tubes De 1982",cat:"Radio",logo:"https://files.catbox.moe/p788vd.jpg",src:"https://streaming.nrjaudio.fm/oudn8v2h9r57"}
-    ,{id:"673",name:"Nostalgie Les Tubes De 1983",cat:"Radio",logo:"https://files.catbox.moe/9xb5mh.jpg",src:"https://streaming.nrjaudio.fm/ou3kt2uizv6i"}
-    ,{id:"674",name:"Nostalgie Les Tubes De 1984",cat:"Radio",logo:"https://files.catbox.moe/iowzsq.jpg",src:"https://streaming.nrjaudio.fm/ousv59m4z85f"}
-    ,{id:"675",name:"Nostalgie Les Tubes De 1985",cat:"Radio",logo:"https://files.catbox.moe/t8121d.jpg",src:"https://streaming.nrjaudio.fm/ou87cwgk7oiu"}
-    ,{id:"676",name:"Nostalgie Les Tubes De 1986",cat:"Radio",logo:"https://files.catbox.moe/es5ech.jpg",src:"https://streaming.nrjaudio.fm/oumoci8fnozc"}
-    ,{id:"677",name:"Nostalgie Les Tubes De 1987",cat:"Radio",logo:"https://files.catbox.moe/1un3a8.jpg",src:"https://streaming.nrjaudio.fm/ouox9v7nfibk"}
-    ,{id:"678",name:"Nostalgie Les Tubes De 1988",cat:"Radio",logo:"https://files.catbox.moe/lg72lu.jpg",src:"https://streaming.nrjaudio.fm/ou2qgbpw5hs7"}
-    ,{id:"679",name:"Nostalgie Les Tubes De 1989",cat:"Radio",logo:"https://files.catbox.moe/h1hsw2.jpg",src:"https://streaming.nrjaudio.fm/ou7dhxf3s5gi"}  
 ];
 
 // ══════════════════════════════════════════
@@ -4337,6 +4420,7 @@ function openPlayerDirect(m, titleOverride) {
   document.body.style.overflow = 'hidden';
   if (isTVMode()) showTvBtns(true, false);
   trackContinueWatching(m);
+  updateMobileMediaSession(m, titleOverride);
 }
 
 // ══════════════════════════════════════════
@@ -4644,7 +4728,7 @@ function buildLiveSection(title, namesOrFilter) {
         <div class="tv-channel-time"></div>
         <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
       </div>`;
-    div.onclick = () => ch.cat==='Radio' ? openRadioPlayer(ch) : window.open(ch.src, '_blank');
+    div.onclick = () => ch.cat==='Radio' ? openRadioPlayer(ch) : openTvChannelPlayer(ch);
     grid.appendChild(div);
     if(ch.cat==='Radio') radioEpgUpdateCard(div, ch.id);
     else epgUpdateCard(div, ch.id);
@@ -4789,26 +4873,6 @@ const radioEpgSources = {
   "658": { type:"rfm",           url:"https://direct-radio.rfm.fr/playout?radio=3027" }, // RFM Funk
   "659": { type:"rfm",           url:"https://direct-radio.rfm.fr/playout?radio=3019" }, // RFM Cinéma
   "660": { type:"rfm",           url:"https://directradio.rfm.fr/rfm/now/3016" }, // RFM 70's
-  "661": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=435&fmt=json&sg_memory" }, // Nostalgie Summer 80
-  "662": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=1464&fmt=json&sg_memory" }, // Nostalgie French Party 80
-  "663": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=1599&fmt=json&sg_memory" }, // Nostalgie Slows 80
-  "664": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2291&fmt=json&sg_memory" }, // Nostalgie Mix 80
-  "665": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=1162&fmt=json&sg_memory" }, // Nostalgie Fan Des Années 80
-  "666": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2045&fmt=json&sg_memory" }, // Nostalgie Vos Pépites 80
-  "667": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2152&fmt=json&sg_memory" }, // Nostalgie Tous Les Tubes 80 !
-  "668": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=1283&fmt=json&sg_memory" }, // Nostalgie Les Tubes 80 N°1
-  "669": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=1771&fmt=json&sg_memory" }, // Nostalgie 500 Tubes 80
-  "670": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2219&fmt=json&sg_memory" }, // Nostalgie Les Tubes De 1980
-  "671": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2220&fmt=json&sg_memory" }, // Nostalgie Les Tubes De 1981
-  "672": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2142&fmt=json&sg_memory" }, // Nostalgie Les Tubes De 1982
-  "673": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2221&fmt=json&sg_memory" }, // Nostalgie Les Tubes De 1983
-  "674": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2222&fmt=json&sg_memory" }, // Nostalgie Les Tubes De 1984
-  "675": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2223&fmt=json&sg_memory" }, // Nostalgie Les Tubes De 1985
-  "676": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2120&fmt=json&sg_memory" }, // Nostalgie Les Tubes De 1986
-  "677": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2224&fmt=json&sg_memory" }, // Nostalgie Les Tubes De 1987
-  "678": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2225&fmt=json&sg_memory" }, // Nostalgie Les Tubes De 1988
-  "679": { type:"nrj",           url:"https://players.nrjaudio.fm/wr_api/live/fr?act=get_plist&id_wr=2266&fmt=json&sg_memory" }, // Nostalgie Les Tubes De 1989
-
 };
 
 const radioNpCache = {};
@@ -5243,6 +5307,341 @@ function radioUpdateMediaSessionMetadata(ch, np){
 })();
 
 // ══════════════════════════════════════════
+//  LECTEUR CHAÎNES TV EN DIRECT (inspiré de l'appli TF1)
+// ══════════════════════════════════════════
+let tvChCurrentChannel = null;
+let tvChHls = null;
+let tvChProgressTimer = null;
+let tvChAllChannelsBuilt = false;
+
+function getTvChVideoEl(){ return document.getElementById('tvChVideo'); }
+
+function getAllTvLiveChannels(){
+  return (typeof tvChannels !== 'undefined') ? tvChannels.filter(c=>c.cat!=='Radio') : [];
+}
+
+// Charge le flux (HLS via hls.js si besoin, sinon lecture native pour Safari/iOS).
+// ── Proxy CORS pour les flux HLS ──
+// Les liens .m3u8 des chaînes redirigent (302) vers un CDN tokenisé et éphémère qui ne
+// renvoie pas d'en-têtes CORS : le navigateur bloque alors la lecture directe (et bloque
+// aussi le contenu "http://" si la page est servie en https). On fait donc transiter
+// CHAQUE requête (manifeste ET segments) par un proxy CORS, qui lui répond en https
+// avec les bons en-têtes.
+// ⚠️ IMPORTANT — chaînes TV qui ne se lancent pas malgré tout :
+// Le serveur qui fournit les flux vérifie l'identifiant technique ("User-Agent") du client
+// et n'autorise que les lecteurs vidéo classiques (VLC...) — un navigateur ne peut PAS
+// modifier cet identifiant lui-même (restriction de sécurité fixe, aucun code JS ne le peut).
+// Solution : déployer un petit proxy à toi (gratuit, ~5 min, voir le message de Claude
+// pour le code + les instructions) qui se fait passer pour VLC. Colle ensuite son URL
+// ci-dessous (garde bien le "?url=" à la fin) pour qu'il soit utilisé en priorité :
+const TVCH_OWN_PROXY = 'https://cinmusiq--e17e34487cf911f1af0f1607ee4eb77e.web.val.run/?url='; // ex: 'https://tv-proxy.tonpseudo.workers.dev/?url='
+
+const TVCH_CORS_PROXIES = [
+  ...(TVCH_OWN_PROXY ? [u => TVCH_OWN_PROXY + encodeURIComponent(u)] : []),
+  u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u)
+];
+let tvChProxyIndex = 0;
+
+function tvChIsProxied(url){
+  if(!url) return false;
+  return TVCH_CORS_PROXIES.some(build => url.indexOf(build('')) === 0);
+}
+
+// Construit une classe de loader hls.js qui réécrit l'URL de chaque requête
+// (playlist + segments + clés) pour passer par le proxy CORS actuellement sélectionné.
+function tvChMakeProxyLoader(){
+  const BaseLoader = Hls.DefaultConfig.loader;
+  return class TvChProxyLoader extends BaseLoader {
+    load(context, config, callbacks){
+      if(context.url && /^https?:\/\//i.test(context.url) && !tvChIsProxied(context.url)){
+        context.url = TVCH_CORS_PROXIES[tvChProxyIndex](context.url);
+      }
+      super.load(context, config, callbacks);
+    }
+  };
+}
+
+function tvChLoadStream(ch){
+  const video = getTvChVideoEl();
+  const subEl = document.getElementById('tvChProgSub');
+  if(tvChHls){ tvChHls.destroy(); tvChHls = null; }
+  video.pause();
+  video.removeAttribute('src');
+  video.load();
+  if(typeof window.Hls === 'undefined'){
+    if(subEl) subEl.textContent = 'Erreur : la librairie de lecture (hls.js) ne s’est pas chargée';
+    showToast("Le lecteur vidéo n'a pas pu se charger (connexion internet ?)");
+    return;
+  }
+  if(Hls.isSupported()){
+    if(subEl) subEl.textContent = 'Connexion au flux… (proxy '+(tvChProxyIndex+1)+'/'+TVCH_CORS_PROXIES.length+')';
+    tvChHls = new Hls({ liveDurationInfinity:true, loader: tvChMakeProxyLoader() });
+    tvChHls.loadSource(ch.src);
+    tvChHls.attachMedia(video);
+    tvChHls.on(Hls.Events.MANIFEST_PARSED, ()=>{
+      const p=video.play();
+      if(p&&p.catch) p.catch(()=>{});
+      if(subEl && tvChCurrentChannel && tvChCurrentChannel.id===ch.id) tvChRefreshProgram();
+    });
+    tvChHls.on(Hls.Events.ERROR, (evt,data)=>{
+      if(!data) return;
+      console.warn('[TV player] hls.js error:', data.type, data.details, 'fatal=', data.fatal, 'proxy=', tvChProxyIndex);
+      if(data.fatal){
+        // Le proxy actuel échoue (rate-limit, blocage, timeout...) : on essaie le suivant avant d'abandonner.
+        if(tvChProxyIndex < TVCH_CORS_PROXIES.length - 1){
+          tvChProxyIndex++;
+          tvChLoadStream(ch);
+        } else {
+          tvChProxyIndex = 0;
+          if(subEl) subEl.textContent = 'Erreur : '+data.details+' — flux inaccessible via les proxys disponibles';
+          showToast("Impossible de lire cette chaîne (erreur: "+data.details+")");
+        }
+      }
+    });
+  } else if(video.canPlayType('application/vnd.apple.mpegurl')){
+    if(subEl) subEl.textContent = 'Connexion au flux (lecture native)…';
+    video.src = TVCH_CORS_PROXIES[tvChProxyIndex](ch.src);
+    const p = video.play();
+    if(p && p.catch) p.catch(()=>{});
+  } else {
+    if(subEl) subEl.textContent = 'Erreur : ce navigateur ne sait pas lire les flux HLS';
+    showToast("Votre navigateur ne peut pas lire ce flux");
+  }
+  updateTvChPlayIcon();
+}
+
+// Ouvre le lecteur de chaîne TV en direct (plein écran fixe, sans mini-barre).
+function openTvChannelPlayer(ch){
+  if(!ch || !ch.src) return;
+  tvChCurrentChannel = ch;
+  tvChProxyIndex = 0;
+  document.getElementById('tvChLogo').src = ch.logo || '';
+  document.getElementById('tvChProgTitle').textContent = ch.name;
+  document.getElementById('tvChProgSub').textContent = 'Chargement…';
+  document.getElementById('tvChPlayer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  tvChLoadStream(ch);
+  tvChRefreshProgram();
+  if(tvChProgressTimer) clearInterval(tvChProgressTimer);
+  tvChProgressTimer = setInterval(tvChRefreshProgram, 30000);
+  tvChSetupMediaSession();
+  tvChShowControls();
+}
+
+// Change de chaîne sans fermer le lecteur (utilisé depuis "Toutes les chaînes").
+function tvChSwitchChannel(ch){
+  openTvChannelPlayer(ch);
+  const panel = document.getElementById('tvChAllChannelsPanel');
+  if(panel) panel.classList.remove('open');
+}
+
+function closeTvChannelPlayer(){
+  const video = getTvChVideoEl();
+  if(tvChHls){ tvChHls.destroy(); tvChHls = null; }
+  video.pause();
+  video.removeAttribute('src');
+  video.load();
+  document.getElementById('tvChPlayer').classList.remove('open');
+  document.getElementById('tvChAllChannelsPanel').classList.remove('open');
+  document.body.style.overflow = '';
+  if(tvChProgressTimer){ clearInterval(tvChProgressTimer); tvChProgressTimer = null; }
+  if(tvChHideControlsTimer){ clearTimeout(tvChHideControlsTimer); tvChHideControlsTimer = null; }
+  tvChCurrentChannel = null;
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  if('mediaSession' in navigator && typeof radioPlayerActive!=='undefined' && !radioPlayerActive){
+    navigator.mediaSession.metadata = null;
+  }
+}
+
+// ── Plein écran ──
+function tvChToggleFullscreen(){
+  const player = document.getElementById('tvChPlayer');
+  if(!document.fullscreenElement){
+    if(player.requestFullscreen) player.requestFullscreen().catch(()=>{});
+  } else {
+    document.exitFullscreen().catch(()=>{});
+  }
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.addEventListener('fullscreenchange', ()=>{
+    const btn = document.getElementById('tvChFullscreenBtn');
+    if(btn) btn.textContent = document.fullscreenElement ? '⛶' : '⛶';
+  });
+});
+
+// ── Masquage automatique des contrôles après 2s d'inactivité ──
+let tvChHideControlsTimer = null;
+function tvChShowControls(){
+  const player = document.getElementById('tvChPlayer');
+  if(!player) return;
+  player.classList.remove('controls-hidden');
+  if(tvChHideControlsTimer) clearTimeout(tvChHideControlsTimer);
+  tvChHideControlsTimer = setTimeout(()=>{
+    // Ne masque pas si le panneau "Toutes les chaînes" est ouvert, ou en pause.
+    const panel = document.getElementById('tvChAllChannelsPanel');
+    const video = getTvChVideoEl();
+    if(panel && panel.classList.contains('open')) return;
+    if(video && video.paused) return;
+    player.classList.add('controls-hidden');
+  }, 2000);
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  const player = document.getElementById('tvChPlayer');
+  if(!player) return;
+  ['mousemove','touchstart','click','keydown'].forEach(evt=>{
+    player.addEventListener(evt, tvChShowControls);
+  });
+});
+
+function tvChTogglePlay(){
+  const video = getTvChVideoEl();
+  if(video.paused){ const p=video.play(); if(p&&p.catch)p.catch(()=>{}); }
+  else video.pause();
+  updateTvChPlayIcon();
+}
+function updateTvChPlayIcon(){
+  const video = getTvChVideoEl();
+  const btn = document.getElementById('tvChPlayBtn');
+  if(btn) btn.textContent = video.paused ? '▶' : '⏸';
+  if('mediaSession' in navigator) navigator.mediaSession.playbackState = video.paused ? 'paused' : 'playing';
+}
+// Rembobinage/avance de 10s (dans la limite du buffer live disponible).
+function tvChSeek(sec){
+  const video = getTvChVideoEl();
+  if(!video.buffered || !video.buffered.length) return;
+  try{
+    const min = video.buffered.start(0);
+    const max = video.buffered.end(video.buffered.length-1);
+    video.currentTime = Math.min(max, Math.max(min, video.currentTime + sec));
+  }catch(e){ /* certains flux live ne permettent pas le seek */ }
+}
+
+// Récupère le programme en cours (EPG) : titre + heure de fin + barre de progression.
+async function tvChRefreshProgram(){
+  if(!tvChCurrentChannel) return;
+  const ch = tvChCurrentChannel;
+  const data = await epgFetch(ch.id);
+  if(!tvChCurrentChannel || tvChCurrentChannel.id !== ch.id) return; // chaîne changée entre temps
+  const prog = epgGetCurrent(data);
+  const subEl = document.getElementById('tvChProgSub');
+  const nowEl = document.getElementById('tvChTimeNow');
+  const endEl = document.getElementById('tvChTimeEnd');
+  const fillEl = document.getElementById('tvChProgressFill');
+  const now = new Date();
+  if(nowEl) nowEl.textContent = now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  if(prog){
+    if(subEl) subEl.textContent = prog.desc ? prog.desc : prog.title;
+    document.getElementById('tvChProgTitle').textContent = prog.title || ch.name;
+    if(endEl) endEl.textContent = epgFormatTime(prog.end_date);
+    const start = new Date(prog.start_date), end = new Date(prog.end_date);
+    const pct = Math.min(100, Math.max(0, ((now-start)/(end-start))*100));
+    if(fillEl) fillEl.style.width = pct + '%';
+    tvChUpdateMediaSessionMetadata(ch, prog);
+  } else {
+    if(subEl) subEl.textContent = ch.name;
+    document.getElementById('tvChProgTitle').textContent = ch.name;
+    if(endEl) endEl.textContent = '--:--';
+    if(fillEl) fillEl.style.width = '0%';
+    tvChUpdateMediaSessionMetadata(ch, null);
+  }
+}
+
+// ── Écran de verrouillage / Centre de contrôle pour les chaînes TV ──
+function tvChSetupMediaSession(){
+  if(!('mediaSession' in navigator)) return;
+  navigator.mediaSession.setActionHandler('play', ()=>{ const v=getTvChVideoEl(); const p=v.play(); if(p&&p.catch)p.catch(()=>{}); updateTvChPlayIcon(); });
+  navigator.mediaSession.setActionHandler('pause', ()=>{ getTvChVideoEl().pause(); updateTvChPlayIcon(); });
+  navigator.mediaSession.setActionHandler('previoustrack', null);
+  navigator.mediaSession.setActionHandler('nexttrack', null);
+  navigator.mediaSession.setActionHandler('stop', ()=>{ closeTvChannelPlayer(); });
+}
+async function tvChUpdateMediaSessionMetadata(ch, prog){
+  if(!('mediaSession' in navigator) || !ch) return;
+  const title = prog && prog.title ? prog.title : ch.name;
+  let artwork = ch.logo;
+  if(prog && prog.title){
+    const img = await tvProgramFetchImage(prog.title);
+    if(img) artwork = img;
+  }
+  if(!tvChCurrentChannel || tvChCurrentChannel.id !== ch.id) return; // chaîne changée pendant l'appel
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: title,
+    artist: ch.name,
+    album: ch.name,
+    artwork: artwork ? [
+      { src: artwork, sizes: '256x256', type: 'image/jpeg' },
+      { src: artwork, sizes: '512x512', type: 'image/jpeg' }
+    ] : []
+  });
+}
+
+// ── Recherche d'une image associée au programme en cours (comme pour la radio) ──
+const tvProgramImageCache = {};
+const TV_PROGRAM_IMAGE_TTL = 6*60*60*1000; // 6h
+async function tvProgramFetchImage(title){
+  if(!title) return null;
+  const key = title.trim().toLowerCase();
+  const cached = tvProgramImageCache[key];
+  if(cached && (Date.now()-cached.ts) < TV_PROGRAM_IMAGE_TTL) return cached.url;
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(), 6000);
+    const r = await fetch('https://itunes.apple.com/search?term='+encodeURIComponent(title)+'&media=tvShow&limit=1', {signal:controller.signal});
+    clearTimeout(timer);
+    let url = null;
+    if(r.ok){
+      const data = await r.json();
+      if(data && Array.isArray(data.results) && data.results.length && data.results[0].artworkUrl100){
+        url = data.results[0].artworkUrl100.replace('100x100bb','600x600bb');
+      }
+    }
+    tvProgramImageCache[key] = { ts:Date.now(), url };
+    return url;
+  }catch(e){
+    tvProgramImageCache[key] = { ts:Date.now(), url:null };
+    return null;
+  }
+}
+
+// ── Panneau "Toutes les chaînes" : liste avec programme en cours + image associée ──
+function toggleTvChAllChannels(){
+  const panel = document.getElementById('tvChAllChannelsPanel');
+  if(!panel) return;
+  const opening = !panel.classList.contains('open');
+  panel.classList.toggle('open');
+  if(opening) buildTvChAllChannelsList();
+}
+async function buildTvChAllChannelsList(){
+  const list = document.getElementById('tvChAllChannelsList');
+  if(!list) return;
+  const channels = getAllTvLiveChannels();
+  list.innerHTML = channels.map(ch => `
+    <div class="tvch-ach-item ${tvChCurrentChannel && tvChCurrentChannel.id===ch.id ? 'active':''}" id="tvch-ach-${ch.id}" onclick='tvChSwitchChannel(${JSON.stringify(ch).replace(/'/g,"&apos;")})'>
+      <div class="tvch-ach-thumb"><img id="tvch-ach-img-${ch.id}" src="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'"></div>
+      <div class="tvch-ach-info">
+        <div class="tvch-ach-name">${ch.name}</div>
+        <div class="tvch-ach-prog" id="tvch-ach-prog-${ch.id}">Chargement…</div>
+      </div>
+    </div>`).join('');
+  channels.forEach(async ch=>{
+    try{
+      const data = await epgFetch(ch.id);
+      const prog = epgGetCurrent(data);
+      const progEl = document.getElementById(`tvch-ach-prog-${ch.id}`);
+      const imgEl = document.getElementById(`tvch-ach-img-${ch.id}`);
+      if(prog && prog.title){
+        if(progEl) progEl.textContent = prog.title;
+        const img = await tvProgramFetchImage(prog.title);
+        if(img && imgEl) imgEl.src = img;
+      } else {
+        if(progEl) progEl.textContent = 'En direct';
+      }
+    }catch(e){ /* silencieux : la chaîne garde son logo par défaut */ }
+  });
+}
+
+// ══════════════════════════════════════════
 //  TV TIME TAB SWITCH
 // ══════════════════════════════════════════
 function switchTvTimeTab(tab) {
@@ -5281,7 +5680,7 @@ function renderTV(cat){
           <div class="tv-channel-time"></div>
           <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
         </div>`;
-      div.onclick=()=>ch.cat==='Radio' ? openRadioPlayer(ch) : window.open(ch.src,'_blank');
+      div.onclick=()=>ch.cat==='Radio' ? openRadioPlayer(ch) : openTvChannelPlayer(ch);
       grid.appendChild(div);
       if(ch.cat==='Radio') radioEpgUpdateCard(div, ch.id);
       else epgUpdateCard(div, ch.id);
@@ -5310,7 +5709,7 @@ async function renderTVCeSoir(list) {
         <div class="tv-channel-time"></div>
         <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
       </div>`;
-    div.onclick = () => ch.cat==='Radio' ? openRadioPlayer(ch) : window.open(ch.src, '_blank');
+    div.onclick = () => ch.cat==='Radio' ? openRadioPlayer(ch) : openTvChannelPlayer(ch);
     grid.appendChild(div);
   });
 
@@ -5411,6 +5810,7 @@ function openPlayer(m,startSeason,startEp){
     loadMedia(frame,m.src,m.embed);
     trackContinueWatching(m);
   }
+  updateMobileMediaSession(m);
   overlay.classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -5741,6 +6141,9 @@ function closePlayer(){
   document.getElementById('tvEpPanel').classList.remove('open');
   showTvBtns(false,false);
   currentSerieData=null;
+  if('mediaSession' in navigator && typeof radioPlayerActive!=='undefined' && !radioPlayerActive){
+    navigator.mediaSession.metadata = null;
+  }
   if(currentTab==='accueil') renderCatalog('accueil');
 }
 
@@ -5832,23 +6235,29 @@ document.addEventListener('keydown',e=>{
 // ══════════════════════════════════════════
 
 // 1. Mise à jour des infos sur l'écran de verrouillage
-function updateMobileMediaSession(movie) {
+function updateMobileMediaSession(movie, titleOverride) {
   if ('mediaSession' in navigator && movie) {
+    const meta = (typeof filmMeta !== 'undefined' && filmMeta[movie.id]) ? filmMeta[movie.id] : {};
+    const artwork = meta.backdrop || movie.backdrop || movie.thumb || movie.img || '';
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: movie.title || "Programme",
+      title: titleOverride || movie.title || "Programme",
       artist: 'Flavio Home',
-      album: movie.year || "",
-      artwork: [
-        { src: movie.backdrop || movie.img, sizes: '512x512', type: 'image/jpeg' }
-      ]
+      album: movie.year || meta.year || "",
+      artwork: artwork ? [
+        { src: artwork, sizes: '512x512',  type: 'image/jpeg' },
+        { src: artwork, sizes: '1280x720', type: 'image/jpeg' }
+      ] : []
     });
 
     navigator.mediaSession.setActionHandler('play', () => { 
-        const v = document.querySelector('video'); if(v) v.play(); 
+        const v = document.querySelector('#playerFrame video'); if(v) v.play(); 
     });
     navigator.mediaSession.setActionHandler('pause', () => { 
-        const v = document.querySelector('video'); if(v) v.pause(); 
+        const v = document.querySelector('#playerFrame video'); if(v) v.pause(); 
     });
+    navigator.mediaSession.setActionHandler('previoustrack', null);
+    navigator.mediaSession.setActionHandler('nexttrack', null);
+    navigator.mediaSession.setActionHandler('stop', null);
   }
 }
 
@@ -6244,7 +6653,7 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
         <div class="tv-channel-time"></div>
         <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
       </div>`;
-    div.onclick = () => window.open(ngChannel.src, '_blank');
+    div.onclick = () => openTvChannelPlayer(ngChannel);
     grid.appendChild(div);
     epgUpdateCard(div, ngChannel.id);
     area.appendChild(sec);
