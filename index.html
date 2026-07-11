@@ -943,6 +943,19 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .tvch-ach-name{ font-size:.82rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .tvch-ach-prog{ font-size:.72rem; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
+.tvch-upcoming-btn{ display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:10px 18px; border-radius:2px; font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; transition:all .2s; }
+.tvch-upcoming-btn:hover{ background:rgba(255,255,255,0.15); }
+.tvch-upcoming-panel{ position:fixed; top:0; right:0; bottom:0; width:min(90vw,380px); background:rgba(10,10,14,0.98); border-left:1px solid var(--glass-border); z-index:2200; transform:translateX(100%); transition:transform .35s ease; display:flex; flex-direction:column; }
+.tvch-upcoming-panel.open{ transform:translateX(0); }
+.tvch-upcoming-header{ display:flex; align-items:center; justify-content:space-between; padding:18px 18px 14px; border-bottom:1px solid var(--glass-border); flex-shrink:0; }
+.tvch-upcoming-title{ font-family:'Cinzel',serif; font-size:.85rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); }
+.tvch-upcoming-close{ background:transparent; border:none; color:var(--muted); font-size:1.1rem; cursor:pointer; }
+.tvch-upcoming-list{ flex:1; overflow-y:auto; padding:8px; }
+.tvch-up-item{ display:flex; align-items:baseline; gap:12px; padding:10px 8px; border-radius:4px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.tvch-up-time{ font-size:.78rem; color:var(--gold); flex-shrink:0; min-width:42px; }
+.tvch-up-title{ font-size:.82rem; color:var(--text); }
+.tvch-up-empty{ padding:18px 8px; color:var(--muted); font-size:.8rem; text-align:center; }
+
 .tvch-player.controls-hidden .tvch-header,
 .tvch-player.controls-hidden .tvch-center-controls,
 .tvch-player.controls-hidden .tvch-bottom{ opacity:0; pointer-events:none; }
@@ -1674,7 +1687,16 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       <span class="tvch-time-end" id="tvChTimeEnd">--:--</span>
     </div>
     <button class="tvch-allchannels-btn" onclick="toggleTvChAllChannels()">📺 Toutes les chaînes</button>
+    <button class="tvch-upcoming-btn" onclick="toggleTvChUpcoming()">⏭ À suivre</button>
   </div>
+</div>
+
+<div class="tvch-upcoming-panel" id="tvChUpcomingPanel">
+  <div class="tvch-upcoming-header">
+    <div class="tvch-upcoming-title">À suivre</div>
+    <button class="tvch-upcoming-close" onclick="toggleTvChUpcoming()">✕</button>
+  </div>
+  <div class="tvch-upcoming-list" id="tvChUpcomingList"></div>
 </div>
 
 <div class="tvch-allchannels-panel" id="tvChAllChannelsPanel">
@@ -4839,6 +4861,11 @@ function epgGetCurrent(data){
   }
   return null;
 }
+function epgGetUpcoming(data, limit){
+  if(!data||!data.epg_list||!data.epg_list.length) return [];
+  const now=new Date();
+  return data.epg_list.filter(p=>new Date(p.start_date)>now).slice(0, limit||8);
+}
 async function epgUpdateCard(el, chId){
   const data=await epgFetch(chId);
   const prog=epgGetCurrent(data);
@@ -5501,6 +5528,8 @@ function tvChSwitchChannel(ch){
   openTvChannelPlayer(ch);
   const panel = document.getElementById('tvChAllChannelsPanel');
   if(panel) panel.classList.remove('open');
+  const upcomingPanel = document.getElementById('tvChUpcomingPanel');
+  if(upcomingPanel) upcomingPanel.classList.remove('open');
 }
 
 function closeTvChannelPlayer(){
@@ -5511,6 +5540,7 @@ function closeTvChannelPlayer(){
   video.load();
   document.getElementById('tvChPlayer').classList.remove('open');
   document.getElementById('tvChAllChannelsPanel').classList.remove('open');
+  document.getElementById('tvChUpcomingPanel').classList.remove('open');
   document.body.style.overflow = '';
   if(tvChProgressTimer){ clearInterval(tvChProgressTimer); tvChProgressTimer = null; }
   if(tvChHideControlsTimer){ clearTimeout(tvChHideControlsTimer); tvChHideControlsTimer = null; }
@@ -5691,6 +5721,29 @@ function toggleTvChAllChannels(){
   const opening = !panel.classList.contains('open');
   panel.classList.toggle('open');
   if(opening) buildTvChAllChannelsList();
+}
+function toggleTvChUpcoming(){
+  const panel = document.getElementById('tvChUpcomingPanel');
+  if(!panel) return;
+  const opening = !panel.classList.contains('open');
+  panel.classList.toggle('open');
+  if(opening) buildTvChUpcomingList();
+}
+async function buildTvChUpcomingList(){
+  const list = document.getElementById('tvChUpcomingList');
+  if(!list || !tvChCurrentChannel) return;
+  list.innerHTML = '<div class="tvch-up-empty">Chargement…</div>';
+  const data = await epgFetch(tvChCurrentChannel.id);
+  const upcoming = epgGetUpcoming(data, 10);
+  if(!upcoming.length){
+    list.innerHTML = '<div class="tvch-up-empty">Aucun programme à venir trouvé</div>';
+    return;
+  }
+  list.innerHTML = upcoming.map(p => `
+    <div class="tvch-up-item">
+      <div class="tvch-up-time">${epgFormatTime(p.start_date)}</div>
+      <div class="tvch-up-title">${p.title}</div>
+    </div>`).join('');
 }
 async function buildTvChAllChannelsList(){
   const list = document.getElementById('tvChAllChannelsList');
