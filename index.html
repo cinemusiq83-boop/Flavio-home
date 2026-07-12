@@ -6371,7 +6371,20 @@ document.addEventListener('keydown',e=>{
     closeFilmModal();
     closeVersionModal();
   }
+  // Flèches haut/bas : changer de chaîne quand le lecteur de chaînes TV est ouvert.
+  const tvChPlayerEl = document.getElementById('tvChPlayer');
+  if(tvChCurrentChannel && tvChPlayerEl && tvChPlayerEl.classList.contains('open')){
+    if(e.key==='ArrowDown'){ e.preventDefault(); tvChChangeChannel(1); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); tvChChangeChannel(-1); }
+  }
 });
+function tvChChangeChannel(delta){
+  if(!tvChCurrentChannel) return;
+  const idx = tvChannels.findIndex(c => c.id === tvChCurrentChannel.id);
+  if(idx === -1) return;
+  const nextIdx = (idx + delta + tvChannels.length) % tvChannels.length;
+  tvChSwitchChannel(tvChannels[nextIdx]);
+}
 // ══════════════════════════════════════════
 //  FONCTIONNALITÉS APP MOBILE (ZOOM, À L'ÉCOUTE, ARRIÈRE-PLAN)
 // ══════════════════════════════════════════
