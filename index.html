@@ -897,6 +897,13 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .tvch-close{ background:transparent;border:none;color:#fff;font-size:1.4rem;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0; opacity:.85; transition:opacity .2s; }
 .tvch-close:hover{ opacity:1; }
 
+/* ── Affichage du numéro de chaîne en cours de frappe (zapping clavier) ── */
+.tvch-zap-display{ position:fixed; top:90px; right:40px; z-index:5000; background:rgba(5,5,8,0.9); border:1px solid var(--gold); border-radius:4px; padding:14px 30px; display:none; flex-direction:column; align-items:center; gap:2px; backdrop-filter:blur(10px); box-shadow:0 8px 30px rgba(0,0,0,0.55); animation:fadeUp .2s ease; }
+.tvch-zap-display.show{ display:flex; }
+.tvch-zap-num{ font-family:'Cinzel',serif; font-size:2.4rem; font-weight:900; letter-spacing:.1em; background:linear-gradient(135deg,var(--gold),var(--gold-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; min-width:80px; text-align:center; line-height:1.1; }
+.tvch-zap-label{ font-size:.62rem; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+.tvch-zap-label.tvch-zap-error{ color:#d97a7a; }
+
 .tvch-video-wrap{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; overflow:hidden; z-index:1; }
 .tvch-video-wrap video{ width:100%; height:100%; object-fit:cover; background:#000; }
 
@@ -1659,6 +1666,10 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
 </div>
 
 <!-- ═══ LECTEUR CHAÎNES TV EN DIRECT ═══ -->
+<div class="tvch-zap-display" id="tvChZapDisplay">
+  <div class="tvch-zap-num" id="tvChZapNum"></div>
+  <div class="tvch-zap-label" id="tvChZapLabel">Chaîne</div>
+</div>
 <div class="tvch-player" id="tvChPlayer">
   <div class="tvch-header">
     <img class="tvch-logo" id="tvChLogo" src="" alt="">
@@ -3867,16 +3878,16 @@ const tvChannels = [
     ,{id:"68",name:"beIN Sports 3",cat:"Sport",logo:"https://img1.oqee.net/pictures/1522300/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/268.m3u8"}
     ,{id:"69",name:"Eurosport 1",cat:"Sport",logo:"https://img2.oqee.net/pictures/1271913/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/239.m3u8"}
     ,{id:"70",name:"Eurosport 2",cat:"Sport",logo:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=320,height=180/image/532792515/67d6113c-4069-4354-bc0d-56ce1bfec766.jpg",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/240.m3u8"}
-    ,{id:"1205685",name:"Ligue 1+",cat:"Sport",logo:"https://freebox.cdn.scw.iliad.fr/ligue1_Plus_placeholder_afcfc4454c.jpeg",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205685.m3u8"}
-    ,{id:"1205684",name:"Ligue 1+ 2",cat:"Sport",logo:"https://img1.oqee.net/pictures/4527022/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205684.m3u8"}
-    ,{id:"1205683",name:"Ligue 1+ 3",cat:"Sport",logo:"https://img2.oqee.net/pictures/4527021/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205683.m3u8"}
-    ,{id:"1205682",name:"Ligue 1+ 4",cat:"Sport",logo:"https://img2.oqee.net/pictures/4527825/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205682.m3u8"}
-    ,{id:"1205681",name:"Ligue 1+ 5",cat:"Sport",logo:"https://img1.oqee.net/pictures/4527026/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205681.m3u8"}
-    ,{id:"1205680",name:"Ligue 1+ 6",cat:"Sport",logo:"https://img1.oqee.net/pictures/5061526/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205680.m3u8"}
-    ,{id:"1205679",name:"Ligue 1+ 7",cat:"Sport",logo:"https://img2.oqee.net/pictures/4570023/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205679.m3u8"}
-    ,{id:"1205678",name:"Ligue 1+ 8",cat:"Sport",logo:"https://img2.oqee.net/pictures/4570025/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205678.m3u8"}
-    ,{id:"1205677",name:"Ligue 1+ 9",cat:"Sport",logo:"https://img1.oqee.net/pictures/4570026/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205677.m3u8"}
-    ,{id:"1205676",name:"Ligue 1+ 10",cat:"Sport",logo:"https://img2.oqee.net/pictures/4527025/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205676.m3u8"}
+    ,{id:"71",name:"Ligue 1+",cat:"Sport",logo:"https://freebox.cdn.scw.iliad.fr/ligue1_Plus_placeholder_afcfc4454c.jpeg",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205685.m3u8"}
+    ,{id:"291",name:"Ligue 1+ 2",cat:"Sport",logo:"https://img1.oqee.net/pictures/4527022/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205684.m3u8"}
+    ,{id:"292",name:"Ligue 1+ 3",cat:"Sport",logo:"https://img2.oqee.net/pictures/4527021/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205683.m3u8"}
+    ,{id:"293",name:"Ligue 1+ 4",cat:"Sport",logo:"https://img2.oqee.net/pictures/4527825/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205682.m3u8"}
+    ,{id:"294",name:"Ligue 1+ 5",cat:"Sport",logo:"https://img1.oqee.net/pictures/4527026/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205681.m3u8"}
+    ,{id:"295",name:"Ligue 1+ 6",cat:"Sport",logo:"https://img1.oqee.net/pictures/5061526/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205680.m3u8"}
+    ,{id:"296",name:"Ligue 1+ 7",cat:"Sport",logo:"https://img2.oqee.net/pictures/4570023/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205679.m3u8"}
+    ,{id:"297",name:"Ligue 1+ 8",cat:"Sport",logo:"https://img2.oqee.net/pictures/4570025/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205678.m3u8"}
+    ,{id:"298",name:"Ligue 1+ 9",cat:"Sport",logo:"https://img1.oqee.net/pictures/4570026/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205677.m3u8"}
+    ,{id:"299",name:"Ligue 1+ 10",cat:"Sport",logo:"https://img2.oqee.net/pictures/4527025/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205676.m3u8"}
     ,{id:"72",name:"Golf+",cat:"Sport",logo:"https://thumb.canalplus.pro/bran/unsafe/560x314/filters:quality(80)/image/673dc2f45f3f4/uploads/media/golf.png",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/236.m3u8"}
     ,{id:"73",name:"Automoto La Chaîne",cat:"Sport",logo:"https://img2.oqee.net/pictures/1535779/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/238.m3u8"}
     ,{id:"74",name:"Equidia",cat:"Sport",logo:"https://img2.oqee.net/pictures/151331/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/2242.m3u8"}
@@ -3899,7 +3910,7 @@ const tvChannels = [
     ,{id:"112",name:"Planète+ Crime",cat:"Docs",logo:"https://img1.oqee.net/pictures/1262884/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/447.m3u8"}
     ,{id:"113",name:"Planète+ Aventure",cat:"Docs",logo:"https://img1.oqee.net/pictures/1262886/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/448.m3u8"}
     ,{id:"114",name:"Museum TV",cat:"Docs",logo:"https://img1.oqee.net/pictures/4037714/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/458.m3u8"}
-    ,{id:"499",name:"National Geographic",cat:"Docs",logo:"https://img2.oqee.net/pictures/1527841/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/490.m3u8"}
+    ,{id:"115",name:"National Geographic",cat:"Docs",logo:"https://img2.oqee.net/pictures/1527841/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/490.m3u8"}
     ,{id:"119",name:"Toute l'Histoire",cat:"Docs",logo:"https://img1.oqee.net/pictures/154092/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/457.m3u8"}
     ,{id:"120",name:"Discovery Channel",cat:"Docs",logo:"https://img2.oqee.net/pictures/1815929/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/440.m3u8"}
     ,{id:"121",name:"Discovery Investigation",cat:"Docs",logo:"https://img2.oqee.net/pictures/1815939/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/442.m3u8"}
@@ -3917,7 +3928,7 @@ const tvChannels = [
     ,{id:"136",name:"Boomerang",cat:"Jeunesse",logo:"https://img2.oqee.net/pictures/151275/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/511.m3u8"}
     ,{id:"137",name:"Télétoon+",cat:"Jeunesse",logo:"https://img2.oqee.net/pictures/151567/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/522.m3u8"}
     ,{id:"138",name:"Télétoon+1",cat:"Jeunesse",logo:"https://img2.oqee.net/pictures/440513/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/523.m3u8"}
-    ,{id:"555",name:"Disney Channel",cat:"Jeunesse",logo:"https://img2.oqee.net/pictures/1584917/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/555.m3u8"}
+    ,{id:"139",name:"Disney Channel",cat:"Jeunesse",logo:"https://img2.oqee.net/pictures/1584917/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/555.m3u8"}
     ,{id:"141",name:"Cartoon Network",cat:"Jeunesse",logo:"https://img2.oqee.net/pictures/151523/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/513.m3u8"}
     ,{id:"142",name:"Nickelodeon",cat:"Jeunesse",logo:"https://img2.oqee.net/pictures/4534713/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/518.m3u8"}
     ,{id:"143",name:"Nickelodeon+1",cat:"Jeunesse",logo:"https://img1.oqee.net/pictures/357958/wide_generic/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/519.m3u8"}
@@ -4750,7 +4761,7 @@ const epgChannelIds = {
   "152":55718,"154":55856,"156":54862,"158":443152,"159":448598,
   "160":459210,"177":55952,"180":494423,"181":516403,"183":443214,"184":55944,
   "186":55845,"188":55876,"200":451926,"201":55821,"250":430106,
-  "499":516394,"555":516400
+  "115":516394,"139":516400
 };
 
 // ══════════════════════════════════════════
@@ -6386,6 +6397,79 @@ function tvChChangeChannel(delta){
   const nextIdx = (idx + delta + tvChannels.length) % tvChannels.length;
   tvChSwitchChannel(tvChannels[nextIdx]);
 }
+
+// ── Raccourcis clavier "zapping par numéro de chaîne" (ordinateur) ──
+// Comme sur une vraie télécommande : on tape le numéro de la chaîne au clavier,
+// le numéro tapé s'affiche à l'écran, et la chaîne se lance automatiquement
+// (dès que le numéro est complet, ou après une courte pause). Fonctionne pour
+// TOUTES les chaînes de la liste (chaque chaîne "id" = son numéro de zapping).
+const TVCH_NUMBER_MAX_LEN = Math.max(...tvChannels.map(c => String(c.id).length));
+let tvChZapBuffer = '';
+let tvChZapTimer = null;
+let tvChZapHideTimer = null;
+
+function tvChZapShow(text, isError){
+  const wrap = document.getElementById('tvChZapDisplay');
+  const numEl = document.getElementById('tvChZapNum');
+  const labelEl = document.getElementById('tvChZapLabel');
+  if(!wrap || !numEl || !labelEl) return;
+  numEl.textContent = tvChZapBuffer;
+  labelEl.textContent = text;
+  labelEl.classList.toggle('tvch-zap-error', !!isError);
+  wrap.classList.add('show');
+  if(tvChZapHideTimer){ clearTimeout(tvChZapHideTimer); tvChZapHideTimer = null; }
+}
+
+function tvChZapHide(delay){
+  if(tvChZapHideTimer) clearTimeout(tvChZapHideTimer);
+  tvChZapHideTimer = setTimeout(()=>{
+    const wrap = document.getElementById('tvChZapDisplay');
+    if(wrap) wrap.classList.remove('show');
+  }, delay || 0);
+}
+
+function tvChZapExecute(){
+  const buffer = tvChZapBuffer;
+  if(tvChZapTimer){ clearTimeout(tvChZapTimer); tvChZapTimer = null; }
+  const ch = tvChannels.find(c => String(c.id) === buffer);
+  tvChZapBuffer = '';
+  if(!ch){
+    tvChZapShow('Aucune chaîne', true);
+    tvChZapHide(1000);
+    return;
+  }
+  tvChZapShow(ch.name, false);
+  tvChZapHide(1200);
+  if(ch.cat === 'Radio'){
+    openRadioPlayer(ch);
+  } else if(tvChCurrentChannel && document.getElementById('tvChPlayer').classList.contains('open')){
+    tvChSwitchChannel(ch);
+  } else {
+    openTvChannelPlayer(ch);
+  }
+}
+
+document.addEventListener('keydown', e=>{
+  if(!/^[0-9]$/.test(e.key)) return;
+  // Ignore si une touche modificatrice est utilisée (évite les conflits avec les raccourcis du navigateur).
+  if(e.ctrlKey || e.metaKey || e.altKey) return;
+  // Ignore si l'utilisateur est en train de taper dans un champ (recherche, formulaire, éditeur…).
+  const active = document.activeElement;
+  const tag = active ? active.tagName : '';
+  if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (active && active.isContentEditable)) return;
+  e.preventDefault();
+  tvChZapBuffer += e.key;
+  if(tvChZapBuffer.length > TVCH_NUMBER_MAX_LEN) tvChZapBuffer = e.key;
+  tvChZapShow('Chaîne n°', false);
+  if(tvChZapTimer) clearTimeout(tvChZapTimer);
+  if(tvChZapBuffer.length >= TVCH_NUMBER_MAX_LEN){
+    // Le numéro est aussi long que le plus long numéro de chaîne connu : on lance tout de suite.
+    tvChZapExecute();
+  } else {
+    // Sinon on laisse un court instant pour taper la suite du numéro (ex: "1" puis "1" puis "5" pour 115).
+    tvChZapTimer = setTimeout(tvChZapExecute, 900);
+  }
+});
 // ══════════════════════════════════════════
 //  FONCTIONNALITÉS APP MOBILE (ZOOM, À L'ÉCOUTE, ARRIÈRE-PLAN)
 // ══════════════════════════════════════════
@@ -6797,7 +6881,7 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
     const grid = document.createElement('div');
     grid.className = 'tv-channels-grid';
     sec.appendChild(grid);
-    const ngChannel = { id:"499", name:"National Geographic", logo:"https://img2.oqee.net/pictures/1527841/wide_generic/h300", src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/490.m3u8" };
+    const ngChannel = { id:"115", name:"National Geographic", logo:"https://img2.oqee.net/pictures/1527841/wide_generic/h300", src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/490.m3u8" };
     const div = document.createElement('div');
     div.className = 'tv-channel';
     div.innerHTML = `
