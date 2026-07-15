@@ -32,6 +32,30 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .screen { display:none; min-height:100vh; }
 .screen.active { display:flex; }
 
+/* ── SPLASH VIDÉO D'INTRO ── */
+.intro-screen {
+  position:fixed; inset:0; z-index:10000;
+  background:#000;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+  opacity:1;
+  transition:opacity .9s ease;
+}
+.intro-screen.fade-out { opacity:0; pointer-events:none; }
+.intro-screen video { width:100%; height:100%; object-fit:cover; display:block; }
+.intro-skip-btn {
+  position:absolute; bottom:26px; right:26px; z-index:2;
+  background:rgba(5,5,8,0.55); border:1px solid rgba(255,255,255,0.3);
+  color:#fff; padding:9px 20px; border-radius:20px;
+  font-family:'Raleway',sans-serif; font-size:.75rem; letter-spacing:.1em;
+  text-transform:uppercase; cursor:pointer; backdrop-filter:blur(6px);
+  transition:all .25s;
+}
+.intro-skip-btn:hover { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,0.15); }
+@media(max-width:768px){
+  .intro-skip-btn { bottom:18px; right:18px; padding:8px 16px; font-size:.7rem; }
+}
+
 /* ── LOGIN ── */
 #loginScreen { align-items:center; justify-content:center; background:radial-gradient(ellipse at 30% 50%, #1a1228 0%, var(--dark) 60%); }
 #loginScreen::after { content:''; position:absolute; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
@@ -1264,6 +1288,12 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
 </style>
 </head>
 <body>
+
+<!-- ═══ SPLASH VIDÉO D'INTRO ═══ -->
+<div class="intro-screen" id="introScreen">
+  <video id="introVideo" src="https://files.catbox.moe/ntl4wk.mp4" autoplay playsinline></video>
+  <button class="intro-skip-btn" id="introSkipBtn" onclick="finishIntroVideo()">Passer ✕</button>
+</div>
 
 <!-- ═══ LOGIN ═══ -->
 <div id="loginScreen" class="screen active">
@@ -6386,11 +6416,39 @@ function initBurger(){
   window.addEventListener('resize',check);
 }
 
+function finishIntroVideo(){
+  const introScreen=document.getElementById('introScreen');
+  if(!introScreen || introScreen.dataset.done)return;
+  introScreen.dataset.done='1';
+  introScreen.classList.add('fade-out');
+  setTimeout(()=>{ introScreen.remove(); }, 900);
+}
+
+function initIntroVideo(){
+  const introScreen=document.getElementById('introScreen');
+  const introVideo=document.getElementById('introVideo');
+  if(!introScreen || !introVideo){ return; }
+
+  // Tentative de lecture avec le son ; si le navigateur bloque l'autoplay sonore, on repasse en muet.
+  const playPromise=introVideo.play();
+  if(playPromise!==undefined){
+    playPromise.catch(()=>{
+      introVideo.muted=true;
+      introVideo.play().catch(()=>{});
+    });
+  }
+
+  introVideo.addEventListener('ended', finishIntroVideo);
+  // Sécurité : si la vidéo ne se charge/termine jamais, on révèle quand même l'app.
+  setTimeout(finishIntroVideo, 12000);
+}
+
 window.onload=()=>{
   initBurger();
   const profiles=getProfiles();
   if(profiles.length>0)goToProfiles();
   else showScreen('loginScreen');
+  initIntroVideo();
 };
 
 document.addEventListener('keydown',e=>{
