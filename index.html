@@ -182,15 +182,21 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .cards-row { display:flex; gap:14px; overflow-x:auto; padding-bottom:14px; scrollbar-width:thin; scrollbar-color:rgba(201,168,76,0.3) transparent; }
 .cards-row::-webkit-scrollbar { height:3px; }
 .cards-row::-webkit-scrollbar-thumb { background:rgba(201,168,76,0.3); border-radius:2px; }
-.movie-card { flex-shrink:0; width:155px; cursor:pointer; transition:transform .3s; position:relative; overflow:hidden; border-radius:4px; }
+.movie-card { flex-shrink:0; width:240px; cursor:pointer; transition:transform .3s; position:relative; overflow:hidden; border-radius:4px; }
 .movie-card:hover { transform:scale(1.06) translateY(-4px); z-index:2; }
-.movie-card img { width:100%; aspect-ratio:2/3; object-fit:cover; display:block; border-radius:4px; background:#1a1a2e; min-height:232px; }
+/* Affiche mobile (portrait, thumb JustWatch) : masquée sur ordinateur */
+.movie-card img.poster-mobile { display:none; }
+/* Affiche ordinateur : format 16/9 construite à partir du backdrop + logo déjà présents dans les données */
+.movie-card .poster-desktop { display:flex; position:relative; width:100%; aspect-ratio:16/9; min-height:135px; background:#1a1a2e no-repeat center/cover; border-radius:4px; overflow:hidden; align-items:flex-end; justify-content:center; }
+.movie-card .poster-desktop::after { content:''; position:absolute; inset:0; background:linear-gradient(to top,rgba(5,5,8,0.85) 0%,rgba(5,5,8,0.15) 45%,transparent 70%); pointer-events:none; }
+.movie-card .poster-desktop-logo { position:relative; z-index:1; max-width:32%; max-height:20%; object-fit:contain; margin-bottom:10px; filter:drop-shadow(0 4px 14px rgba(0,0,0,0.8)); background:none; width:auto; aspect-ratio:auto; min-height:0; border-radius:0; }
+.movie-card .poster-desktop-title { position:relative; z-index:1; width:100%; padding:0 10px 10px; font-family:'Cinzel',serif; font-size:.8rem; letter-spacing:.06em; color:var(--text); text-align:center; text-shadow:0 2px 8px rgba(0,0,0,0.9); }
 .movie-card-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(5,5,8,0.95) 0%,transparent 60%); opacity:0; transition:opacity .3s; border-radius:4px; display:flex; align-items:flex-end; padding:10px; flex-direction:column; justify-content:flex-end; gap:6px; }
 .movie-card:hover .movie-card-overlay { opacity:1; }
 .movie-card-title { font-size:.68rem; color:var(--text); text-align:center; line-height:1.3; }
 .play-btn-small { width:36px; height:36px; border-radius:50%; background:var(--gold); border:none; color:var(--dark); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; align-self:center; transition:transform .2s; }
 .play-btn-small:hover { transform:scale(1.1); }
-.movies-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:16px; }
+.movies-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
 .catalog-section { margin-bottom:50px; }
 
 /* ── STREAMING PLATFORM SECTION ── */
@@ -1120,7 +1126,8 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   .catalog-section { margin-bottom:36px; }
   .cards-row { gap:10px; padding-bottom:10px; }
   .movie-card { width:110px !important; flex-shrink:0; }
-  .movie-card img { height:160px !important; }
+  .movie-card img.poster-mobile { display:block !important; width:100%; aspect-ratio:2/3; object-fit:cover; height:160px !important; border-radius:4px; background:#1a1a2e; }
+  .movie-card .poster-desktop { display:none !important; }
   .movies-grid { grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; }
   .wishlist-btn { opacity:1 !important; }
   .tv-header { padding:20px 14px 14px; }
@@ -4427,6 +4434,16 @@ function resumeContinueWatching(entry){
     openPlayer(m);
   }
 }
+function buildPosterHTML(m){
+  // Affiche ordinateur (16/9) : on réutilise le backdrop + logo déjà présents dans les données du film/série
+  const meta = (typeof filmMeta !== 'undefined' && filmMeta[m.id]) ? filmMeta[m.id] : {};
+  const backdrop = meta.backdrop || m.backdrop || m.thumb;
+  const logo = meta.logo || m.logo || '';
+  const desktopInner = logo
+    ? `<img class="poster-desktop-logo" src="${logo}" alt="${m.title}" loading="lazy">`
+    : `<div class="poster-desktop-title">${m.title}</div>`;
+  return `<img class="poster-mobile" src="${m.thumb}" alt="${m.title}" loading="lazy"><div class="poster-desktop" style="background-image:url('${backdrop}')">${desktopInner}</div>`;
+}
 function createContinueCard(entry){
   const m = allContent.find(x=>x.id===entry.id);
   if(!m) return document.createElement('div');
@@ -4436,7 +4453,7 @@ function createContinueCard(entry){
   if(entry.type==='serie' && entry.seasonLabel){
     resumeLabel = 'Reprendre '+entry.seasonLabel+(entry.epLabel?' '+entry.epLabel:'');
   }
-  card.innerHTML=`<img src="${m.thumb}" alt="${m.title}" loading="lazy"><div class="movie-card-overlay" style="opacity:1;background:linear-gradient(to top,rgba(5,5,8,0.95) 0%,rgba(5,5,8,0.15) 55%,transparent 80%);"><div class="movie-card-title">${m.title}</div><div style="font-size:.6rem;color:var(--gold);letter-spacing:.06em;text-align:center;">${resumeLabel}</div><button class="play-btn-small">▶</button></div><button class="wishlist-btn continue-remove-btn" title="Retirer de Reprendre la lecture" style="opacity:1;">✕</button>`;
+  card.innerHTML=`${buildPosterHTML(m)}<div class="movie-card-overlay" style="opacity:1;background:linear-gradient(to top,rgba(5,5,8,0.95) 0%,rgba(5,5,8,0.15) 55%,transparent 80%);"><div class="movie-card-title">${m.title}</div><div style="font-size:.6rem;color:var(--gold);letter-spacing:.06em;text-align:center;">${resumeLabel}</div><button class="play-btn-small">▶</button></div><button class="wishlist-btn continue-remove-btn" title="Retirer de Reprendre la lecture" style="opacity:1;">✕</button>`;
   card.onclick = () => resumeContinueWatching(entry);
   card.querySelector('.play-btn-small').onclick = (e) => { e.stopPropagation(); resumeContinueWatching(entry); };
   card.querySelector('.continue-remove-btn').onclick = (e) => { e.stopPropagation(); removeContinueWatching(entry.id); };
@@ -4717,7 +4734,7 @@ function createCard(m){
   const inList=isInListe(m.id);
   const trailerYtId = getTrailerYtId(m.id);
   const trailerBtn = trailerYtId ? `<button class="trailer-btn-card" title="Bande-annonce">🎬</button>` : '';
-  card.innerHTML=`<img src="${m.thumb}" alt="${m.title}" loading="lazy"><div class="movie-card-overlay"><div class="movie-card-title">${m.title}</div><div style="display:flex;gap:6px;align-items:center;justify-content:center;">${trailerBtn}<button class="play-btn-small">▶</button></div></div><button class="wishlist-btn ${inList?'in-list':''}" title="${inList?'Retirer':'Ajouter'}">${inList?'♥':'♡'}</button>`;
+  card.innerHTML=`${buildPosterHTML(m)}<div class="movie-card-overlay"><div class="movie-card-title">${m.title}</div><div style="display:flex;gap:6px;align-items:center;justify-content:center;">${trailerBtn}<button class="play-btn-small">▶</button></div></div><button class="wishlist-btn ${inList?'in-list':''}" title="${inList?'Retirer':'Ajouter'}">${inList?'♥':'♡'}</button>`;
   card.onclick = () => showFilmModal(m);
   card.querySelector('.play-btn-small').onclick = (e) => { e.stopPropagation(); handleCardPlay(m); };
   card.querySelector('.wishlist-btn').onclick = (e) => toggleListe(m.id, card.querySelector('.wishlist-btn'), e);
