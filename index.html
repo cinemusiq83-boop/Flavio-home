@@ -43,18 +43,6 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 }
 .intro-screen.fade-out { opacity:0; pointer-events:none; }
 .intro-screen video { width:100%; height:100%; object-fit:cover; display:block; }
-.intro-skip-btn {
-  position:absolute; bottom:26px; right:26px; z-index:2;
-  background:rgba(5,5,8,0.55); border:1px solid rgba(255,255,255,0.3);
-  color:#fff; padding:9px 20px; border-radius:20px;
-  font-family:'Raleway',sans-serif; font-size:.75rem; letter-spacing:.1em;
-  text-transform:uppercase; cursor:pointer; backdrop-filter:blur(6px);
-  transition:all .25s;
-}
-.intro-skip-btn:hover { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,0.15); }
-@media(max-width:768px){
-  .intro-skip-btn { bottom:18px; right:18px; padding:8px 16px; font-size:.7rem; }
-}
 
 /* ── LOGIN ── */
 #loginScreen { align-items:center; justify-content:center; background:radial-gradient(ellipse at 30% 50%, #1a1228 0%, var(--dark) 60%); }
@@ -763,6 +751,11 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 }
 .film-meta-value { color:var(--text); line-height:1.5; }
 
+/* ── ÉLÉMENTS MOBILE UNIQUEMENT (façon app CANAL VOD) : masqués sur ordinateur ── */
+.film-modal-quickmeta,
+.film-modal-iconrow,
+.film-modal-meta-mobile { display:none; }
+
 /* ── SUGGESTION MINI-CARDS ── */
 .suggestion-card {
   flex-shrink:0; width:110px; cursor:pointer;
@@ -1174,16 +1167,75 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   #searchResultsSection { padding:16px 14px 60px; }
   .toast { right:14px; bottom:20px; padding:12px 18px; font-size:.76rem; }
 
-  /* Film modal mobile */
-  .film-modal-backdrop { height:300px; }
-  .film-modal-logo-area { padding:0 20px 22px; }
+  /* Film modal mobile — façon fiche app CANAL VOD (voir capture de référence) */
+  .film-modal-overlay { padding:0; align-items:stretch; }
+  .film-modal { max-width:100%; width:100%; max-height:100%; height:100%; border-radius:0; margin:0; }
+  .film-modal-backdrop { height:46vh; min-height:260px; }
+  .film-modal-logo-area { padding:0 20px 18px; }
   .film-modal-logo-img { max-width:260px; max-height:100px; }
   .film-modal-title { font-size:1.9rem; }
-  .film-modal-body { padding:22px 22px 32px; }
-  .film-modal-actions { gap:8px; }
-  .btn-lecture { padding:12px 20px; font-size:.82rem; }
-  .btn-vof { padding:12px 16px; font-size:.78rem; }
-  .film-modal-desc { font-size:.85rem; }
+  .film-modal-close { top:14px; right:14px; }
+  .film-modal-badges { display:none; } /* remplacées par la barre d'infos rapides ci-dessous */
+
+  .film-modal-body { display:flex; flex-direction:column; padding:18px 18px 40px; }
+
+  /* Barre d'infos rapides : Film · Genre · Durée · Année + badges HD/5.1 */
+  .film-modal-quickmeta {
+    order:1; display:flex; align-items:center; flex-wrap:wrap;
+    gap:8px 10px; font-size:.8rem; color:var(--text);
+    padding-bottom:16px; margin-bottom:16px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .film-modal-quickmeta .qm-sep { color:var(--muted); }
+  .film-modal-quickmeta .qm-badges { display:flex; gap:6px; margin-left:auto; }
+  .film-modal-quickmeta .qm-badge {
+    border:1px solid rgba(255,255,255,0.25); border-radius:3px;
+    padding:2px 7px; font-size:.65rem; letter-spacing:.08em; color:var(--muted);
+  }
+
+  /* Bouton d'action principal : grand bouton plein, façon "Acheter/Louer" */
+  .film-modal-actions { order:2; gap:10px; margin-bottom:20px; }
+  .film-modal-actions .btn-lecture,
+  .film-modal-actions .btn-vof,
+  .film-modal-actions .btn-trailer { width:100%; }
+  .wishlist-modal-btn { display:none; } /* remplacé par l'icône "Ma Liste" ci-dessous */
+  .btn-lecture {
+    padding:16px 20px; font-size:.88rem; border-radius:30px;
+    background:linear-gradient(135deg,#f0405a,#d81830);
+    box-shadow:0 6px 20px rgba(216,24,48,0.35);
+  }
+  .btn-lecture:hover { background:linear-gradient(135deg,#ff5570,#e8203c); }
+  .btn-vof, .btn-trailer { border-radius:30px; }
+
+  /* Icône Ma Liste */
+  .film-modal-iconrow {
+    order:3; display:flex; justify-content:center;
+    padding-bottom:22px; margin-bottom:22px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .fm-icon-btn {
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    background:none; border:none; color:var(--muted); cursor:pointer;
+    font-family:'Raleway',sans-serif; font-size:.68rem; letter-spacing:.02em;
+  }
+  .fm-icon-circle {
+    width:44px; height:44px; border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.15rem; color:var(--text); transition:all .2s;
+  }
+  .fm-icon-btn:active .fm-icon-circle { background:rgba(201,168,76,0.25); }
+  .fm-icon-label { color:var(--muted); }
+
+  .film-modal-desc { order:4; font-size:.85rem; margin-bottom:22px; }
+
+  /* Liste réalisateur/acteurs/pays façon "De : / Avec : / Pays :" */
+  .film-modal-meta-mobile { order:5; display:block; font-size:.85rem; color:var(--text); }
+  .film-meta-mobile-row { margin-bottom:6px; line-height:1.5; }
+
+  .film-modal-divider { order:6; display:none; } /* remplacé par les séparateurs des blocs ci-dessus */
+  .film-modal-meta { order:7; display:none; } /* remplacée par la version mobile compacte */
+  #filmModalSuggestionsWrap { order:8; }
   .film-meta-label { min-width:90px; }
 }
 
@@ -1292,7 +1344,6 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
 <!-- ═══ SPLASH VIDÉO D'INTRO ═══ -->
 <div class="intro-screen" id="introScreen">
   <video id="introVideo" src="https://files.catbox.moe/ntl4wk.mp4" autoplay playsinline></video>
-  <button class="intro-skip-btn" id="introSkipBtn" onclick="finishIntroVideo()">Passer ✕</button>
 </div>
 
 <!-- ═══ LOGIN ═══ -->
@@ -1618,8 +1669,18 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       </div>
     </div>
     <div class="film-modal-body">
+      <!-- Barre d'infos rapides façon app mobile (genre, durée, année, badges) : mobile uniquement -->
+      <div class="film-modal-quickmeta" id="filmModalQuickMeta"></div>
       <div class="film-modal-actions" id="filmModalActions"></div>
+      <!-- Icône Ma Liste façon app mobile : mobile uniquement -->
+      <div class="film-modal-iconrow" id="filmModalIconRow">
+        <button class="fm-icon-btn" onclick="mobilePlaylistAction()" type="button">
+          <span class="fm-icon-circle" id="fmPlaylistIcon">☆</span><span class="fm-icon-label">Ma Liste</span>
+        </button>
+      </div>
       <div class="film-modal-desc" id="filmModalDesc"></div>
+      <!-- Infos réalisateur/acteurs/pays façon app mobile (De : / Avec : / Pays :) : mobile uniquement -->
+      <div class="film-modal-meta-mobile" id="filmModalMetaMobile"></div>
       <div class="film-modal-divider"></div>
       <div class="film-modal-meta" id="filmModalMeta"></div>
 
@@ -4203,8 +4264,11 @@ function renderAvatarGrid(){
 //  Logo chargé avec Image() pour fallback robuste
 //  Backdrop cinématographique (différent de l'affiche)
 // ══════════════════════════════════════════
+let currentModalMovie = null;
+
 function showFilmModal(m) {
   if (!m) return;
+  currentModalMovie = m;
   const meta = filmMeta[m.id] || {};
 
   // ── BACKDROP : image de fond cinématographique (différente de l'affiche) ──
@@ -4250,6 +4314,14 @@ function showFilmModal(m) {
   if (m.type === 'serie') badges.push(`<span class="film-badge" style="border-color:rgba(201,168,76,0.5);color:var(--gold);">Série</span>`);
   document.getElementById('filmModalBadges').innerHTML = badges.join('');
 
+  // ── BARRE D'INFOS RAPIDES MOBILE (Film · Genre · Durée · Année + badges) ──
+  const qmParts = [`<span class="qm-type">${m.type === 'serie' ? 'Série' : 'Film'}</span>`];
+  qmParts.push(`<span class="qm-sep">·</span><span class="qm-genre">${m.genre}</span>`);
+  if (meta.duration) qmParts.push(`<span class="qm-sep">·</span><span class="qm-duration">${meta.duration}</span>`);
+  if (meta.year)     qmParts.push(`<span class="qm-sep">·</span><span class="qm-year">${meta.year}</span>`);
+  qmParts.push(`<span class="qm-badges"><span class="qm-badge">HD</span><span class="qm-badge">5.1</span></span>`);
+  document.getElementById('filmModalQuickMeta').innerHTML = qmParts.join('');
+
   // ── BOUTONS D'ACTION ──
   const hasVO = meta.srcVO && meta.srcVO !== m.src;
   let actionsHTML = '';
@@ -4283,6 +4355,16 @@ function showFilmModal(m) {
   if (meta.duration) metaRows.push(`<div class="film-meta-row"><span class="film-meta-label">Durée</span><span class="film-meta-value">${meta.duration}</span></div>`);
   if (meta.country)  metaRows.push(`<div class="film-meta-row"><span class="film-meta-label">Pays</span><span class="film-meta-value">${meta.country}</span></div>`);
   document.getElementById('filmModalMeta').innerHTML = metaRows.join('');
+
+  // ── VERSION MOBILE COMPACTE (De : / Avec : / Pays :) ──
+  const mobileMetaLines = [];
+  if (meta.director) mobileMetaLines.push(`<div class="film-meta-mobile-row">De : ${meta.director}</div>`);
+  if (meta.cast)     mobileMetaLines.push(`<div class="film-meta-mobile-row">Avec : ${meta.cast}</div>`);
+  if (meta.country)  mobileMetaLines.push(`<div class="film-meta-mobile-row">Pays : ${meta.country}</div>`);
+  document.getElementById('filmModalMetaMobile').innerHTML = mobileMetaLines.join('');
+
+  // ── ÉTAT DE L'ICÔNE PLAYLIST (rangée mobile) ──
+  updatePlaylistIconState();
 
   // ── SUGGESTIONS (8 contenus similaires) ──
   (function buildSuggestions(current) {
@@ -4368,6 +4450,41 @@ function toggleListeModal(id, btn) {
     showToast('Ajouté à Ma Liste ♥');
   }
   saveMaListe(list);
+  updatePlaylistIconState();
+}
+
+// ══════════════════════════════════════════
+//  RANGÉE D'ICÔNES MOBILE (fiche film façon app)
+// ══════════════════════════════════════════
+function updatePlaylistIconState(){
+  const icon = document.getElementById('fmPlaylistIcon');
+  if (!icon || !currentModalMovie) return;
+  const inList = isInListe(currentModalMovie.id);
+  icon.textContent = inList ? '★' : '☆';
+  icon.style.color = inList ? 'var(--gold)' : '';
+}
+
+function mobilePlaylistAction(){
+  if (!currentModalMovie) return;
+  let list = getMaListe();
+  const id = currentModalMovie.id;
+  if (list.includes(id)) {
+    list = list.filter(x => x !== id);
+    showToast('Retiré de Ma Liste');
+  } else {
+    list.push(id);
+    showToast('Ajouté à Ma Liste ♥');
+  }
+  saveMaListe(list);
+  updatePlaylistIconState();
+  // Garde le bouton "Ma Liste" du bloc d'actions synchronisé
+  const wishBtn = document.querySelector('.wishlist-modal-btn');
+  if (wishBtn) {
+    const inList = isInListe(id);
+    wishBtn.textContent = inList ? '♥ Ma Liste' : '♡ Ma Liste';
+    wishBtn.style.borderColor = inList ? 'var(--gold)' : 'rgba(255,255,255,0.2)';
+    wishBtn.style.color = inList ? 'var(--gold)' : 'white';
+  }
 }
 
 // ══════════════════════════════════════════
@@ -6424,10 +6541,21 @@ function finishIntroVideo(){
   setTimeout(()=>{ introScreen.remove(); }, 900);
 }
 
+// L'intro vidéo ne concerne que la version app mobile (pas la version ordinateur).
+function isMobileApp(){
+  return window.matchMedia('(max-width:768px)').matches;
+}
+
 function initIntroVideo(){
   const introScreen=document.getElementById('introScreen');
   const introVideo=document.getElementById('introVideo');
   if(!introScreen || !introVideo){ return; }
+
+  // Sur ordinateur : pas d'intro, on retire l'écran immédiatement.
+  if(!isMobileApp()){
+    introScreen.remove();
+    return;
+  }
 
   // Tentative de lecture avec le son ; si le navigateur bloque l'autoplay sonore, on repasse en muet.
   const playPromise=introVideo.play();
