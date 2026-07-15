@@ -211,6 +211,49 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .movies-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
 .catalog-section { margin-bottom:50px; }
 
+/* ── APERÇU AU SURVOL (façon Netflix) : ordinateur uniquement ── */
+.card-hover-preview {
+  position:fixed; top:0; left:0; width:320px;
+  background:var(--dark2); border-radius:6px; overflow:hidden;
+  box-shadow:0 24px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06);
+  opacity:0; visibility:hidden; transform:scale(0.88); transform-origin:center center;
+  transition:opacity .2s ease, transform .2s ease;
+  z-index:400; pointer-events:none;
+}
+.card-hover-preview.show { opacity:1; visibility:visible; transform:scale(1); pointer-events:auto; }
+.chp-media { position:relative; width:100%; aspect-ratio:16/9; background:#000; overflow:hidden; }
+.chp-media-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.chp-media-video { position:absolute; inset:0; width:100%; height:100%; border:none; }
+.chp-media::after { content:''; position:absolute; inset:0; background:linear-gradient(to top,rgba(13,13,20,0.85) 0%,transparent 40%); pointer-events:none; }
+.chp-sound-btn {
+  position:absolute; bottom:10px; right:10px; z-index:2;
+  width:32px; height:32px; border-radius:50%;
+  background:rgba(20,20,20,0.65); border:1.5px solid rgba(255,255,255,0.4);
+  color:#fff; font-size:.8rem; cursor:pointer; backdrop-filter:blur(4px);
+  display:flex; align-items:center; justify-content:center; transition:all .2s;
+}
+.chp-sound-btn:hover { border-color:#fff; background:rgba(40,40,40,0.8); }
+.chp-body { padding:14px 16px 16px; }
+.chp-logo-area { margin-bottom:10px; min-height:22px; display:flex; align-items:center; }
+.chp-logo-area img { max-height:32px; max-width:75%; object-fit:contain; }
+.chp-logo-area .chp-title-fallback { font-family:'Cinzel',serif; font-size:1rem; letter-spacing:.05em; color:var(--text); }
+.chp-actions { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.chp-icon-btn {
+  width:34px; height:34px; border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.4); background:rgba(20,20,20,0.4);
+  color:#fff; font-size:.85rem; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .2s;
+}
+.chp-icon-btn:hover { border-color:#fff; background:rgba(255,255,255,0.15); }
+.chp-icon-btn.in-list { border-color:var(--gold); color:var(--gold); }
+.chp-play { background:#fff; color:#111; border-color:#fff; }
+.chp-play:hover { background:rgba(255,255,255,0.85); }
+.chp-more { margin-left:auto; }
+.chp-meta { display:flex; align-items:center; gap:8px; font-size:.72rem; color:var(--muted); margin-bottom:8px; flex-wrap:wrap; }
+.chp-meta .chp-badge { border:1px solid rgba(255,255,255,0.3); border-radius:3px; padding:1px 6px; font-size:.65rem; color:var(--muted); }
+.chp-tags { font-size:.72rem; color:var(--muted); }
+.chp-tags .chp-tag-sep { margin:0 6px; opacity:.5; }
+
 /* ── STREAMING PLATFORM SECTION ── */
 .streaming-section {
   padding:50px 40px 60px;
@@ -1166,6 +1209,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   .modal-actions { flex-wrap:wrap; }
   #searchResultsSection { padding:16px 14px 60px; }
   .toast { right:14px; bottom:20px; padding:12px 18px; font-size:.76rem; }
+  .card-hover-preview { display:none !important; }
 
   /* Film modal mobile — façon fiche app CANAL VOD (voir capture de référence) */
   .film-modal-overlay { padding:0; align-items:stretch; }
@@ -1837,6 +1881,26 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     </div>
   </div>
   <div class="platform-content-area" id="platformContentArea"></div>
+</div>
+
+<!-- ═══ APERÇU AU SURVOL (ordinateur uniquement) ═══ -->
+<div class="card-hover-preview" id="cardHoverPreview">
+  <div class="chp-media" id="chpMedia">
+    <img class="chp-media-img" id="chpMediaImg" src="" alt="">
+    <iframe class="chp-media-video" id="chpMediaVideo" style="display:none" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen title="Bande-annonce"></iframe>
+    <button class="chp-sound-btn" id="chpSoundBtn" title="Activer le son" style="display:none">🔇</button>
+  </div>
+  <div class="chp-body">
+    <div class="chp-logo-area" id="chpLogoArea"></div>
+    <div class="chp-actions">
+      <button class="chp-icon-btn chp-play" id="chpPlayBtn" title="Lecture">▶</button>
+      <button class="chp-icon-btn" id="chpAddBtn" title="Ma Liste">＋</button>
+      <button class="chp-icon-btn" id="chpLikeBtn" title="J'aime">👍</button>
+      <button class="chp-icon-btn chp-more" id="chpMoreBtn" title="Plus d'infos">⌄</button>
+    </div>
+    <div class="chp-meta" id="chpMeta"></div>
+    <div class="chp-tags" id="chpTags"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -4596,6 +4660,7 @@ function createContinueCard(entry){
   if(!m) return document.createElement('div');
   const card=document.createElement('div');
   card.className='movie-card';
+  card.dataset.movieId=m.id;
   let resumeLabel = 'Reprendre la lecture';
   if(entry.type==='serie' && entry.seasonLabel){
     resumeLabel = 'Reprendre '+entry.seasonLabel+(entry.epLabel?' '+entry.epLabel:'');
@@ -4878,6 +4943,7 @@ function renderCatalog(tab){
 function createCard(m){
   const card=document.createElement('div');
   card.className='movie-card';
+  card.dataset.movieId=m.id;
   const inList=isInListe(m.id);
   const trailerYtId = getTrailerYtId(m.id);
   const trailerBtn = trailerYtId ? `<button class="trailer-btn-card" title="Bande-annonce">🎬</button>` : '';
@@ -4901,6 +4967,185 @@ function handleCardPlay(m) {
   } else {
     openPlayer(m);
   }
+}
+
+// ══════════════════════════════════════════
+//  APERÇU AU SURVOL (façon Netflix) — ordinateur uniquement
+//  Bande-annonce si disponible, sinon simple fond ; logo, actions et infos en dessous
+// ══════════════════════════════════════════
+let chpHoverTimer = null;
+let chpHideTimer = null;
+let chpActiveCard = null;
+let chpCurrentMovie = null;
+let chpMuted = true;
+
+function initCardHoverPreview(){
+  const preview = document.getElementById('cardHoverPreview');
+  if (!preview) return;
+
+  document.addEventListener('mouseover', (e) => {
+    if (isMobileApp()) return;
+    const card = e.target.closest('.movie-card');
+    if (!card || !card.dataset.movieId) return;
+    if (chpActiveCard === card) return;
+    if (chpHideTimer) { clearTimeout(chpHideTimer); chpHideTimer = null; }
+    clearTimeout(chpHoverTimer);
+    chpHoverTimer = setTimeout(() => showCardHoverPreview(card), 550);
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest('.movie-card');
+    if (!card) return;
+    if (card.contains(e.relatedTarget)) return;
+    clearTimeout(chpHoverTimer);
+    scheduleHideCardHoverPreview();
+  });
+
+  preview.addEventListener('mouseenter', () => {
+    if (chpHideTimer) { clearTimeout(chpHideTimer); chpHideTimer = null; }
+  });
+  preview.addEventListener('mouseleave', () => scheduleHideCardHoverPreview());
+
+  document.getElementById('chpSoundBtn').onclick = (e) => { e.stopPropagation(); chpToggleSound(); };
+  document.getElementById('chpPlayBtn').onclick = (e) => {
+    e.stopPropagation();
+    if (!chpCurrentMovie) return;
+    const m = chpCurrentMovie;
+    hideCardHoverPreview(true);
+    handleCardPlay(m);
+  };
+  document.getElementById('chpMoreBtn').onclick = (e) => {
+    e.stopPropagation();
+    if (!chpCurrentMovie) return;
+    const m = chpCurrentMovie;
+    hideCardHoverPreview(true);
+    showFilmModal(m);
+  };
+  document.getElementById('chpAddBtn').onclick = (e) => {
+    e.stopPropagation();
+    if (!chpCurrentMovie) return;
+    let list = getMaListe();
+    const id = chpCurrentMovie.id;
+    if (list.includes(id)) { list = list.filter(x => x !== id); showToast('Retiré de Ma Liste'); }
+    else { list.push(id); showToast('Ajouté à Ma Liste ♥'); }
+    saveMaListe(list);
+    updateChpAddBtnState();
+  };
+  document.getElementById('chpLikeBtn').onclick = (e) => {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    btn.classList.toggle('in-list');
+    showToast(btn.classList.contains('in-list') ? 'Vous aimez ce contenu' : 'Avis retiré');
+  };
+
+  window.addEventListener('scroll', () => hideCardHoverPreview(true), true);
+}
+
+function updateChpAddBtnState(){
+  const btn = document.getElementById('chpAddBtn');
+  if (!btn || !chpCurrentMovie) return;
+  const inList = isInListe(chpCurrentMovie.id);
+  btn.classList.toggle('in-list', inList);
+  btn.textContent = inList ? '✓' : '＋';
+}
+
+function scheduleHideCardHoverPreview(){
+  chpHideTimer = setTimeout(() => hideCardHoverPreview(), 250);
+}
+
+function showCardHoverPreview(card){
+  if (isMobileApp()) return;
+  const id = Number(card.dataset.movieId);
+  const m = allContent.find(x => x.id === id);
+  if (!m) return;
+  chpActiveCard = card;
+  chpCurrentMovie = m;
+  chpMuted = true;
+
+  const meta = (typeof filmMeta !== 'undefined' && filmMeta[m.id]) ? filmMeta[m.id] : {};
+  const preview = document.getElementById('cardHoverPreview');
+  const img = document.getElementById('chpMediaImg');
+  const video = document.getElementById('chpMediaVideo');
+  const soundBtn = document.getElementById('chpSoundBtn');
+  const trailerYtId = getTrailerYtId(m.id);
+
+  // Fond : bande-annonce si disponible, sinon simple image de fond
+  img.src = meta.backdrop || m.backdrop || m.thumb;
+  if (trailerYtId) {
+    video.src = `https://www.youtube.com/embed/${trailerYtId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerYtId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1`;
+    video.style.display = 'block';
+    soundBtn.style.display = 'flex';
+    soundBtn.textContent = '🔇';
+  } else {
+    video.src = '';
+    video.style.display = 'none';
+    soundBtn.style.display = 'none';
+  }
+
+  // Logo / titre
+  const logoArea = document.getElementById('chpLogoArea');
+  const logoSrc = meta.logo || m.logo || '';
+  const safeTitle = m.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  logoArea.innerHTML = logoSrc
+    ? `<img src="${logoSrc}" alt="${m.title}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'chp-title-fallback',textContent:'${safeTitle}'}))">`
+    : `<div class="chp-title-fallback">${m.title}</div>`;
+
+  // Méta (épisodes ou durée + HD)
+  const metaBits = [];
+  if (m.type === 'serie' && m.seasons) {
+    const epCount = m.seasons.reduce((n, s) => n + (s.episodes ? s.episodes.length : 0), 0);
+    if (epCount) metaBits.push(`<span>${epCount} Épisode${epCount > 1 ? 's' : ''}</span>`);
+  } else if (meta.duration) {
+    metaBits.push(`<span>${meta.duration}</span>`);
+  }
+  metaBits.push(`<span class="chp-badge">HD</span>`);
+  document.getElementById('chpMeta').innerHTML = metaBits.join('');
+
+  // Tags (genre du contenu)
+  document.getElementById('chpTags').textContent = m.genre || '';
+
+  updateChpAddBtnState();
+
+  positionCardHoverPreview(card);
+  preview.classList.add('show');
+}
+
+function positionCardHoverPreview(card){
+  const preview = document.getElementById('cardHoverPreview');
+  const rect = card.getBoundingClientRect();
+  const previewWidth = 320;
+  const scaleExtra = (previewWidth - rect.width) / 2;
+  let left = rect.left - scaleExtra;
+  let top = rect.top - 30;
+  const maxLeft = window.innerWidth - previewWidth - 10;
+  if (left < 10) left = 10;
+  if (left > maxLeft) left = maxLeft;
+  if (top < 10) top = 10;
+  preview.style.left = left + 'px';
+  preview.style.top = top + 'px';
+}
+
+function hideCardHoverPreview(immediate){
+  const preview = document.getElementById('cardHoverPreview');
+  if (!preview) return;
+  preview.classList.remove('show');
+  chpActiveCard = null;
+  chpCurrentMovie = null;
+  const clearVideo = () => {
+    const video = document.getElementById('chpMediaVideo');
+    if (video) { video.src = ''; video.style.display = 'none'; }
+  };
+  if (immediate) clearVideo(); else setTimeout(clearVideo, 200);
+}
+
+function chpToggleSound(){
+  const btn = document.getElementById('chpSoundBtn');
+  const video = document.getElementById('chpMediaVideo');
+  if (!video || video.style.display === 'none') return;
+  chpMuted = !chpMuted;
+  const func = chpMuted ? 'mute' : 'unMute';
+  try { video.contentWindow.postMessage(JSON.stringify({ event: 'command', func: func, args: [] }), '*'); } catch (e) {}
+  btn.textContent = chpMuted ? '🔇' : '🔊';
 }
 
 // ══════════════════════════════════════════
@@ -6577,6 +6822,7 @@ window.onload=()=>{
   if(profiles.length>0)goToProfiles();
   else showScreen('loginScreen');
   initIntroVideo();
+  initCardHoverPreview();
 };
 
 document.addEventListener('keydown',e=>{
