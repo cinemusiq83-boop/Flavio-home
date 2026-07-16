@@ -82,6 +82,19 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .btn-outline { padding:10px 28px; background:transparent; border:1px solid var(--glass-border); border-radius:2px; color:var(--muted); font-family:'Raleway',sans-serif; font-size:.75rem; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; transition:all .3s; }
 .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
 
+/* ── PROFILES : fond en fondu (affiches récentes) — APP MOBILE UNIQUEMENT ── */
+.profiles-hero-bg { display:none; }
+.profiles-hero-layer { position:absolute; inset:0; background:#000 no-repeat center/cover; opacity:0; transition:opacity 1.6s ease; }
+.profiles-hero-layer.active { opacity:1; }
+.profiles-hero-gradient { position:absolute; inset:0; background:linear-gradient(to bottom, rgba(5,5,8,0.1) 0%, rgba(5,5,8,0.35) 45%, var(--dark) 94%); }
+@media(max-width:768px){
+  #profilesScreen { position:relative; justify-content:flex-end; padding:0 20px 40px; overflow:hidden; min-height:100vh; }
+  #profilesScreen.has-hero h1 { position:relative; z-index:2; margin-bottom:22px; text-shadow:0 2px 10px rgba(0,0,0,0.8); }
+  #profilesScreen.has-hero .profiles-grid { position:relative; z-index:2; gap:16px; }
+  #profilesScreen.has-hero .profiles-actions { position:relative; z-index:2; margin-top:30px; }
+  .profiles-hero-bg { display:block; position:absolute; inset:0; z-index:0; }
+}
+
 /* ── MODAL ── */
 .modal-overlay { display:none; position:fixed; inset:0; z-index:1000; background:rgba(5,5,8,0.92); backdrop-filter:blur(10px); align-items:center; justify-content:center; }
 .modal-overlay.open { display:flex; }
@@ -206,6 +219,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .movie-card-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(5,5,8,0.95) 0%,transparent 60%); opacity:0; transition:opacity .3s; border-radius:4px; display:flex; align-items:flex-end; padding:10px; flex-direction:column; justify-content:flex-end; gap:6px; }
 .movie-card:hover .movie-card-overlay { opacity:1; }
 .movie-card-title { font-size:.68rem; color:var(--text); text-align:center; line-height:1.3; }
+.recent-badge { position:absolute; top:8px; left:8px; z-index:3; background:linear-gradient(135deg,#b8903c,var(--gold),#d4a84c); color:var(--dark); font-family:'Cinzel',serif; font-size:.55rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:4px 8px; border-radius:2px; box-shadow:0 2px 8px rgba(0,0,0,0.5); pointer-events:none; }
 .play-btn-small { width:36px; height:36px; border-radius:50%; background:var(--gold); border:none; color:var(--dark); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; align-self:center; transition:transform .2s; }
 .play-btn-small:hover { transform:scale(1.1); }
 .movies-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
@@ -1410,6 +1424,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
 
 <!-- ═══ PROFILES ═══ -->
 <div id="profilesScreen" class="screen">
+  <div class="profiles-hero-bg" id="profilesHeroBg"></div>
   <h1>Qui regarde ?</h1>
   <div class="profiles-grid" id="profilesGrid"></div>
   <div class="profiles-actions">
@@ -4324,11 +4339,49 @@ function handleAuth(){
 //  SCREENS
 // ══════════════════════════════════════════
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function goToProfiles(){showScreen('profilesScreen');renderProfiles();}
+function goToProfiles(){showScreen('profilesScreen');renderProfiles();initProfilesHero();}
 function goToHome(profile){
+  stopProfilesHero();
   document.getElementById('navProfileImg').src=profile.avatar;
   showScreen('homeScreen');
   showTab('accueil', document.querySelector('.nav-links a'));
+}
+
+// ══════════════════════════════════════════
+//  FOND EN FONDU "QUI REGARDE ?" — APP MOBILE UNIQUEMENT
+//  3 affiches au hasard parmi les 9 films récemment ajoutés,
+//  qui s'enchaînent en boucle avec un fondu, et changent
+//  à chaque réouverture de l'application.
+// ══════════════════════════════════════════
+let profilesHeroTimer = null;
+function pickRandomRecentPosters(n){
+  const recentFilms = allContent.filter(m => recentFilmIds.includes(m.id));
+  const shuffled = [...recentFilms].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, n);
+}
+function stopProfilesHero(){
+  if (profilesHeroTimer) { clearInterval(profilesHeroTimer); profilesHeroTimer = null; }
+}
+function initProfilesHero(){
+  const bg = document.getElementById('profilesHeroBg');
+  const screen = document.getElementById('profilesScreen');
+  if (!bg || !screen) return;
+  stopProfilesHero();
+  // Cette fonctionnalité (fond en fondu) est réservée à l'app mobile ; sur ordinateur, rien ne s'affiche.
+  if (!isMobileApp()) { bg.innerHTML=''; screen.classList.remove('has-hero'); return; }
+  const picks = pickRandomRecentPosters(3);
+  if (!picks.length) { bg.innerHTML=''; screen.classList.remove('has-hero'); return; }
+  bg.innerHTML = picks.map((m,i) => `<div class="profiles-hero-layer${i===0?' active':''}" style="background-image:url('${m.backdrop||m.thumb}')"></div>`).join('') + `<div class="profiles-hero-gradient"></div>`;
+  screen.classList.add('has-hero');
+  if (picks.length > 1) {
+    let idx = 0;
+    const layers = bg.querySelectorAll('.profiles-hero-layer');
+    profilesHeroTimer = setInterval(() => {
+      layers[idx].classList.remove('active');
+      idx = (idx + 1) % layers.length;
+      layers[idx].classList.add('active');
+    }, 5000);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -4719,7 +4772,19 @@ function buildPosterHTML(m){
   const desktopInner = logo
     ? `<img class="poster-desktop-logo" src="${logo}" alt="${m.title}" loading="lazy">`
     : `<div class="poster-desktop-title">${m.title}</div>`;
-  return `<img class="poster-mobile" src="${m.thumb}" alt="${m.title}" loading="lazy"><div class="poster-desktop" style="background-image:url('${backdrop}')">${desktopInner}</div>`;
+  const badge = buildRecentBadgeHTML(m);
+  return `<img class="poster-mobile" src="${m.thumb}" alt="${m.title}" loading="lazy"><div class="poster-desktop" style="background-image:url('${backdrop}')">${desktopInner}</div>${badge}`;
+}
+
+// ══════════════════════════════════════════
+//  BADGE "AJOUT RÉCENT"
+//  9 premiers films de allContent (mobile et ordinateur)
+// ══════════════════════════════════════════
+const recentFilmIds = allContent.filter(m => m.type !== 'serie').slice(0, 9).map(m => m.id);
+function buildRecentBadgeHTML(m){
+  if (m.type === 'serie') return '';
+  if (!recentFilmIds.includes(m.id)) return '';
+  return `<div class="recent-badge">Ajout Récent</div>`;
 }
 function createContinueCard(entry){
   const m = allContent.find(x=>x.id===entry.id);
