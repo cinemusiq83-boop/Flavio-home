@@ -206,10 +206,10 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
 .section-title { font-family:'Cinzel',serif; font-size:.85rem; letter-spacing:.35em; text-transform:uppercase; color:var(--text); }
 .section-line { flex:1; height:1px; background:linear-gradient(to right,rgba(201,168,76,0.3),transparent); margin-left:20px; }
-.cards-row { display:flex; gap:14px; overflow-x:auto; padding-bottom:14px; scrollbar-width:thin; scrollbar-color:rgba(201,168,76,0.3) transparent; }
+.cards-row { display:flex; gap:14px; overflow-x:auto; padding-bottom:14px; scrollbar-width:thin; scrollbar-color:rgba(201,168,76,0.3) transparent; -webkit-overflow-scrolling:touch; contain:layout paint; }
 .cards-row::-webkit-scrollbar { height:3px; }
 .cards-row::-webkit-scrollbar-thumb { background:rgba(201,168,76,0.3); border-radius:2px; }
-.movie-card { flex-shrink:0; width:240px; cursor:pointer; transition:transform .3s; position:relative; overflow:hidden; border-radius:4px; }
+.movie-card { flex-shrink:0; width:240px; cursor:pointer; transition:transform .3s; position:relative; overflow:hidden; border-radius:4px; content-visibility:auto; contain-intrinsic-size:240px 175px; }
 .movie-card:hover { transform:scale(1.06) translateY(-4px); z-index:2; }
 /* Affiche mobile (portrait, thumb JustWatch) : masquée sur ordinateur */
 .movie-card img.poster-mobile { display:none; }
@@ -1176,7 +1176,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 /* ── RESPONSIVE MOBILE ── */
 @media (max-width:768px) {
   .login-box { width:92vw; padding:36px 24px; }
-  .navbar { padding:0 14px; height:56px; flex-wrap:nowrap; gap:10px; }
+  .navbar { padding:0 14px; height:56px; flex-wrap:nowrap; gap:10px; backdrop-filter:none; background:linear-gradient(to bottom,rgba(5,5,8,0.98) 0%,rgba(5,5,8,0.85) 75%,transparent 100%); }
   .nav-logo img { height:28px !important; }
   .nav-links { display:none; }
   .nav-links.mobile-open { display:flex; flex-direction:column; position:fixed; top:56px; left:0; right:0; background:rgba(5,5,8,0.98); backdrop-filter:blur(16px); border-bottom:1px solid rgba(201,168,76,0.12); padding:16px 20px 24px; gap:4px; z-index:200; animation:fadeUp .25s ease; }
@@ -1751,7 +1751,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
           <div style="font-family:'Cinzel',serif; font-size:.78rem; letter-spacing:.35em; text-transform:uppercase; color:var(--text);">Suggestions</div>
           <div style="flex:1; height:1px; background:linear-gradient(to right,rgba(201,168,76,0.3),transparent);"></div>
         </div>
-        <div id="filmModalSuggestionsRow" style="display:flex; gap:12px; overflow-x:auto; padding-bottom:10px; scrollbar-width:thin; scrollbar-color:rgba(201,168,76,0.3) transparent;"></div>
+        <div id="filmModalSuggestionsRow" style="display:flex; gap:12px; overflow-x:auto; padding-bottom:10px; scrollbar-width:thin; scrollbar-color:rgba(201,168,76,0.3) transparent; -webkit-overflow-scrolling:touch;"></div>
       </div>
     </div>
   </div>
@@ -4813,7 +4813,53 @@ function buildPosterHTML(m){
     ? `<img class="poster-desktop-logo" src="${logo}" alt="${m.title}" loading="lazy">`
     : `<div class="poster-desktop-title">${m.title}</div>`;
   const badge = buildRecentBadgeHTML(m);
-  return `<img class="poster-mobile" src="${m.thumb}" alt="${m.title}" loading="lazy"><div class="poster-desktop" style="background-image:url('${backdrop}')">${desktopInner}</div>${badge}`;
+  return `<img class="poster-mobile" src="${m.thumb}" alt="${m.title}" loading="lazy" decoding="async"><div class="poster-desktop" data-bg="${backdrop}">${desktopInner}</div>${badge}`;
+}
+
+// ══════════════════════════════════════════
+//  LAZY LOADING DES AFFICHES (façon Netflix)
+//  N'importe quelle affiche ".poster-desktop[data-bg]" insérée dans la page
+//  (accueil, catégories, recherche, suggestions...) n'est chargée que
+//  lorsqu'elle approche de l'écran. Gros gain de fluidité au défilement.
+// ══════════════════════════════════════════
+let posterLazyObserver = null;
+function loadLazyPoster(el){
+  const url = el.dataset.bg;
+  if (!url) return;
+  el.style.backgroundImage = `url('${url}')`;
+  el.removeAttribute('data-bg');
+}
+function initPosterLazyLoading(){
+  if (posterLazyObserver) return; // déjà initialisé
+  if (!('IntersectionObserver' in window)) {
+    // Repli pour un très vieux navigateur : on charge tout de suite
+    document.querySelectorAll('.poster-desktop[data-bg]').forEach(loadLazyPoster);
+    return;
+  }
+  posterLazyObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        loadLazyPoster(entry.target);
+        posterLazyObserver.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '600px 300px', threshold: 0.01 });
+
+  // Repère automatiquement toute nouvelle affiche insérée dans le DOM,
+  // peu importe la fonction de rendu qui l'a créée (rows, recherche, modale...)
+  const mo = new MutationObserver((mutations) => {
+    mutations.forEach(mut => {
+      mut.addedNodes.forEach(node => {
+        if (node.nodeType !== 1) return;
+        if (node.matches && node.matches('.poster-desktop[data-bg]')) posterLazyObserver.observe(node);
+        if (node.querySelectorAll) node.querySelectorAll('.poster-desktop[data-bg]').forEach(el => posterLazyObserver.observe(el));
+      });
+    });
+  });
+  mo.observe(document.body, { childList: true, subtree: true });
+
+  // Affiches déjà présentes au premier chargement
+  document.querySelectorAll('.poster-desktop[data-bg]').forEach(el => posterLazyObserver.observe(el));
 }
 
 // ══════════════════════════════════════════
@@ -5209,7 +5255,7 @@ function initCardHoverPreview(){
     showToast(btn.classList.contains('in-list') ? 'Vous aimez ce contenu' : 'Avis retiré');
   };
 
-  window.addEventListener('scroll', () => hideCardHoverPreview(true), true);
+  window.addEventListener('scroll', () => hideCardHoverPreview(true), { capture:true, passive:true });
 }
 
 function updateChpAddBtnState(){
@@ -5993,6 +6039,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   video.addEventListener('pause', updateTvChPlayIcon);
   video.addEventListener('playing', updateTvChPlayIcon);
 });
+
+document.addEventListener('DOMContentLoaded', initPosterLazyLoading);
 
 function getAllTvLiveChannels(){
   return (typeof tvChannels !== 'undefined') ? tvChannels.filter(c=>c.cat!=='Radio') : [];
