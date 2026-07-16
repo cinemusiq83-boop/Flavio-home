@@ -84,15 +84,17 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 
 /* ── PROFILES : fond en fondu (affiches récentes) — APP MOBILE UNIQUEMENT ── */
 .profiles-hero-bg { display:none; }
-.profiles-hero-layer { position:absolute; inset:0; background:#000 no-repeat center/cover; opacity:0; transition:opacity 1.6s ease; }
+.profiles-hero-layer { position:absolute; inset:0; background:#000 no-repeat top center/cover; opacity:0; transition:opacity 1.6s ease; }
 .profiles-hero-layer.active { opacity:1; }
-.profiles-hero-gradient { position:absolute; inset:0; background:linear-gradient(to bottom, rgba(5,5,8,0.1) 0%, rgba(5,5,8,0.35) 45%, var(--dark) 94%); }
+.profiles-hero-gradient { position:absolute; inset:0; background:linear-gradient(to bottom, rgba(5,5,8,0.15) 0%, rgba(5,5,8,0.25) 40%, var(--dark) 92%); }
+.mobile-edit-tile { display:none; }
 @media(max-width:768px){
   #profilesScreen { position:relative; justify-content:flex-end; padding:0 20px 40px; overflow:hidden; min-height:100vh; }
   #profilesScreen.has-hero h1 { position:relative; z-index:2; margin-bottom:22px; text-shadow:0 2px 10px rgba(0,0,0,0.8); }
   #profilesScreen.has-hero .profiles-grid { position:relative; z-index:2; gap:16px; }
-  #profilesScreen.has-hero .profiles-actions { position:relative; z-index:2; margin-top:30px; }
+  #profilesScreen.has-hero .profiles-actions { display:none; }
   .profiles-hero-bg { display:block; position:absolute; inset:0; z-index:0; }
+  .mobile-edit-tile { display:flex !important; }
 }
 
 /* ── MODAL ── */
@@ -1425,7 +1427,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
 <!-- ═══ PROFILES ═══ -->
 <div id="profilesScreen" class="screen">
   <div class="profiles-hero-bg" id="profilesHeroBg"></div>
-  <h1>Qui regarde ?</h1>
+  <h1 id="profilesHeading">Qui regarde ?</h1>
   <div class="profiles-grid" id="profilesGrid"></div>
   <div class="profiles-actions">
     <button class="btn-outline" onclick="toggleEditMode()">Modifier les profils</button>
@@ -4365,14 +4367,24 @@ function stopProfilesHero(){
 function initProfilesHero(){
   const bg = document.getElementById('profilesHeroBg');
   const screen = document.getElementById('profilesScreen');
+  const heading = document.getElementById('profilesHeading');
   if (!bg || !screen) return;
   stopProfilesHero();
-  // Cette fonctionnalité (fond en fondu) est réservée à l'app mobile ; sur ordinateur, rien ne s'affiche.
-  if (!isMobileApp()) { bg.innerHTML=''; screen.classList.remove('has-hero'); return; }
+  // Ce fond en fondu (affiches récentes) est réservé à l'app mobile ; sur ordinateur, rien ne s'affiche.
+  if (!isMobileApp()) {
+    bg.innerHTML=''; screen.classList.remove('has-hero');
+    if (heading) heading.textContent = 'Qui regarde ?';
+    return;
+  }
   const picks = pickRandomRecentPosters(3);
-  if (!picks.length) { bg.innerHTML=''; screen.classList.remove('has-hero'); return; }
+  if (!picks.length) {
+    bg.innerHTML=''; screen.classList.remove('has-hero');
+    if (heading) heading.textContent = 'Qui regarde ?';
+    return;
+  }
   bg.innerHTML = picks.map((m,i) => `<div class="profiles-hero-layer${i===0?' active':''}" style="background-image:url('${m.thumb}')"></div>`).join('') + `<div class="profiles-hero-gradient"></div>`;
   screen.classList.add('has-hero');
+  if (heading) heading.textContent = 'Qui regarde ?';
   if (picks.length > 1) {
     let idx = 0;
     const layers = bg.querySelectorAll('.profiles-hero-layer');
@@ -4404,6 +4416,12 @@ function renderProfiles(){
   add.innerHTML=`<div class="add-circle">＋</div><div class="profile-name">Ajouter</div>`;
   add.onclick=()=>openEditor(null);
   grid.appendChild(add);
+  // Tuile ronde "Modifier / Terminé" — visible uniquement sur l'app mobile (voir CSS .mobile-edit-tile)
+  const editTile=document.createElement('div');
+  editTile.className='add-profile-card mobile-edit-tile';
+  editTile.innerHTML=`<div class="add-circle">${editMode?'✓':'✎'}</div><div class="profile-name">${editMode?'Terminé':'Modifier'}</div>`;
+  editTile.onclick=toggleEditMode;
+  grid.appendChild(editTile);
 }
 function toggleEditMode(){editMode=!editMode;renderProfiles();}
 function openEditor(profile){
