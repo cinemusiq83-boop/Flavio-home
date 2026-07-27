@@ -3486,7 +3486,9 @@ const filmMeta = {
   duration:"2h07",
   country:"États-Unis, Royaume-Uni",
   logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/TITLELOGO/MICHAEL_myCANAL_Logo_Fiche_Programme_1920x1080-pdLm",
-  backdrop:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=1920,height=1080/image/551827139/d3815455-c286-4938-b5e1-72c7a20d5f9b.jpg"
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/STD169/MICHAEL_myCANAL_16x9_MEA_1920x1080_jpg80_-vk1p",
+  backdropMobile:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=1920,height=1080/image/551827139/d3815455-c286-4938-b5e1-72c7a20d5f9b.jpg",
+  backdropDesktop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/STD169/MICHAEL_myCANAL_16x9_MEA_1920x1080_jpg80_-vk1p"
 },
 897:{
   desc:"Peu après avoir trahi sa meilleure amie, une riche héritière est retrouvée assassinée lors d'une croisière. Un inspecteur flegmatique mène l'enquête.",
@@ -4671,7 +4673,7 @@ function showFilmModal(m) {
 
   // ── BACKDROP : image de fond cinématographique (différente de l'affiche) ──
   // Priorité : filmMeta.backdrop > m.backdrop > m.thumb (dernier recours)
-  const backdropSrc = meta.backdrop || m.backdrop || m.thumb;
+  const backdropSrc = getBackdropFor(m, meta);
   const backdropEl = document.getElementById('filmModalImg');
   backdropEl.src = backdropSrc;
 
@@ -5004,7 +5006,7 @@ function resumeContinueWatching(entry){
 function buildPosterHTML(m){
   // Affiche ordinateur (16/9) : on réutilise le backdrop + logo déjà présents dans les données du film/série
   const meta = (typeof filmMeta !== 'undefined' && filmMeta[m.id]) ? filmMeta[m.id] : {};
-  const backdrop = meta.backdrop || m.backdrop || m.thumb;
+  const backdrop = getBackdropFor(m, meta);
   const logo = meta.logo || m.logo || '';
   const desktopInner = logo
     ? `<img class="poster-desktop-logo" src="${logo}" alt="${m.title}" loading="lazy">`
@@ -5209,7 +5211,7 @@ function setHeroSlide(idx, instant) {
   heroFilm = film;
 
   const meta = filmMeta[film.id] || {};
-  const backdropUrl = meta.backdrop || film.backdrop || film.thumb;
+  const backdropUrl = getBackdropFor(film, meta);
   const logoUrl = meta.logo || film.logo || '';
   const desc = meta.desc ? meta.desc.substring(0,130)+'…' : film.genre + ' · Disponible maintenant sur Flavio Home';
 
@@ -5489,7 +5491,7 @@ function showCardHoverPreview(card){
   const trailerYtId = getTrailerYtId(m.id);
 
   // Fond : bande-annonce si disponible, sinon simple image de fond
-  img.src = meta.backdrop || m.backdrop || m.thumb;
+  img.src = getBackdropFor(m, meta);
   if (trailerYtId) {
     video.src = `https://www.youtube.com/embed/${trailerYtId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerYtId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1`;
     video.style.display = 'block';
@@ -7225,7 +7227,7 @@ function createMssRow(m){
   row.className = 'mss-item';
   // Fond + logo du film (comme sur ordinateur), réservé à la barre de recherche de l'app mobile
   const meta = (typeof filmMeta !== 'undefined' && filmMeta[m.id]) ? filmMeta[m.id] : {};
-  const backdrop = meta.backdrop || m.backdrop || m.thumb;
+  const backdrop = getBackdropFor(m, meta);
   const logo = meta.logo || m.logo || '';
   const thumbInner = logo
     ? `<img class="mss-item-thumb-logo" src="${logo}" alt="${m.title}" loading="lazy">`
@@ -7319,6 +7321,17 @@ function finishIntroVideo(){
 // L'intro vidéo ne concerne que la version app mobile (pas la version ordinateur).
 function isMobileApp(){
   return window.matchMedia('(max-width:768px)').matches;
+}
+
+// Choisit le backdrop adapté à l'appareil (mobile vs ordinateur).
+// Priorité mobile : meta.backdropMobile > meta.backdrop > m.backdropMobile > m.backdrop > m.thumb
+// Priorité ordinateur : meta.backdropDesktop > meta.backdrop > m.backdropDesktop > m.backdrop > m.thumb
+function getBackdropFor(m, meta){
+  meta = meta || {};
+  if (isMobileApp()) {
+    return meta.backdropMobile || meta.backdrop || m.backdropMobile || m.backdrop || m.thumb;
+  }
+  return meta.backdropDesktop || meta.backdrop || m.backdropDesktop || m.backdrop || m.thumb;
 }
 
 function initIntroVideo(){
@@ -7461,7 +7474,7 @@ document.addEventListener('keydown', e=>{
 function updateMobileMediaSession(movie, titleOverride) {
   if ('mediaSession' in navigator && movie) {
     const meta = (typeof filmMeta !== 'undefined' && filmMeta[movie.id]) ? filmMeta[movie.id] : {};
-    const artwork = meta.backdrop || movie.backdrop || movie.thumb || movie.img || '';
+    const artwork = getBackdropFor(movie, meta) || movie.img || '';
     navigator.mediaSession.metadata = new MediaMetadata({
       title: titleOverride || movie.title || "Programme",
       artist: 'Flavio Home',
