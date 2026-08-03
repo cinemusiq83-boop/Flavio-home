@@ -154,6 +154,10 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   .bn-item.active span { font-weight:600; }
   .bn-avatar { width:24px; height:24px; border-radius:50%; object-fit:cover; display:block; border:1.5px solid transparent; }
   .bn-item.active .bn-avatar { border-color:var(--text); }
+
+  /* Le fond opaque d'origine devient le socle du verre ; l'effet liquide vient de .bn-liquid-blob */
+  .bottom-nav-mobile { position:fixed; }
+  .bn-item { position:relative; z-index:1; }
 }
 
 /* ── MODAL ── */
@@ -1546,8 +1550,8 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <!-- ═══ BANNIÈRE PROMO (YouTube sur mobile / Netflix + YouTube sur ordinateur) ═══ -->
   <div class="promo-banner" id="promoBanner">
     <div class="promo-banner-inner">
-      <span class="promo-banner-text promo-banner-text-mobile">Les films et séries sont momentanements indisponible pour les avoir encore télécharger l'application Windscribe VPN qui est 100% gratuite et branchez sur le réseau Montreal Expo 67</span>
-      <span class="promo-banner-text promo-banner-text-desktop">Les films et séries sont momentanements indisponible pour les avoir encore télécharger l'application Windscribe VPN et VPN: Super Unlimited, Fast VPN qui sont 100% gratuite et branchez sur le réseau Montreal Expo 67</span>
+      <span class="promo-banner-text promo-banner-text-mobile">Les films et séries sont momentanements indisponible pour les avoir encore télécharger l'application Windscribe VPN qui est 100% gratuite et branchez vous sur le réseau Montreal Expo 67</span>
+      <span class="promo-banner-text promo-banner-text-desktop">Les films et séries sont momentanements indisponible pour les avoir encore télécharger l'application Windscribe VPN et VPN: Super Unlimited, Fast VPN qui sont 100% gratuite et branchez vous sur le réseau Montreal Expo 67</span>
       <div class="promo-banner-badges promo-banner-badges-mobile">
         <a href="https://apps.apple.com/fr/app/windscribe-vpn/id1129435228" target="_blank" rel="noopener">
           <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Download_on_the_App_Store_Badge_FRCA_RGB_blk.svg/3840px-Download_on_the_App_Store_Badge_FRCA_RGB_blk.svg.png" alt="Télécharger YouTube sur l'App Store">
@@ -1597,7 +1601,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       <span class="mss-back" onclick="closeMobileSearch()">←</span>
       <div class="mss-title">Rechercher</div>
     </div>
-    <div class="mss-searchbar">
+    <div class="mss-searchbar liquid-glass">
       <span class="mss-search-icon">🔍</span>
       <input type="text" id="mobileSearchInput" placeholder="Rechercher des séries, films, jeux…" oninput="handleMobileSearch(this.value)">
     </div>
@@ -1608,9 +1612,9 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <!-- HERO -->
   <div class="hero" id="heroSection">
     <div class="hero-category-banners" id="heroCategoryBanners">
-      <button class="hcb-pill" data-tab="films" onclick="hcbGoTab('films')">Films</button>
-      <button class="hcb-pill" data-tab="series" onclick="hcbGoTab('series')">Séries</button>
-      <button class="hcb-pill sport" onclick="hcbGoExternal('https://www.france.tv/sport/cyclisme/tour-de-france-femmes/')">🚴 Tour de France Femmes</button>
+      <button class="hcb-pill liquid-glass" data-tab="films" onclick="hcbGoTab('films')">Films</button>
+      <button class="hcb-pill liquid-glass" data-tab="series" onclick="hcbGoTab('series')">Séries</button>
+      <button class="hcb-pill liquid-glass liquid-glass-gold sport" onclick="hcbGoExternal('https://www.france.tv/sport/cyclisme/tour-de-france-femmes/')">🚴 Tour de France Femmes</button>
     </div>
     <div class="hero-bg" id="heroBg"></div>
     <div class="hero-content" id="heroContent">
@@ -1619,8 +1623,8 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       <div class="hero-title" id="heroTitle"></div>
       <div class="hero-desc" id="heroDesc"></div>
       <div class="hero-btns">
-        <button class="btn-play" onclick="playHeroFilm()">▶ Regarder</button>
-        <button class="btn-more" onclick="showFilmModal(heroFilm)">ℹ Plus d'infos</button>
+        <button class="btn-play liquid-glass liquid-glass-red" onclick="playHeroFilm()">▶ Regarder</button>
+        <button class="btn-more liquid-glass" onclick="showFilmModal(heroFilm)">ℹ Plus d'infos</button>
       </div>
     </div>
     <div class="hero-slideshow-bar" id="heroSlideshowBar"></div>
@@ -1879,7 +1883,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       <!-- Icône Ma Liste façon app mobile : mobile uniquement -->
       <div class="film-modal-iconrow" id="filmModalIconRow">
         <button class="fm-icon-btn" onclick="mobilePlaylistAction()" type="button">
-          <span class="fm-icon-circle" id="fmPlaylistIcon">☆</span><span class="fm-icon-label">Ma Liste</span>
+          <span class="fm-icon-circle liquid-glass" id="fmPlaylistIcon">☆</span><span class="fm-icon-label">Ma Liste</span>
         </button>
       </div>
       <div class="film-modal-desc" id="filmModalDesc"></div>
@@ -1906,8 +1910,8 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     <h3>Choisir la version</h3>
     <p>Ce film est disponible en version française et en version originale.</p>
     <div class="version-btns">
-      <button class="btn-version vf" id="btnVF" onclick="playVersion('vf')">🇫🇷 Version Française (VF)</button>
-      <button class="btn-version vo" id="btnVO" onclick="playVersion('vo')">🌍 Version Originale (VO)</button>
+      <button class="btn-version vf liquid-glass liquid-glass-red" id="btnVF" onclick="playVersion('vf')">🇫🇷 Version Française (VF)</button>
+      <button class="btn-version vo liquid-glass" id="btnVO" onclick="playVersion('vo')">🌍 Version Originale (VO)</button>
     </div>
     <button class="btn-version-cancel" onclick="closeVersionModal()">Annuler</button>
   </div>
@@ -4790,21 +4794,21 @@ function showFilmModal(m) {
   const hasVO = meta.srcVO && meta.srcVO !== m.src;
   let actionsHTML = '';
   if (m.type === 'serie') {
-    actionsHTML = `<button class="btn-lecture" onclick="closeFilmModal();openPlayer(allContent.find(x=>x.id===${m.id}))"><span class="play-icon">▶</span> Regarder</button>`;
+    actionsHTML = `<button class="btn-lecture liquid-glass liquid-glass-red" onclick="closeFilmModal();openPlayer(allContent.find(x=>x.id===${m.id}))"><span class="play-icon">▶</span> Regarder</button>`;
   } else if (hasVO) {
     actionsHTML = `
-      <button class="btn-lecture" onclick="handleLectureClick(${m.id})"><span class="play-icon">▶</span> Lecture</button>
-      <button class="btn-vof" onclick="handleLectureClick(${m.id})">🌍 VF / VO</button>
+      <button class="btn-lecture liquid-glass liquid-glass-red" onclick="handleLectureClick(${m.id})"><span class="play-icon">▶</span> Lecture</button>
+      <button class="btn-vof liquid-glass" onclick="handleLectureClick(${m.id})">🌍 VF / VO</button>
     `;
   } else {
-    actionsHTML = `<button class="btn-lecture" onclick="closeFilmModal();openPlayer(allContent.find(x=>x.id===${m.id}))"><span class="play-icon">▶</span> Lecture</button>`;
+    actionsHTML = `<button class="btn-lecture liquid-glass liquid-glass-red" onclick="closeFilmModal();openPlayer(allContent.find(x=>x.id===${m.id}))"><span class="play-icon">▶</span> Lecture</button>`;
   }
   const inList = isInListe(m.id);
-  actionsHTML += `<button class="btn-vof wishlist-modal-btn" style="border-color:${inList?'var(--gold)':'rgba(255,255,255,0.2)'};color:${inList?'var(--gold)':'white'}" onclick="toggleListeModal(${m.id},this)">${inList?'♥ Ma Liste':'♡ Ma Liste'}</button>`;
+  actionsHTML += `<button class="btn-vof wishlist-modal-btn liquid-glass" style="border-color:${inList?'var(--gold)':'rgba(255,255,255,0.2)'};color:${inList?'var(--gold)':'white'}" onclick="toggleListeModal(${m.id},this)">${inList?'♥ Ma Liste':'♡ Ma Liste'}</button>`;
   // Bouton bande-annonce uniquement si trailer disponible
   const trailerYtId = getTrailerYtId(m.id);
   if (trailerYtId) {
-    actionsHTML += `<button class="btn-trailer" onclick="closeFilmModal();openTrailer(allContent.find(x=>x.id===${m.id}),'${trailerYtId}')">🎬 Bande-annonce</button>`;
+    actionsHTML += `<button class="btn-trailer liquid-glass liquid-glass-gold" onclick="closeFilmModal();openTrailer(allContent.find(x=>x.id===${m.id}),'${trailerYtId}')">🎬 Bande-annonce</button>`;
   }
   document.getElementById('filmModalActions').innerHTML = actionsHTML;
 
@@ -7296,7 +7300,7 @@ function createMssRow(m){
   const thumbInner = logo
     ? `<img class="mss-item-thumb-logo" src="${logo}" alt="${m.title}" loading="lazy">`
     : `<div class="mss-item-thumb-title">${m.title}</div>`;
-  row.innerHTML = `<div class="mss-item-thumb" style="background-image:url('${backdrop}')">${thumbInner}</div><div class="mss-item-info"><div class="mss-item-title">${m.title}</div><div class="mss-item-sub">${m.genre} · ${m.type==='serie'?'Série':'Film'}</div></div><button class="mss-item-play" title="Regarder">▶</button>`;
+  row.innerHTML = `<div class="mss-item-thumb" style="background-image:url('${backdrop}')">${thumbInner}</div><div class="mss-item-info"><div class="mss-item-title">${m.title}</div><div class="mss-item-sub">${m.genre} · ${m.type==='serie'?'Série':'Film'}</div></div><button class="mss-item-play liquid-glass" title="Regarder">▶</button>`;
   row.onclick = () => { closeMobileSearch(); showFilmModal(m); };
   row.querySelector('.mss-item-play').onclick = (e) => { e.stopPropagation(); closeMobileSearch(); handleCardPlay(m); };
   return row;
@@ -8030,6 +8034,7 @@ function closePlatformPage() {
 </script>
 <!-- ═══ BOTTOM NAV (app mobile uniquement, style Netflix) ═══ -->
 <nav class="bottom-nav-mobile" id="bottomNavMobile">
+  <div class="bn-liquid-blob" id="bnLiquidBlob"></div>
   <button class="bn-item active" data-bn="accueil" onclick="bnGoAccueil()">
     <svg class="bn-icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5"/><path d="M5.5 9.5V19a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5"/></svg>
     <svg class="bn-icon-active" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.5V20a1 1 0 0 0 1 1h5.5v-6.5h5V21H19a1 1 0 0 0 1-1v-9.5L12 3.2Z"/></svg>
@@ -8068,6 +8073,7 @@ function bnSetActive(name){
   document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
   const el = document.querySelector('.bn-item[data-bn="'+name+'"]');
   if(el) el.classList.add('active');
+  bnMoveLiquidBlob(el); // fonction définie tout en bas du fichier (bloc Liquid Glass)
 }
 function bnGoAccueil(){
   const ps = document.getElementById('platformScreen');
@@ -8123,6 +8129,137 @@ function hcbGoTab(tab){
 }
 function hcbGoExternal(url){
   window.location.href = url;
+}
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════
+     LIQUID GLASS — effet "verre liquide" façon iOS, APP MOBILE UNIQUEMENT
+     Placé en toute fin de document pour dominer la cascade CSS et
+     s'appliquer proprement par-dessus tous les boutons existants.
+     ══════════════════════════════════════════════════════════════ -->
+<style>
+/* Bulle qui glisse dans la barre du bas (Accueil / Rechercher / TV / Chaînes / Mon Profil) */
+.bn-liquid-blob { display:none; }
+@media(max-width:768px){
+  .bn-liquid-blob {
+    display:block;
+    position:absolute; top:6px; bottom:6px; left:6px; width:64px;
+    z-index:0; pointer-events:none;
+    border-radius:26px;
+    background:linear-gradient(135deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.06) 55%, rgba(255,255,255,0.16) 100%);
+    -webkit-backdrop-filter:blur(16px) saturate(200%);
+    backdrop-filter:blur(16px) saturate(200%);
+    border:1px solid rgba(255,255,255,0.4);
+    box-shadow:
+      inset 0 1.5px 1.5px rgba(255,255,255,0.55),
+      inset 0 -1.5px 2px rgba(0,0,0,0.2),
+      0 6px 16px rgba(0,0,0,0.35);
+    transition:
+      left .5s cubic-bezier(.34,1.56,.64,1),
+      width .5s cubic-bezier(.34,1.56,.64,1),
+      transform .5s cubic-bezier(.34,1.56,.64,1);
+  }
+  .bn-liquid-blob::before {
+    content:''; position:absolute; inset:0; border-radius:inherit;
+    background:radial-gradient(90% 60% at 30% 0%, rgba(255,255,255,0.6), transparent 60%);
+    mix-blend-mode:overlay; pointer-events:none;
+  }
+  .bn-liquid-blob.morphing { transform:scaleX(1.18); }
+  .bottom-nav-mobile { overflow:hidden; }
+  .bn-item { position:relative; z-index:1; }
+}
+
+/* Utilitaire liquid-glass réutilisable sur tous les boutons
+   (Regarder, Plus d'infos, Ma Liste, Lecture, VF/VO, Bande-annonce, pills Films/Séries...) */
+@media(max-width:768px){
+  .liquid-glass {
+    position:relative; overflow:hidden;
+    background:linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0.10) 100%) !important;
+    -webkit-backdrop-filter:blur(18px) saturate(180%) !important;
+    backdrop-filter:blur(18px) saturate(180%) !important;
+    border:1px solid rgba(255,255,255,0.28);
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.4),
+      inset 0 -1px 2px rgba(0,0,0,0.22),
+      0 6px 18px rgba(0,0,0,0.32) !important;
+    transition:transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease, background .3s ease !important;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .liquid-glass::before {
+    content:''; position:absolute; inset:0; border-radius:inherit;
+    background:radial-gradient(120% 70% at 25% -10%, rgba(255,255,255,0.5), transparent 55%);
+    mix-blend-mode:overlay; pointer-events:none;
+  }
+  .liquid-glass::after {
+    content:''; position:absolute; left:0; right:0; bottom:0; height:45%;
+    background:linear-gradient(to top, rgba(0,0,0,0.16), transparent);
+    pointer-events:none;
+  }
+  .liquid-glass:active {
+    transform:scale(.94) !important;
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.5),
+      inset 0 -1px 2px rgba(0,0,0,0.3),
+      0 2px 8px rgba(0,0,0,0.3) !important;
+    background:linear-gradient(135deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.18) 100%) !important;
+  }
+  /* Variante teintée rouge pour les actions principales (Regarder / Lecture / VF) */
+  .liquid-glass-red {
+    background:linear-gradient(135deg, rgba(232,20,30,0.55) 0%, rgba(160,10,20,0.32) 100%) !important;
+    border-color:rgba(255,90,90,0.4) !important;
+  }
+  .liquid-glass-red:active {
+    background:linear-gradient(135deg, rgba(255,32,48,0.68) 0%, rgba(180,15,25,0.42) 100%) !important;
+  }
+  /* Variante teintée or (Bande-annonce, pill "Tour de France") */
+  .liquid-glass-gold {
+    background:linear-gradient(135deg, rgba(201,168,76,0.45) 0%, rgba(201,168,76,0.14) 100%) !important;
+    border-color:rgba(240,208,128,0.45) !important;
+  }
+  .liquid-glass-gold:active {
+    background:linear-gradient(135deg, rgba(240,208,128,0.55) 0%, rgba(201,168,76,0.22) 100%) !important;
+  }
+  .btn-play.liquid-glass { color:var(--text) !important; text-shadow:0 1px 4px rgba(0,0,0,0.6); }
+  .fm-icon-circle.liquid-glass { border-radius:50% !important; }
+
+  /* La barre de recherche est un champ, pas un bouton : pas d'effet de pression/écrasement */
+  .mss-searchbar.liquid-glass { cursor:text; }
+  .mss-searchbar.liquid-glass:active { transform:none !important; }
+  .mss-searchbar.liquid-glass:focus-within {
+    border-color:rgba(201,168,76,0.5) !important;
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.45),
+      inset 0 -1px 2px rgba(0,0,0,0.22),
+      0 0 0 2px rgba(201,168,76,0.25),
+      0 6px 18px rgba(0,0,0,0.32) !important;
+  }
+}
+</style>
+
+<script>
+// ── Bulle "liquid glass" qui glisse d'un onglet à l'autre (Accueil / Rechercher / TV / Chaînes / Mon Profil) ──
+function bnMoveLiquidBlob(el){
+  const blob = document.getElementById('bnLiquidBlob');
+  const nav = document.getElementById('bottomNavMobile');
+  if(!blob || !nav || !el || window.innerWidth > 768) return;
+  const navRect = nav.getBoundingClientRect();
+  const elRect = el.getBoundingClientRect();
+  const pad = 6;
+  blob.style.left = Math.max(pad, (elRect.left - navRect.left) + pad) + 'px';
+  blob.style.width = (elRect.width - pad * 2) + 'px';
+  // petit effet d'étirement "liquide" au moment du changement d'onglet
+  blob.classList.add('morphing');
+  clearTimeout(blob._morphTimeout);
+  blob._morphTimeout = setTimeout(()=>blob.classList.remove('morphing'), 220);
+}
+function bnRepositionLiquidBlob(){
+  const active = document.querySelector('.bn-item.active');
+  if(active) bnMoveLiquidBlob(active);
+}
+window.addEventListener('resize', bnRepositionLiquidBlob);
+window.addEventListener('DOMContentLoaded', ()=>setTimeout(bnRepositionLiquidBlob, 50));
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  setTimeout(bnRepositionLiquidBlob, 50);
 }
 </script>
 </body>
