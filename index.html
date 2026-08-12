@@ -1493,6 +1493,108 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   .platform-hero-logo img { max-height:60px; }
   .platform-content-area { padding:20px 16px 60px; }
 }
+
+/* ══════════════════════════════════════════
+   MULTI-LIVE — tuile, modale de sélection, vue multi-écrans
+   ══════════════════════════════════════════ */
+.mlv-icon-wrap { background:rgba(255,255,255,0.08) !important; }
+.mlv-icon-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:4px; width:38px; height:38px; }
+.mlv-icon-grid span { background:rgba(232,228,216,0.55); border-radius:2px; }
+.tv-channel-multilive .tv-channel-program { color:var(--text); }
+.tv-channel-multilive .tv-channel-time { color:var(--muted); }
+
+/* ── Modale de sélection des chaînes ── */
+.mlv-modal-overlay {
+  display:none; position:fixed; inset:0; z-index:5000;
+  background:rgba(0,0,0,0.7); backdrop-filter:blur(6px);
+  align-items:center; justify-content:center; padding:20px;
+}
+.mlv-modal-overlay.open { display:flex; }
+.mlv-modal {
+  background:var(--dark2); border:1px solid var(--glass-border); border-radius:10px;
+  width:100%; max-width:480px; max-height:80vh; display:flex; flex-direction:column;
+  overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+.mlv-modal-header { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--glass-border); }
+.mlv-modal-title { font-family:'Cinzel',serif; font-size:.85rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text); }
+.mlv-modal-close { background:rgba(255,255,255,0.06); border:none; color:var(--text); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:.95rem; }
+.mlv-modal-sub { padding:12px 20px 0; font-size:.72rem; color:var(--muted); letter-spacing:.03em; }
+.mlv-modal-list { flex:1; overflow-y:auto; padding:10px 12px 14px; display:flex; flex-direction:column; gap:6px; }
+.mlv-modal-list::-webkit-scrollbar { width:4px; }
+.mlv-modal-list::-webkit-scrollbar-thumb { background:var(--glass-border); }
+.mlv-ch-item {
+  display:flex; align-items:center; gap:12px; padding:9px 10px; border-radius:6px;
+  cursor:pointer; transition:background .2s; border:1px solid transparent;
+}
+.mlv-ch-item:hover { background:rgba(255,255,255,0.05); }
+.mlv-ch-item.selected { background:rgba(201,168,76,0.1); border-color:rgba(201,168,76,0.35); }
+.mlv-ch-check {
+  width:20px; height:20px; border-radius:4px; border:1px solid rgba(232,228,216,0.35);
+  flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .2s;
+}
+.mlv-ch-item.selected .mlv-ch-check { background:var(--gold); border-color:var(--gold); }
+.mlv-ch-item.selected .mlv-ch-check::after { content:'✓'; color:var(--dark); font-size:.7rem; font-weight:700; }
+.mlv-ch-logo { width:44px; height:30px; object-fit:contain; flex-shrink:0; background:rgba(255,255,255,0.05); border-radius:3px; padding:2px; }
+.mlv-ch-name { font-size:.82rem; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mlv-modal-footer { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 20px; border-top:1px solid var(--glass-border); }
+.mlv-count { font-size:.72rem; color:var(--muted); letter-spacing:.05em; }
+.mlv-start-btn {
+  padding:10px 26px; background:linear-gradient(135deg,#b8903c,var(--gold)); border:none; border-radius:3px;
+  color:var(--dark); font-family:'Cinzel',serif; font-size:.72rem; font-weight:700; letter-spacing:.15em;
+  text-transform:uppercase; cursor:pointer; transition:opacity .2s;
+}
+.mlv-start-btn:disabled { opacity:.35; cursor:not-allowed; }
+
+/* ── Vue multi-écrans plein écran ── */
+.mlv-view { display:none; position:fixed; inset:0; z-index:5100; background:#000; flex-direction:column; }
+.mlv-view.open { display:flex; }
+.mlv-view-header {
+  position:absolute; top:0; left:0; right:0; z-index:2; display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px; background:linear-gradient(to bottom, rgba(0,0,0,0.65), transparent);
+}
+.mlv-view-title { font-family:'Cinzel',serif; font-size:.75rem; letter-spacing:.25em; text-transform:uppercase; color:var(--gold-light); }
+.mlv-close-btn { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:var(--text); width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:1rem; }
+.mlv-grid { flex:1; display:grid; gap:3px; background:#000; }
+.mlv-grid-1 { grid-template-columns:1fr; grid-template-rows:1fr; }
+.mlv-grid-2 { grid-template-columns:1fr 1fr; grid-template-rows:1fr; }
+.mlv-grid-3 { grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; }
+.mlv-grid-3 .mlv-cell:nth-child(3) { grid-column:1 / 3; }
+.mlv-grid-4 { grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; }
+.mlv-cell { position:relative; overflow:hidden; cursor:pointer; background:#050508; }
+.mlv-cell video { width:100%; height:100%; object-fit:cover; display:block; }
+.mlv-cell-label {
+  position:absolute; left:8px; bottom:8px; right:8px; display:flex; align-items:center; gap:8px;
+  background:rgba(0,0,0,0.6); padding:6px 12px; border-radius:12px; backdrop-filter:blur(4px);
+  max-width:calc(100% - 16px);
+}
+.mlv-cell-label img { width:22px; height:22px; object-fit:contain; flex-shrink:0; }
+.mlv-cell-label-text { display:flex; flex-direction:column; min-width:0; overflow:hidden; }
+.mlv-cell-name { font-size:.74rem; color:var(--text); letter-spacing:.03em; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mlv-cell-program { font-size:.68rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mlv-cell:hover { outline:2px solid rgba(201,168,76,0.5); outline-offset:-2px; }
+.mlv-fs-btn {
+  position:absolute; top:8px; right:8px; z-index:3;
+  width:30px; height:30px; border-radius:50%; border:1px solid rgba(255,255,255,0.25);
+  background:rgba(0,0,0,0.5); color:var(--text); font-size:.85rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s, background .2s;
+}
+.mlv-cell:hover .mlv-fs-btn { opacity:1; }
+.mlv-fs-btn:hover, .mlv-fs-btn.active { background:rgba(201,168,76,0.35); border-color:var(--gold); }
+.mlv-cell:fullscreen .mlv-fs-btn { opacity:1; }
+.mlv-cell:fullscreen video { object-fit:contain; }
+.mlv-cell-status {
+  position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.55); color:var(--muted); font-size:.75rem; letter-spacing:.05em;
+  text-align:center; padding:10px; z-index:2; pointer-events:none;
+}
+/* Mode "agrandi" : une seule chaîne occupe tout l'écran, cliquer dessus revient à la vue à 4 */
+.mlv-grid.expanded { grid-template-columns:1fr !important; grid-template-rows:1fr !important; }
+.mlv-grid.expanded .mlv-cell { display:none; }
+.mlv-grid.expanded .mlv-cell.expanded-cell { display:block; grid-column:1 / -1; grid-row:1 / -1; }
+@media(max-width:768px){
+  .mlv-modal { max-width:100%; }
+  .mlv-grid-3 .mlv-cell:nth-child(3) { grid-column:1 / 3; }
+}
 </style>
 </head>
 <body>
@@ -2022,6 +2124,31 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     </div>
     <div class="tvch-allchannels-list" id="tvChAllChannelsList"></div>
   </div>
+</div>
+
+<!-- ═══ MULTI-LIVE : modale de sélection des chaînes ═══ -->
+<div class="mlv-modal-overlay" id="mlvModalOverlay" onclick="if(event.target===this) closeMultiLiveModal()">
+  <div class="mlv-modal">
+    <div class="mlv-modal-header">
+      <div class="mlv-modal-title">Multi-Live</div>
+      <button class="mlv-modal-close" onclick="closeMultiLiveModal()">✕</button>
+    </div>
+    <div class="mlv-modal-sub">Choisissez jusqu'à 4 chaînes de télé à regarder en même temps</div>
+    <div class="mlv-modal-list" id="mlvChannelList"></div>
+    <div class="mlv-modal-footer">
+      <div class="mlv-count" id="mlvCount">0 / 4 sélectionnée</div>
+      <button class="mlv-start-btn" id="mlvStartBtn" disabled onclick="startMultiLive()">Regarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MULTI-LIVE : vue plein écran à plusieurs chaînes ═══ -->
+<div class="mlv-view" id="mlvView">
+  <div class="mlv-view-header">
+    <div class="mlv-view-title">Multi-Live</div>
+    <button class="mlv-close-btn" onclick="closeMultiLiveView()">✕</button>
+  </div>
+  <div class="mlv-grid" id="mlvGrid"></div>
 </div>
 
 <!-- TV mode panels -->
@@ -6703,6 +6830,303 @@ async function buildTvChAllChannelsList(){
 }
 
 // ══════════════════════════════════════════
+//  MULTI-LIVE — regarder jusqu'à 4 chaînes en même temps
+// ══════════════════════════════════════════
+let multiLiveSelected = [];   // chaînes choisies (objets tvChannels), 4 max
+let multiLiveHls = {};        // id de chaîne -> instance Hls
+let multiLiveExpandedId = null;
+
+// Tuile "Multi-Live" affichée en tête de la liste des chaînes (catégorie "Tous")
+function buildMultiLiveTile(){
+  const div = document.createElement('div');
+  div.className = 'tv-channel tv-channel-multilive';
+  div.innerHTML = `
+    <div class="tv-channel-logo-wrap mlv-icon-wrap">
+      <div class="mlv-icon-grid"><span></span><span></span><span></span><span></span></div>
+    </div>
+    <div class="tv-channel-info">
+      <div class="tv-channel-program">Multi-Live</div>
+      <div class="tv-channel-time">Jusqu'à 4 chaînes en même temps</div>
+    </div>`;
+  div.onclick = openMultiLiveModal;
+  return div;
+}
+
+function openMultiLiveModal(){
+  const overlay = document.getElementById('mlvModalOverlay');
+  if(!overlay) return;
+  multiLiveSelected = [];
+  buildMultiLiveChannelList();
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMultiLiveModal(){
+  const overlay = document.getElementById('mlvModalOverlay');
+  if(overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function buildMultiLiveChannelList(){
+  const list = document.getElementById('mlvChannelList');
+  if(!list) return;
+  const channels = getAllTvLiveChannels(); // toutes les chaînes de télé, radios exclues
+  list.innerHTML = channels.map(ch => `
+    <div class="mlv-ch-item" id="mlv-ch-${ch.id}" onclick="toggleMultiLiveChannel('${ch.id}')">
+      <div class="mlv-ch-check" id="mlv-check-${ch.id}"></div>
+      <img class="mlv-ch-logo" src="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'">
+      <div class="mlv-ch-name">${ch.name}</div>
+    </div>`).join('');
+  updateMultiLiveCount();
+}
+
+function toggleMultiLiveChannel(id){
+  const channels = getAllTvLiveChannels();
+  const ch = channels.find(c => String(c.id) === String(id));
+  if(!ch) return;
+  const idx = multiLiveSelected.findIndex(c => String(c.id) === String(id));
+  const item = document.getElementById('mlv-ch-' + id);
+  if(idx >= 0){
+    multiLiveSelected.splice(idx, 1);
+    if(item) item.classList.remove('selected');
+  } else {
+    if(multiLiveSelected.length >= 4){
+      showToast('Vous pouvez sélectionner jusqu\'à 4 chaînes maximum');
+      return;
+    }
+    multiLiveSelected.push(ch);
+    if(item) item.classList.add('selected');
+  }
+  updateMultiLiveCount();
+}
+
+function updateMultiLiveCount(){
+  const countEl = document.getElementById('mlvCount');
+  if(countEl){
+    const n = multiLiveSelected.length;
+    countEl.textContent = n + ' / 4 sélectionnée' + (n > 1 ? 's' : '');
+  }
+  const btn = document.getElementById('mlvStartBtn');
+  if(btn) btn.disabled = multiLiveSelected.length === 0;
+}
+
+function startMultiLive(){
+  if(!multiLiveSelected.length) return;
+  const channels = multiLiveSelected.slice();
+  closeMultiLiveModal();
+  openMultiLiveView(channels);
+}
+
+// Ouvre la vue plein écran avec 1 à 4 chaînes lues simultanément (muettes, sauf celle agrandie)
+function openMultiLiveView(channels){
+  const view = document.getElementById('mlvView');
+  const grid = document.getElementById('mlvGrid');
+  if(!view || !grid) return;
+  multiLiveExpandedId = null;
+  multiLiveProxyIndex = {};
+  multiLiveRetryCount = {};
+  grid.className = 'mlv-grid mlv-grid-' + channels.length;
+  grid.classList.remove('expanded');
+  grid.innerHTML = channels.map(ch => `
+    <div class="mlv-cell" id="mlv-cell-${ch.id}" onclick="toggleMultiLiveExpand('${ch.id}')">
+      <video id="mlv-video-${ch.id}" playsinline webkit-playsinline muted autoplay></video>
+      <div class="mlv-cell-status" id="mlv-status-${ch.id}">Connexion…</div>
+      <button class="mlv-fs-btn" onclick="toggleMultiLiveFullscreen('${ch.id}', event)" title="Plein écran">⛶</button>
+      <div class="mlv-cell-label">
+        <img src="${ch.logo}" alt="" onerror="this.style.display='none'">
+        <div class="mlv-cell-label-text">
+          <span class="mlv-cell-name">${ch.name}</span>
+          <span class="mlv-cell-program" id="mlv-program-${ch.id}">Chargement du programme…</span>
+        </div>
+      </div>
+    </div>`).join('');
+  view.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  channels.forEach(ch => { multiLiveLoadStream(ch); multiLiveUpdateProgram(ch); });
+  multiLiveStartProgramRefresh(channels);
+}
+
+// Récupère et affiche le programme en cours de chaque chaîne du Multi-Live via l'EPG,
+// puis se remet à jour automatiquement toutes les 2 minutes tant que la vue est ouverte.
+let multiLiveProgramTimer = null;
+async function multiLiveUpdateProgram(ch){
+  const el = document.getElementById('mlv-program-' + ch.id);
+  if(!el) return;
+  try{
+    const data = await epgFetch(ch.id);
+    // La vue a pu être fermée / la chaîne retirée pendant le chargement.
+    const stillEl = document.getElementById('mlv-program-' + ch.id);
+    if(!stillEl) return;
+    const prog = epgGetCurrent(data);
+    stillEl.textContent = prog ? prog.title : 'Programme indisponible';
+  }catch(e){
+    const stillEl = document.getElementById('mlv-program-' + ch.id);
+    if(stillEl) stillEl.textContent = 'Programme indisponible';
+  }
+}
+function multiLiveStartProgramRefresh(channels){
+  if(multiLiveProgramTimer) clearInterval(multiLiveProgramTimer);
+  multiLiveProgramTimer = setInterval(()=>{
+    const view = document.getElementById('mlvView');
+    if(!view || !view.classList.contains('open')){
+      clearInterval(multiLiveProgramTimer);
+      multiLiveProgramTimer = null;
+      return;
+    }
+    channels.forEach(ch => multiLiveUpdateProgram(ch));
+  }, 120000);
+}
+
+// ── Chargement d'un flux avec bascule automatique de proxy + réessais,
+//    chaque chaîne du Multi-Live gère son propre compteur (indépendant des autres) ──
+let multiLiveProxyIndex = {};   // id de chaîne -> index de proxy en cours
+let multiLiveRetryCount = {};   // id de chaîne -> nombre de réessais effectués
+const MULTILIVE_MAX_RETRIES = 10;
+
+function multiLiveMakeProxyLoader(chId){
+  const BaseLoader = Hls.DefaultConfig.loader;
+  return class MultiLiveProxyLoader extends BaseLoader {
+    load(context, config, callbacks){
+      if(context.url && /^https?:\/\//i.test(context.url) && !tvChIsProxied(context.url)){
+        const idx = multiLiveProxyIndex[chId] || 0;
+        context.url = TVCH_CORS_PROXIES[idx](context.url);
+      }
+      super.load(context, config, callbacks);
+    }
+  };
+}
+
+function multiLiveSetStatus(chId, text){
+  const el = document.getElementById('mlv-status-' + chId);
+  if(el){ el.textContent = text || ''; el.style.display = text ? 'flex' : 'none'; }
+}
+
+function multiLiveLoadStream(ch){
+  const video = document.getElementById('mlv-video-' + ch.id);
+  if(!video) return;
+  if(multiLiveHls[ch.id]){ multiLiveHls[ch.id].destroy(); delete multiLiveHls[ch.id]; }
+  video.pause();
+  video.removeAttribute('src');
+  video.load();
+  if(multiLiveProxyIndex[ch.id] === undefined) multiLiveProxyIndex[ch.id] = 0;
+  if(multiLiveRetryCount[ch.id] === undefined) multiLiveRetryCount[ch.id] = 0;
+  if(typeof window.Hls === 'undefined'){
+    multiLiveSetStatus(ch.id, 'Erreur de lecteur');
+    return;
+  }
+  multiLiveSetStatus(ch.id, 'Connexion…');
+  if(Hls.isSupported()){
+    const hls = new Hls({ liveDurationInfinity:true, loader: multiLiveMakeProxyLoader(ch.id) });
+    hls.loadSource(ch.src);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, ()=>{
+      const p = video.play();
+      if(p && p.catch) p.catch(()=>{});
+      multiLiveRetryCount[ch.id] = 0;
+      multiLiveSetStatus(ch.id, '');
+    });
+    hls.on(Hls.Events.ERROR, (evt, data)=>{
+      if(!data || !data.fatal) return;
+      // La chaîne a pu être retirée / la vue fermée entre-temps : on arrête là.
+      if(!document.getElementById('mlv-video-' + ch.id)) return;
+      if(multiLiveProxyIndex[ch.id] < TVCH_CORS_PROXIES.length - 1){
+        multiLiveProxyIndex[ch.id]++;
+        multiLiveLoadStream(ch);
+      } else if(multiLiveRetryCount[ch.id] < MULTILIVE_MAX_RETRIES){
+        multiLiveRetryCount[ch.id]++;
+        const delay = 800 * multiLiveRetryCount[ch.id];
+        multiLiveSetStatus(ch.id, 'Reconnexion… (' + multiLiveRetryCount[ch.id] + '/' + MULTILIVE_MAX_RETRIES + ')');
+        setTimeout(()=>{ if(document.getElementById('mlv-video-' + ch.id)) multiLiveLoadStream(ch); }, delay);
+      } else {
+        multiLiveProxyIndex[ch.id] = 0;
+        multiLiveRetryCount[ch.id] = 0;
+        multiLiveSetStatus(ch.id, 'Chaîne indisponible');
+      }
+    });
+    multiLiveHls[ch.id] = hls;
+  } else if(video.canPlayType('application/vnd.apple.mpegurl')){
+    video.src = TVCH_CORS_PROXIES.length ? TVCH_CORS_PROXIES[multiLiveProxyIndex[ch.id]](ch.src) : ch.src;
+    video.addEventListener('loadedmetadata', ()=>multiLiveSetStatus(ch.id, ''), { once:true });
+    const p = video.play();
+    if(p && p.catch) p.catch(()=>{});
+  } else {
+    multiLiveSetStatus(ch.id, "Lecture HLS non supportée");
+  }
+}
+
+// Clique sur une chaîne (hors bouton plein écran) : l'agrandit dans la vue Multi-Live
+// (et coupe les autres) ; re-cliquer sur la chaîne en cours (agrandie) revient à la vue à 4 écrans.
+function toggleMultiLiveExpand(id){
+  const grid = document.getElementById('mlvGrid');
+  if(!grid) return;
+  if(multiLiveExpandedId === String(id)){
+    multiLiveExpandedId = null;
+    grid.classList.remove('expanded');
+    document.querySelectorAll('#mlvGrid .mlv-cell').forEach(c=>c.classList.remove('expanded-cell'));
+    const video = document.getElementById('mlv-video-' + id);
+    if(video) video.muted = true;
+  } else {
+    if(multiLiveExpandedId){
+      const prevVideo = document.getElementById('mlv-video-' + multiLiveExpandedId);
+      if(prevVideo) prevVideo.muted = true;
+    }
+    multiLiveExpandedId = String(id);
+    grid.classList.add('expanded');
+    document.querySelectorAll('#mlvGrid .mlv-cell').forEach(c=>c.classList.toggle('expanded-cell', c.id === 'mlv-cell-' + id));
+    const video = document.getElementById('mlv-video-' + id);
+    if(video) video.muted = false;
+  }
+}
+
+// Bouton ⛶ sur une chaîne : l'agrandit (comme toggleMultiLiveExpand) ET passe en plein écran
+// natif du navigateur (masque la barre du navigateur, comme le lecteur de chaîne normal).
+function toggleMultiLiveFullscreen(id, evt){
+  if(evt){ evt.stopPropagation(); }
+  const cell = document.getElementById('mlv-cell-' + id);
+  if(!cell) return;
+  const isThisCellFullscreen = document.fullscreenElement === cell;
+  if(isThisCellFullscreen){
+    document.exitFullscreen().catch(()=>{});
+    return;
+  }
+  // S'assure que la chaîne cliquée est bien celle agrandie (son activé) avant le plein écran.
+  if(multiLiveExpandedId !== String(id)) toggleMultiLiveExpand(id);
+  if(document.fullscreenElement && document.fullscreenElement !== cell){
+    document.exitFullscreen().catch(()=>{});
+  }
+  if(cell.requestFullscreen) cell.requestFullscreen().catch(()=>{});
+  else if(cell.webkitRequestFullscreen) cell.webkitRequestFullscreen();
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.addEventListener('fullscreenchange', ()=>{
+    const el = document.fullscreenElement;
+    document.querySelectorAll('.mlv-fs-btn').forEach(btn=>{
+      const cell = btn.closest('.mlv-cell');
+      btn.classList.toggle('active', !!cell && cell === el);
+    });
+  });
+});
+
+function closeMultiLiveView(){
+  if(document.fullscreenElement && document.getElementById('mlvView').contains(document.fullscreenElement)){
+    document.exitFullscreen().catch(()=>{});
+  }
+  if(multiLiveProgramTimer){ clearInterval(multiLiveProgramTimer); multiLiveProgramTimer = null; }
+  Object.values(multiLiveHls).forEach(h=>{ try{ h.destroy(); }catch(e){} });
+  multiLiveHls = {};
+  multiLiveProxyIndex = {};
+  multiLiveRetryCount = {};
+  document.querySelectorAll('#mlvGrid video').forEach(v=>{
+    v.pause(); v.removeAttribute('src'); v.load();
+  });
+  const view = document.getElementById('mlvView');
+  if(view) view.classList.remove('open');
+  document.body.style.overflow = '';
+  multiLiveSelected = [];
+  multiLiveExpandedId = null;
+}
+
+// ══════════════════════════════════════════
 //  TV TIME TAB SWITCH
 // ══════════════════════════════════════════
 function switchTvTimeTab(tab) {
@@ -6722,6 +7146,7 @@ function renderTV(cat){
   catsEl.innerHTML=cats.map(c=>`<button class="tv-cat-btn ${c===cat?'active':''}" onclick="renderTV('${c}')">${c}</button>`).join('');
   const grid=document.getElementById('tvGrid');
   grid.innerHTML='';
+  if(cat==='Tous') grid.appendChild(buildMultiLiveTile());
   const baseList = tvChannels.filter(c => !(c.name === 'Ligue 1+' || /^Ligue 1\+ \d+$/.test(c.name) || c.name === 'Disney Channel' || c.name === 'National Geographic'));
   const list=cat==='Tous'?baseList:baseList.filter(c=>c.cat===cat);
 
