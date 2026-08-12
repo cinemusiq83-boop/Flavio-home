@@ -1078,7 +1078,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .tvch-player{ position:fixed; inset:0; z-index:2100; background:#000; display:none; flex-direction:column; }
 .tvch-player.open{ display:flex; }
 .tvch-header{ display:flex; align-items:center; gap:14px; padding:18px 24px; background:linear-gradient(to bottom, rgba(0,0,0,0.85), transparent); position:absolute; top:0; left:0; right:0; z-index:2; transition:opacity .35s ease; }
-.tvch-logo{ height:34px; width:auto; max-width:90px; object-fit:contain; flex-shrink:0; background:#fff; border-radius:2px; padding:2px 6px; }
+.tvch-logo{ height:34px; width:auto; max-width:90px; object-fit:contain; flex-shrink:0; background:transparent; }
 .tvch-titles{ flex:1; min-width:0; }
 .tvch-prog-title{ font-family:'Cinzel',serif; font-weight:700; font-size:1.25rem; color:#fff; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .tvch-prog-sub{ font-size:.82rem; color:rgba(255,255,255,0.6); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -4697,6 +4697,139 @@ const tvChannels = [
 ];
 
 // ══════════════════════════════════════════
+//  LOGOS SPÉCIFIQUES AU LECTEUR (différents de ceux affichés dans la page TV)
+//  Clé = nom EXACT de la chaîne (ch.name, voir tableau tvChannels ci-dessus)
+//  Valeur = URL du logo à utiliser UNIQUEMENT dans le lecteur.
+//  Si une chaîne n'a pas d'entrée ici, le logo de la page TV (ch.logo) est utilisé par défaut.
+// ══════════════════════════════════════════
+const tvPlayerLogos = {
+  "TF1": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/66746746",
+  "France 2": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/67032119",
+  "France 3": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/67033022",
+  "Canal+": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/301/canal-ouah/CHN43FN/CHN43FN_301_29082023",
+  "France 5": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/67033026",
+  "M6": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/313/canal-ouah/CHN43FN/CHN43FN_M6_20220415",
+  "Arte": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/3932761",
+  "Canal+ Sport 360": "https://thumb.canalplus.pro/http/unsafe/204x/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/channel/83/canal-ouah/CHN43FB/CHN43FB_83_29082023",
+  "Canal+ Foot": "https://thumb.canalplus.pro/http/unsafe/204x/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/channel/19/canal-ouah/CHN43FB/CHN43FB_19_29082023",
+  "Canal+ Sport": "https://thumb.canalplus.pro/http/unsafe/204x/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/channel/177/canal-ouah/CHN43FB/CHN43FB_177_29082023",
+  "Canal+ Cinéma(s)": "https://thumb.canalplus.pro/http/unsafe/204x/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/channel/198/canal-ouah/CHN43FB/CHN43FB_198_29082023",
+  "OCS": "https://thumb.canalplus.pro/http/unsafe/240x180/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/channel/322/canal-ouah/CHN43FB/CHN43FB_322_20240703-x2Gu",
+  "Ciné+ Frisson": "https://thumb.canalplus.pro/http/unsafe/204x/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/channel/398/canal-ouah/CHN43FB/CHN43FB_398_20240703-OUDD",
+  "Ciné+ Émotion": "https://thumb.canalplus.pro/http/unsafe/204x/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/channel/396/canal-ouah/CHN43FB/CHN43FB_396_20240703-rGn5",
+  "Ciné+ Family": "https://thumb.canalplus.pro/http/unsafe/204x/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/channel/533/canal-ouah/CHN43FB/CHN43FB_533_20240703-GCQG",
+  "Ciné+ Festival": "https://thumb.canalplus.pro/http/unsafe/204x/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/channel/532/canal-ouah/CHN43FB/CHN43FB_532_20240703-v_Nw",
+  "Ciné+ Classic": "https://thumb.canalplus.pro/http/unsafe/204x/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/channel/531/canal-ouah/CHN43FB/CHN43FB_531_20240703-xihx",
+  "Action": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782010/b9b4fc2c-a628-46c2-926d-7367a1d9eeb1.png",
+  "TCM Cinéma": "https://thumb.canalplus.pro/http/unsafe/epg.canal-plus.com/mycanal/img/CHN43FN/PNG/213X160/CHN43FB_374.PNG",
+  "Polar+": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/61718410",
+  "SérieClub": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/19132964",
+  "Warner TV": "https://thumb.canalplus.pro/http/unsafe/epg.canal-plus.com/mycanal/img/CHN43FN/PNG/213X160/CHN43FB_694.PNG",
+  "RTL9": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/50052/canal-ouah/CHN43FN/RTL9_chn43fn",
+  "AB1": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/611/canal-ouah/CHN43FN/AB1_BLANC_640x480-Fza-",
+  "Novelas TV": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/91743977",
+  "TF1 Séries Films": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/66747478",
+  "InfoSport+": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/37032867",
+  "beIN Sports 1": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/48981173",
+  "beIN Sports 2": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/48981183",
+  "beIN Sports 3": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/48981545",
+  "Eurosport 1": "https://thumb.canalplus.pro/http/unsafe/epg.canal-plus.com/mycanal/img/CHN43FN/PNG/213X160/CHN43FB_101.PNG",
+  "Eurosport 2": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782015/cb0e24e8-3d4f-4509-9f47-860f6f472ae7.png",
+  "Ligue 1+": "https://reunion.orange.fr/portail/images/livetv_ligue_1_plus-Fonce-500x500-1_1.png",
+  "Automoto La Chaîne": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/79159708",
+  "Equidia": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/66127994",
+  "Sport en France": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/1080/canal-ouah/CHN43FN/CHN43FN_1080_20240206-go3d",
+  "Cheval TV": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/1182/canal-ouah/CHN43FN/CHN43FN_1182_20251013-QVcu",
+  "L'Équipe": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/44863403",
+  "Comédie+": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/21549672",
+  "Paris Première": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/294/canal-ouah/CHN43FN/CHN43FN__Paris_Premiere_20220415",
+  "Teva": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/292/canal-ouah/CHN43FN/CHN43FN_292_20211002",
+  "W9": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/296/canal-ouah/CHN43FN/CHN43FN_W9_20220415",
+  "TMC": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/66747568",
+  "TFX": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/66747551",
+  "CStar": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/64699011",
+  "T18": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/1167/canal-ouah/CHN43FN/CHN43FN_1167_20250606-oUVi",
+  "6ter": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/521/canal-ouah/CHN43FN/CHN43FN_6TER_20220415",
+  "RMC Story": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/571/canal-ouah/CHN43FN/CHN43FN_571_20251217-pHg9",
+  "RMC Life": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/440/canal-ouah/CHN43FN/RMCLIFE_ONDARK_640x480-LhJC",
+  "TV5 Monde": "https://thumb.canalplus.pro/http/unsafe/96x72/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/520/canal-ouah/CHN43FN/CHN43FN_520_20251008-YfN8",
+  "Planète+": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/4492627",
+  "Planète+ Crime": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/587/canal-ouah/CHN43FN/CHN43FN_587_120122",
+  "Planète+ Aventure": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/588/canal-ouah/CHN43FN/CHN43FN_588_120122",
+  "Museum TV": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/95900535",
+  "National Geographic": "https://cdn-proxymedia-digicert.tv-fr-cdn.orange.net/api/v1/images/2090%2Flogos/v2/logos/catchuptv_nationalgeographic/20250303_094406/partnerWhiteLogo/logo_300x300.png?service=replay&device=W_PC",
+  "Discovery Channel": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782025/46f1311e-d719-4074-b80f-38b13255cad8.png",
+  "Discovery Investigation": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782028/b24e6740-9c22-415d-94f5-95edb9dde235.png",
+  "Animaux": "https://thumb.canalplus.pro/http/unsafe/epg.canal-plus.com/mycanal/img/CHN43FN/PNG/213X160/CHN43FB_503.PNG",
+  "TV Monaco": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/1076/canal-ouah/CHN43FN/CHN43FN_1076_20230919",
+  "Le Figaro TV": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/1102/canal-ouah/CHN43FN/CHN43FN_1102_20241115-3Ztt",
+  "8 Mont Blanc": "https://upload.wikimedia.org/wikipedia/fr/6/6a/Logo_8_Mont_Blanc_2015.svg?utm_source=fr.wikipedia.org&utm_campaign=index&utm_content=original",
+  "RMC Découverte": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/595/canal-ouah/CHN43FN/CHN43FN_595_20251217-j8Gg",
+  "Piwi+": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/21549720",
+  "Nickelodeon Junior": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/593/canal-ouah/CHN43FN/CHN43FN_593_20240205-D3YF",
+  "Tiji": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/41072706",
+  "Cartoonito": "https://thumb.canalplus.pro/bran/unsafe/3840x/filters:quality(%7BimageQualityPercentage%7D)/image/68837ff96a5c1/uploads/media/CARTOONITO.png",
+  "Boomerang": "https://thumb.canalplus.pro/bran/unsafe/3840x/filters:quality(%7BimageQualityPercentage%7D)/image/68837f3d3c3d9/uploads/media/BOOMRANG.png",
+  "Télétoon+": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/21549725",
+  "Télétoon+1": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/21549726",
+  "Disney Channel": "https://cdn-proxymedia-digicert.tv-fr-cdn.orange.net/api/v1/images/2090%2Flogos/v2/logos/catchuptv_disneychannel/20250120_110819/partnerWhiteLogo/logo_300x300.png?service=replay&device=W_PC",
+  "Cartoon Network": "https://thumb.canalplus.pro/bran/unsafe/3840x/filters:quality(%7BimageQualityPercentage%7D)/image/68837fe10c457/uploads/media/CARTOON_NETWORK.png",
+  "Nickelodeon": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/591/canal-ouah/CHN43FN/CHN43FN_591_20240806-VOLC",
+  "Nickelodeon+1": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/44924953",
+  "Canal J": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/91743730",
+  "Nick Toons": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/518/canal-ouah/CHN43FN/CHN43FN_518_20251507-CYam",
+  "France 4": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/67033024",
+  "Gulli": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/549/canal-ouah/CHN43FN/CHN43FN_40067_20230829",
+  "MTV": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/20482724",
+  "Comedy Central": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/92490208",
+  "Mangas": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/613/canal-ouah/CHN43FN/CHN43FN_40025_20220711",
+  "MGG TV": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/819/canal-ouah/CHN43FN/CHN43FN_819_20220127",
+  "Warner TV Next": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782044/bac939ea-838f-42a1-b1ff-efccf55f2275.png",
+  "La Chaîne Météo": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/21549692",
+  "CNews": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/64698936",
+  "BFM TV": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=160,height=120/image/545782050/7f6e1129-5cb7-4b78-9734-1c95c831fef9.png",
+  "LCI": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/66747521",
+  "France Info": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/41072782",
+  "LCP": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/94033640",
+  "France 24": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/18810794",
+  "Euronews": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/324/canal-ouah/CHN43FN/EURONEWS2023_myCANAL_640x480",
+  "CNN": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=160,height=120/image/545782438/b399aefb-1467-4970-a86b-55799e2c888a.png",
+  "BFM Business": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/54239635",
+  "KTO": "https://upload.wikimedia.org/wikipedia/commons/7/7a/KTO_t%C3%A9l%C3%A9vision_catholique_-_logo_2022.png",
+  "Europe 2 Pop TV": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/723/canal-ouah/CHN43FN/CHN43FN_723_20251001-IXnV",
+  "M6 Music": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/352/canal-ouah/CHN43FN/CHN43FN_M6_Music_20220415",
+  "NRJ Hits": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/21549710",
+  "Trace Urban": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/channel/585/canal-ouah/CHN43FN/CHN43FN_585_20230208",
+  "RFM TV": "https://thumb.canalplus.pro/http/unsafe/202x152/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/72998764",
+  "Mélody": "https://thumb.canalplus.pro/bran/unsafe/3840x/filters:quality(%7BimageQualityPercentage%7D)/image/68b1abce377df/uploads/media/MELODY.png",
+  "Mezzo": "https://thumb.canalplus.pro/bran/unsafe/3840x/filters:quality(%7BimageQualityPercentage%7D)/image/68b1abac2b1a4/uploads/media/MEZZO.png",
+  "Mezzo Live HD": "https://thumb.canalplus.pro/http/unsafe/epg.canal-plus.com/mycanal/img/CHN43FN/PNG/213X160/CHN43FB_268.PNG",
+  "beIN Sports MAX 4": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782100/236a3ebc-89a6-4abe-863e-c81ca2f56b9c.png",
+  "beIN Sports MAX 5": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782104/dd75747c-9289-46db-8d1a-2daacfffa9aa.png",
+  "beIN Sports MAX 6": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782115/a9876c33-3608-4796-9644-cf0aa3163746.png",
+  "beIN Sports MAX 7": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782132/674ff4e7-e459-4e06-8cf7-9c5f3f71e0a1.png",
+  "beIN Sports MAX 8": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782168/174e882d-66f4-42b8-8f04-aa6d293d0ec4.png",
+  "beIN Sports MAX 9": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782182/7446e405-63cc-4555-a585-b8d38b815029.png",
+  "beIN Sports MAX 10": "https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=120,height=90/image/545782187/5a4ee73e-ff74-4109-b270-e71426ecdb1b.png",
+  "Ligue 1+ 2": "https://proxymedia.woopic.com/api/v1/images/2709%2Fboutique-tv%2Flivetv_ligue_1_plus_2-Clair-500x500_6a5f30e13c09320d54965bd6.png",
+  "Ligue 1+ 3": "https://proxymedia.woopic.com/api/v1/images/2709%2Fboutique-tv%2Flivetv_ligue_1_plus_3-Clair-500x500_6a5f30f61932be2c9447ec78.png",
+  "Ligue 1+ 4": "https://proxymedia.woopic.com/api/v1/images/2709%2Fboutique-tv%2Flivetv_ligue_1_plus_4-Clair-500x500_6a5f31131932be2c9447ec7b.png",
+  "Ligue 1+ 5": "https://proxymedia.woopic.com/api/v1/images/2709%2Fboutique-tv%2Flivetv_ligue_1_plus_5-Clair-500x500_6a5f3134206b0f2cd8f3bd85.png",
+  "Ligue 1+ 6": "https://proxymedia.woopic.com/api/v1/images/2709%2Fboutique-tv%2Flivetv_ligue_1_plus_6-Clair-500x500_6a5f317d206b0f2cd8f3bd86.png",
+  "Ligue 1+ 7": "https://proxymedia.woopic.com/api/v1/images/2709%2Fboutique-tv%2Flivetv_ligue_1_plus_7-Clair-500x500_6a5f31974f10744e1d78ef20.png",
+  "Ligue 1+ 8": "https://proxymedia.woopic.com/api/v1/images/2709%2Fboutique-tv%2Flivetv_ligue_1_plus_8-Clair-500x500_6a5f31ad1932be2c9447ec7c.png",
+  "Ligue 1+ 9": "https://proxymedia.woopic.com/api/v1/images/2709%2Fboutique-tv%2Flivetv_ligue_1_plus_9-Clair-500x500_6a5f31c73c09320d54965bdf.png",
+  "Ligue 1+ 10": "https://cdn.tv-sports.fr/photos/chaines/svg/218.svg",
+};
+
+// Retourne le logo à afficher dans le LECTEUR pour une chaîne donnée
+// (logo dédié si défini dans tvPlayerLogos, sinon repli sur le logo de la page TV).
+function getTvPlayerLogo(ch){
+  if(!ch) return '';
+  return tvPlayerLogos[ch.name] || ch.logo || '';
+}
+
+// ══════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════
 let isSignup=false, editMode=false, editingProfileId=null, selectedAvatar='', currentAvatarCat='NETFLIX';
@@ -6565,7 +6698,7 @@ function openTvChannelPlayer(ch){
   tvChCurrentChannel = ch;
   tvChProxyIndex = 0;
   tvChRetryCount = 0;
-  document.getElementById('tvChLogo').src = ch.logo || '';
+  document.getElementById('tvChLogo').src = getTvPlayerLogo(ch);
   document.getElementById('tvChProgTitle').textContent = ch.name;
   document.getElementById('tvChProgSub').textContent = 'Chargement…';
   document.getElementById('tvChPlayer').classList.add('open');
@@ -6724,7 +6857,7 @@ function tvChSetupMediaSession(){
 async function tvChUpdateMediaSessionMetadata(ch, prog){
   if(!('mediaSession' in navigator) || !ch) return;
   const title = prog && prog.title ? prog.title : ch.name;
-  let artwork = ch.logo;
+  let artwork = getTvPlayerLogo(ch);
   if(prog && prog.title){
     const img = await tvProgramFetchImage(prog.title);
     if(img) artwork = img;
@@ -6933,7 +7066,7 @@ function openMultiLiveView(channels){
       <div class="mlv-cell-status" id="mlv-status-${ch.id}">Connexion…</div>
       <button class="mlv-fs-btn" onclick="toggleMultiLiveFullscreen('${ch.id}', event)" title="Plein écran">⛶</button>
       <div class="mlv-cell-label">
-        <img src="${ch.logo}" alt="" onerror="this.style.display='none'">
+        <img src="${getTvPlayerLogo(ch)}" alt="" onerror="this.style.display='none'">
         <div class="mlv-cell-label-text">
           <span class="mlv-cell-name">${ch.name}</span>
           <span class="mlv-cell-program" id="mlv-program-${ch.id}">Chargement du programme…</span>
