@@ -1685,7 +1685,6 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       <a data-tab="tv" onclick="showTab('tv',this);closeBurger()">TV Direct</a>
       <a data-tab="maliste" onclick="showTab('maliste',this);closeBurger()">Ma Liste</a>
       <a data-tab="chaines" onclick="showTab('chaines',this);closeBurger()">Chaînes</a>
-      <a onclick="window.location.href='https://www.france.tv/sport/cyclisme/tour-de-france-femmes/';closeBurger()" style="color:#c9a84c;font-weight:700;">🚴 Tour de France Femmes</a>
     </div>
     <div class="nav-search">
       <span class="nav-search-icon">🔍</span>
@@ -1716,7 +1715,6 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     <div class="hero-category-banners" id="heroCategoryBanners">
       <button class="hcb-pill liquid-glass" data-tab="films" onclick="hcbGoTab('films')">Films</button>
       <button class="hcb-pill liquid-glass" data-tab="series" onclick="hcbGoTab('series')">Séries</button>
-      <button class="hcb-pill liquid-glass liquid-glass-gold sport" onclick="hcbGoExternal('https://www.france.tv/sport/cyclisme/tour-de-france-femmes/')">🚴 Tour de France Femmes</button>
     </div>
     <div class="hero-bg" id="heroBg"></div>
     <div class="hero-content" id="heroContent">
@@ -1797,20 +1795,6 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
         onmouseenter="hoverPlatform(this)" onmouseleave="leavePlatform()" onclick="clickPlatform(this)">
         <video class="card-video" muted loop playsinline preload="none"></video>
         <img class="card-logo" src="https://www.lfp.fr/assets/LFP_LOGOTYPE_L1_MASTER_ELECTRIC_BLUE_RVB_fdd5c15fd3.png" alt="Ligue 1+">
-      </div>
-
-      <!-- TOUR DE FRANCE FEMMES -->
-      <div class="platform-card" id="platform-tourdefrance"
-        style="background:linear-gradient(135deg,#0a1f3d 0%,#1a3d6b 50%,#0a1f3d 100%);width:200px;"
-        onmouseenter="this.style.boxShadow='0 20px 50px rgba(0,0,0,0.7), 0 0 0 2px rgba(201,168,76,0.6)';this.style.transform='scale(1.08) translateY(-5px)'"
-        onmouseleave="this.style.boxShadow='';this.style.transform=''"
-        onclick="window.location.href='https://www.france.tv/sport/cyclisme/tour-de-france-femmes/'">
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px;width:100%;height:100%;position:relative;z-index:2;">
-          <div style="font-size:1.8rem;line-height:1;">🚴</div>
-          <div style="font-family:'Cinzel',serif;font-size:.55rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#f0d080;text-align:center;line-height:1.3;text-shadow:0 2px 8px rgba(0,0,0,0.8);">Tour de France Femmes</div>
-          <div style="font-size:.5rem;letter-spacing:.2em;color:rgba(240,208,128,0.6);text-transform:uppercase;font-family:'Raleway',sans-serif;">2026 • France.tv</div>
-        </div>
-        <div style="position:absolute;inset:0;border-radius:8px;background:linear-gradient(135deg,rgba(201,168,76,0.08) 0%,transparent 60%);pointer-events:none;"></div>
       </div>
 
     </div>
@@ -8781,7 +8765,7 @@ function hcbGoExternal(url){
   .liquid-glass-red:active {
     background:linear-gradient(135deg, rgba(255,32,48,0.68) 0%, rgba(180,15,25,0.42) 100%) !important;
   }
-  /* Variante teintée or (Bande-annonce, pill "Tour de France") */
+  /* Variante teintée or (Bande-annonce) */
   .liquid-glass-gold {
     background:linear-gradient(135deg, rgba(201,168,76,0.45) 0%, rgba(201,168,76,0.14) 100%) !important;
     border-color:rgba(240,208,128,0.45) !important;
