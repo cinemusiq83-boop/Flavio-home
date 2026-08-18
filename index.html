@@ -739,27 +739,27 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
    ══════════════════════════════════════════ */
 .film-modal-overlay {
   display:none; position:fixed; inset:0; z-index:500;
-  background:rgba(0,0,0,0.88); backdrop-filter:blur(12px);
-  align-items:center; justify-content:center;
-  padding:20px;
+  background:var(--dark); backdrop-filter:none;
+  align-items:stretch; justify-content:stretch;
+  padding:0;
   animation:fadeIn .3s ease;
 }
 .film-modal-overlay.open { display:flex; }
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
 .film-modal {
-  position:relative; width:100%; max-width:920px;
+  position:relative; width:100vw; height:100vh;
   background:var(--dark2);
-  border-radius:10px; overflow:hidden;
-  box-shadow:0 50px 100px rgba(0,0,0,0.9), 0 0 0 1px rgba(201,168,76,0.1);
+  border-radius:0; overflow:hidden;
+  box-shadow:none;
   animation:slideUp .45s cubic-bezier(0.16,1,0.3,1);
-  max-height:92vh; overflow-y:auto;
+  display:flex; flex-direction:column;
 }
 @keyframes slideUp { from{opacity:0;transform:translateY(50px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
 
 /* ── BACKDROP CINÉMATOGRAPHIQUE ── */
 .film-modal-backdrop {
-  position:relative; width:100%; height:500px; overflow:hidden;
+  position:relative; width:100%; height:55vh; overflow:hidden; flex-shrink:0;
 }
 .film-modal-backdrop img.backdrop-img {
   width:100%; height:100%; object-fit:cover; display:block;
@@ -839,6 +839,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 /* ── CORPS DE LA MODAL ── */
 .film-modal-body {
   padding:32px 44px 44px;
+  flex:1; overflow-y:auto; overflow-x:hidden;
 }
 .film-modal-actions {
   display:flex; gap:12px; margin-bottom:28px; flex-wrap:wrap;
