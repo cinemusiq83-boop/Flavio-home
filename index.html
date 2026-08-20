@@ -773,6 +773,16 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   transform:scale(1.03);
   transform-origin:center center;
 }
+/* ── VIDÉO DE FOND (se déclenche après quelques secondes sur la fiche film, façon Netflix) ── */
+.film-modal-hero video.backdrop-video {
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;
+  filter:brightness(0.40) saturate(1.2);
+  opacity:0; pointer-events:none;
+  transition:opacity 1s ease;
+  transform:scale(1.03);
+  transform-origin:center center;
+}
+.film-modal-hero video.backdrop-video.show { opacity:1; }
 /* Dégradé double : bas vers haut + gauche vers droite pour effet cinéma */
 .film-modal-hero::after {
   content:''; position:absolute; inset:0;
@@ -1973,6 +1983,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     <!-- ── HERO PLEIN ÉCRAN ── -->
     <div class="film-modal-hero">
       <img class="backdrop-img" id="filmModalImg" src="" alt="">
+      <video class="backdrop-video" id="filmModalBgVideo" muted loop playsinline preload="none"></video>
       <button class="film-modal-close" onclick="closeFilmModal()">✕</button>
       <div class="film-modal-hero-content">
         <!-- Logo officiel : géré par JS (preload + fallback) -->
@@ -2226,7 +2237,7 @@ const filmMeta = {
   7:  { desc:"L'histoire touchante et drôle d'une petite fille hawaïenne solitaire et d'un extra-terrestre fugitif qui l'aide à renouer le lien avec sa famille.", director:"Dean Fleischer Camp", cast:"Maia Kealoha, Sydney Agudong, Zach Galifianakis", year:"2025", duration:"1h52", country:"États-Unis", logo:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/75e90566-7630-4ab5-aa19-25a3a0582c11/trim?format=webp&max=800%7C300", backdrop:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/bbff8077-ffba-4b32-a6dc-d3fd11db9498/compose?format=webp&width=2880"},
   8:  { desc:"L'agent Ethan Hunt doit prendre tous les risques pour mettre hors d'état de nuire une intelligence artificielle qui menace la paix dans le monde.", director:"Christopher McQuarrie", cast:"Tom Cruise, Hayley Atwell, Ving Rhames", year:"2025", duration:"2h49", country:"États-Unis d'Amérique, Royaume-Uni", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/120746223", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/120746220"},
   9:  { desc:"Lassés de faire tourner des sosies capricieux, deux promoteurs décident de lancer un spectacle avec des vedettes des années 80. Le succès est au rendez-vous.", director:"Frédéric Forestier, Thomas Langmann", cast:"Richard Anconina, Patrick Timsit, Bruno Lochet", year:"2012", duration:"1h50", country:"France, Belgique", logo:"", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/104947785" },
-  10: { desc:"Quatre ans maintenant que la tournée Stars 80 remplit les salles. Alors que les chanteurs partent pour une semaine de ski bien méritée, leurs producteurs Vincent et Antoine découvrent qu'ils ont été victimes d'une escroquerie et risquent de tout perdre. Seule solution pour couvrir leurs dettes : organiser LE concert du siècle en seulement 15 jours !", director:"Thomas Langmann", cast:"", year:"2017", duration:"1h52", country:"France", logo:"", backdrop:"https://images.justwatch.com/backdrop/308553668/s640/stars-80-la-suite.jpg" },
+  10: { desc:"Victimes d'une escroquerie, les promoteurs d'une tournée triomphale organisent LE concert avec des chanteurs des années 1980 et des stars internationales.", director:"Thomas Langmann", cast:"Richard Anconina, Patrick Timsit, Edouard Montoute", year:"2017", duration:"1h47", country:"France", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/9319807/canal-ouah_50002/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-eEHV", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/9319807/canal-ouah_50002/STD169/myCANAL_16x9_MEA_1920x1080-1pnU" },
   11: { desc:"Projetés à travers un mystérieux portail dans un étrange monde cubique, quatre amis se démènent pour tenter de trouver un moyen de rentrer chez eux.", director:"Jared Hess", cast:"Jason Momoa, Jack Black, Danielle Brooks", year:"2025", duration:"1h37", country:"États-Unis, Suède", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/28379699/canal-ouah_50001/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-IyWB", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/28379699/canal-ouah_50001/STD169/myCANAL_16x9_MEA_1920x1080-CrIP"},
   12: { desc:"Née en Egypte, Dalida multiplie les succès dans sa carrière de chanteuse mais souffre d'une vie sentimentale chaotique et d'un manque d'enfant.", director:"Lisa Azuelos", cast:"Sveva Alviti, Riccardo Scamarcio, Jean-Paul Rouve", year:"2016", duration:"2h01", country:"France", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/7981365/canal-ouah_50002/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-YCwc", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/7981365/canal-ouah_50002/STD169/myCANAL_16x9_MEA_1920x1080-0XeI" },
   13: { desc:"Une adolescente américaine, venue passer quelques jours dans un camp de vacances avec ses parents, découvre la vie et l'amour sur fond de danses endiablées.", director:"Emile Ardolino", cast:"Jennifer Grey, Patrick Swayze, Jerry Orbach", year:"1987", duration:"1h40", country:"États-Unis", logo:"", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/58814786"},
@@ -2238,7 +2249,7 @@ const filmMeta = {
   19: { desc:"Deux paysans retraités, portés sur la bouteille, reçoivent la visite d'un extraterrestre qui va totalement bouleverser leur vie tranquille et ennuyeuse.", director:"Jean Girault", cast:"Louis de Funès, Jacques Villeret, Jean Carmet", year:"1981", duration:"1h38", country:"France", logo:"", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/94936745" },
   20: { desc:"En couple au lycée, une femme et un homme, dont les destins semblent liés, finissent par se retrouver des années après leur douloureuse séparation.", director:"Gilles Lellouche", cast:"Adèle Exarchopoulos, François Civil, Mallory Wanecque", year:"2024", duration:"2h41", country:"France", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/118104585", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/118104579" },
   21: { desc:"Embauché comme surveillant dans un centre de rééducation pour mineurs, un professeur de musique transforme la vie des élèves en les initiant au chant choral.", director:"Christophe Barratier", cast:"Gérard Jugnot, François Berléand, Kad Merad", year:"2004", duration:"1h37", country:"France, Suisse, Allemagne", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/111889782", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/111889778" },
-  22: { desc:"Un requin blanc terrorise les côtes d'une station balnéaire de la Nouvelle-Angleterre : le chef de la police locale décide de donner la chasse au squale.", director:"Steven Spielberg", cast:"Roy Scheider, Robert Shaw, Richard Dreyfuss", year:"1975", duration:"2h04", country:"États-Unis", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/180957/canal-ouah/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x108019", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/180957/canal-ouah/STD169/myCANAL_16x9_MEA_1920x108048"},
+  22: { desc:"A quelques jours du début de la saison estivale, les habitants de la petite station balnéaire d'Amity sont mis en émoi par la découverte sur le littoral du corps atrocement mutilé d'une jeune vacancière.", director:"Steven Spielberg", cast:"Roy Scheider, Robert Shaw, Richard Dreyfuss", year:"1975", duration:"1h58", country:"États-Unis", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/3d94733b1b2ffd9686915847e91e128f.png", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/68403e8b10ee6815ea9f41901fb6a950.jpg"},
   23: { desc:"Bugs Bunny fait appel au basketteur Michael Jordan pour tenir tête à une bande de gnomes, au cours d'un match de basket-ball crucial pour le lapin et ses amis.", director:"Joe Pytka", cast:"Michael Jordan, Wayne Knight, Bill Murray", year:"1996", duration:"1h28", country:"États-Unis", logo:"", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/52837014"},
   24: { desc:"Pour sauver son fils kidnappé, une star de la NBA accompagnée de Looney Tunes peu adroits doit affronter et battre une équipe de grands basketteurs.", director:"Malcolm D. Lee", cast:"LeBron James, Don Cheadle, Sonequa Martin-Green", year:"2021", duration:"1h55", country:"États-Unis, Royaume-Uni, Singapour, Canada, Australie", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/108447688", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/105203686"},
   25: { desc:"Lorsque la famille Deetz retourne dans son ancienne maison, ce n'est qu'une question de temps avant que quelqu'un ne dise trois fois « Beetlejuice ».", director:"Tim Burton", cast:"Michael Keaton, Winona Ryder, Catherine O'Hara", year:"2024", duration:"1h40", country:"États-Unis", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/WBD_258990_000_FR_TITLELOGO_fr-FR.png", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/WBD_258990_000_FR_STD169_zxx.jpg"},
@@ -2250,11 +2261,11 @@ const filmMeta = {
   31: { desc:"Une étudiante américaine tombe amoureuse d'un Balinais pendant les vacances puis décide de l'épouser. Ses parents débarquent pour l'en dissuader.", director:"Ol Parker", cast:"Julia Roberts, George Clooney, Sean Lynch", year:"2022", duration:"1h44", country:"États-Unis, Royaume-Uni, Japon", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/20861792/canal-ouah/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/20861792/canal-ouah/STD169/myCANAL_16x9_MEA_1920x1080"},
   32: { desc:"Bien loin d'être découragés par leurs échecs répétés, quatre malfaiteurs décident de frapper un grand coup en tentant de kidnapper Sophie Marceau.", director:"Eric Fraticelli", cast:"Eric Fraticelli, Denis Braccini, Philippe Corti", year:"2023", duration:"1h32", country:"France", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/110131337", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/110131333" },
   33: { desc:"Au début des années 2000, après une rupture sentimentale douloureuse, la jeune chanteuse Amy Winehouse compose un album qui la propulse au rang de star planétaire.", director:"Sam Taylor-Johnson", cast:"Marisa Abela, Eddie Marsan, Jack O'Connell", year:"2024", duration:"2h02", country:"Royaume-Uni, États-Unis", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/115454149", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/115454144"},
- 34: { desc:"Pour venger son père, un ancien shérif abattu par un tueur impitoyable, une jeune femme s'inscrit au concours annuel de la meilleure gâchette de l'Ouest.", director:"Sam Raimi", cast:"Sharon Stone, Gene Hackman, Russell Crow", year:"1995", duration:"1h48", country:"États-Unis, Japon", logo:"", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/66154171"}, 
+ 34: { desc:"Pour venger son père, un ancien shérif abattu par un tueur impitoyable, une jeune femme s'inscrit au concours annuel de la meilleure gâchette de l'Ouest.", director:"Sam Raimi", cast:"Sharon Stone, Gene Hackman, Russell Crow", year:"1995", duration:"1h48", country:"États-Unis, Japon", logo:"", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/123802066"}, 
  35: { desc:"Des héros de dessin animé, aidés par un cascadeur et une employée des studios, se mettent à la recherche d'un diamant magique convoité par un génie du mal.", director:"Joe Dante, Eric Goldberg", cast:"Brendan Fraser, Jenna Elfman, Steve Martin", year:"2003", duration:"1h33", country:"États-Unis, Allemagne", logo:"", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/67463809"}, 
  36: { desc:"Au XXIIIe siècle, des Terriens, confrontés à de terribles extraterrestres, tentent de récupérer quatre pierres magiques symbolisant les quatre éléments.", director:"Luc Besson", cast:"Bruce Willis, Gary Oldman, Milla Jovovich", year:"1997", duration:"2h06", country:"France", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/111103144", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/111103140"}, 
   37: { desc:"La destinée tragique de Whitney Houston, chanteuse talentueuse parvenue au sommet à force d'abnégation, qui va payer chèrement la rançon de cette gloire.", director:"Kasi Lemmons", cast:"Naomi Ackie, Stanley Tucci, Tamara Tunie", year:"2022", duration:"2h24", country:"États-Unis", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/21095198/canal-ouah/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/21095198/canal-ouah/STD169/myCANAL_16x9_MEA_1920x1080"},
-  38: { desc:"Un gentil extraterrestre, égaré sur Terre, est recueilli par un garçonnet qui tente tant bien que mal de l'aider à rejoindre sa planète natale.", director:"Steven Spielberg", cast:"Henry Thomas, Drew Barrymore, Peter Coyote", year:"1982", duration:"1h55", country:"États-Unis", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/1064160/canal-ouah/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-i-Nj", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/1064160/canal-ouah/STD169/myCANAL_16x9_MEA_1920x1080-w_r7"},
+  38: { desc:"Un petit extra-terrestre perdu à plus de 3 millions d'années lumière de sa planète. Un petit garçon de 10 ans qui fera tout pour le ramener chez lui.", director:"Steven Spielberg", cast:"Henry Thomas, Dee Wallace, Peter Coyote", year:"1982", duration:"1h49", country:"États-Unis", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/ef9de235ab8336fc29844658feb3b4fb.png", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/463fa3df6a49acd988be9cf73f5afadb.jpg"},
   39: { desc:"Les douze dernières heures du Christ, prêt à laisser s'accomplir son destin, des ultimes prières dans le Jardin des oliviers à l'épreuve de la crucifixion. En araméen et latin.", director:"Mel Gibson", cast:"Jim Caviezel, Maia Morgenstern, Monica Bellucci", year:"2004", duration:"2h07", country:"États-Unis", logo:"", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/90931625"},
   200:{ desc:"Une belle princesse, pourchassée par sa belle-mère jalouse, est contrainte de se réfugier au milieu de la forêt, dans une maison habitée par sept nains.", director:"William Cottrell, David Hand, Wilfred Jackson", cast:"", year:"1937", duration:"1h23", country:"États-Unis", logo:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/3f39931d-ac43-418a-bac0-71063e22421d/trim?format=webp&max=800%7C300", backdrop:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/80528d11-5139-47e5-8ef4-14200abaefef/compose?format=webp&width=2880" },
   201:{ desc:"Pinocchio, une marionnette de bois douée de vie, rêve de devenir un vrai petit garçon. Un criquet l'aide à apprendre les dures leçons de la vie.", director:"Ben Sharpsteen, Hamilton Luske, Norman Ferguson", cast:"", year:"1940", duration:"1h28", country:"États-Unis", logo:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/24a26fb7-0db5-42ec-b240-35ea53ea81a3/trim?format=webp&max=800%7C300", backdrop:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/409cd99d-93a6-4d94-a4c9-3255a4097d37/compose?format=webp&width=2880" },
@@ -3526,14 +3537,14 @@ const filmMeta = {
 },
   878:{ desc:"Séville, une ville grandiose… pour un braquage grandiose. Les yeux rivés sur une œuvre d'art inestimable, Berlin réunit son équipe pour mettre au point un casse explosif.", director:"David Barrocal, Albert Pinto, Geoffrey Cowper", cast:"Michelle Jenner, Begoña Vargas, Joel Sánchez", year:"", duration:"50min/ép", country:"Espagne", logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/brand/23460827/canal-ouah_50259/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-hVk5", backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/brand/23460827/canal-ouah_50259/STD169/myCANAL_16x9_MEA_1920x1080-K8xw" },
   879:{
-  desc:"Un musicien, également doué pour tirer au revolver, revient sur le lieu du meurtre de sa fiancée, bien décidé à se venger de l'auteur du crime.",
+  desc:"Antonio Banderas incarne un musicien devenu pistolero qui revient dans une petite ville mexicaine pour se venger d'un baron de la drogue.",
   director:"Robert Rodriguez",
   cast:"Antonio Banderas, Salma Hayek, Joaquim de Almeida",
   year:"1995",
   duration:"1h44",
-  country:"États-Unis, Mexique",
-  logo:"",
-  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/52701865"
+  country:"États-Unis",
+  logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/2fd0efea71b3c90e642e28f47a65e262.png",
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/736e841278e1e2a5f0697d593387e537.jpg"
 },
   880:{
   desc:"Un banquier condamné pour meurtre fait la dure expérience de la réclusion à perpétuité. De rencontre en amitié, il bâtit son nid dans cet univers.",
@@ -3665,7 +3676,7 @@ const filmMeta = {
   duration:"1h38",
   country:"États-Unis, Japon, France",
   logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/43474650/canal-ouah/TITLELOGO/MARIO2_myCANAL_Logo_Fiche_Programme_1920x1080-xgAE",
-  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/43474650/canal-ouah/STD169/MARIO2_myCANAL_16x9_MEA_1920x1080_jpg80_-Bsu6"
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/124219294"
 },
 895:{
   desc:"Mabel, une adolescente passionnée par les animaux, saute sur l'occasion d'essayer une nouvelle technologie révolutionnaire permettant de communiquer avec eux d'une manière totalement inédite… en se glissant dans la peau d'une adorable femelle castor.",
@@ -5227,11 +5238,15 @@ function showFilmModal(m) {
   document.getElementById('filmModal').classList.add('open');
   document.getElementById('filmModalContent').scrollTop = 0;
   document.body.style.overflow = 'hidden';
+
+  // ── VIDÉO DE FOND : se lance après quelques secondes sur la fiche ──
+  scheduleFilmBgVideo(m);
 }
 
 function closeFilmModal() {
   document.getElementById('filmModal').classList.remove('open');
   document.body.style.overflow = '';
+  clearFilmBgVideo();
 }
 
 function handleFilmModalBg(e) {
@@ -7815,6 +7830,167 @@ function getTrailerYtId(filmId) {
   return trailerMap[filmId] || null;
 }
 
+// ══════════════════════════════════════════
+//  ── VIDÉO DE FOND SUR LA FICHE FILM ──
+//  Après quelques secondes passées sur la fiche (backdrop + infos),
+//  une courte vidéo se lance automatiquement en fond, façon Netflix.
+//  Ajoutez ici l'id du film → url .mp4 pour activer l'effet sur d'autres fiches.
+// ══════════════════════════════════════════
+const filmBgVideoMap = {
+  896: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_155495_BA/01KZBNEJNQHTP293J6FQKK72JN/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Michael
+  2: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_147750_BA/01K8RZKCTMNFC861B09CMYYB6W/w1_v_avcvbr_10_720_1280_0_2400.mp4', // F1 Le Film
+  3: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_138390_BA/01JB1FD91GRW8SATJ5X3RC2J7H/w1_v_avc_10_720_1280_0_3400.mp4', // Le Comte de Monte-Cristo
+  4: 'https://replay-dshclear1.p-cdnvod-edge010501-dual.scy.canalplus-cdn.net/__token__id%3D5ca11ef8c0448dc7408999cf85b3d4e0~hmac%3D031d2fec7a7bf682d2a034ef434f4f5d0f9a60a4758406c7b93904249b8ae8fc/wal/dash/clear/canalplus/canalplus/ANT_1273353_567_CPSV/01KXR95X6WNRBDBYNFYRNH8R90/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Ferrari: La Tournée du Trio
+  5: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_78612_BA/133090/canalplay.com_78612_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Épouse-Moi Mon Pote
+  6: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_6520_BA/01HZ2JF05F0GH82XJ3GF93HGAQ/w1_v_avc_10_720_1280_0_3400.mp4', // La Môme
+  8: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_147400_BA/01KE6XD6JDFWH92NH1KM3ZJE1M/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Mission: Impossible – The Final Reckoning
+  9: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_25753_BA/128503/canalplay.com_25753_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Stars 80
+  11: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_146001_BA/01K8XN6NFCAC5VZCPGVS9HZPKA/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Minecraft Le Film
+  12: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68769_BA/122449/canalplay.com_68769_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Dalida
+  13: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_71350_BA/01JN4ESN3JJ7D8V8WKY6HBJH4Z/w1_v_avc_10_720_1280_0_3400.mp4', // Dirty Dancing
+  14: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3982_BA/145869/canalplay.com_3982_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Jean-Philippe
+  15: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_2767_BA/144035/canalplay.com_2767_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Ray
+  16: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_145533_BA/01JWBMF353FBP5YG44W4FM1WGG/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Bridget Jones: Folle de Lui
+  17: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_19310_BA/145884/canalplay.com_19310_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Les Aventures de Tintin : Le Secret De La Licorne
+  18: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_110316_BA/01JMVQG0434ZX00TC67V5XV86W/w1_v_avc_10_720_1280_0_3400.mp4', // Tom & Jerry
+  19: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_5277_BA/01J3N134EVYAXKPX5CWEMJ0CW1/w1_v_avc_0_540_960_0_1500.mp4', // La Soupe aux Choux
+  20: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_141235_BA/01KWGSZP73C5EBJRNN9PCRH1XD/w1_v_avcvbr_10_720_1280_0_2400.mp4', // L'Amour Ouf
+  21: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_226_BA/01K47WTKMJRX6WV6ZGA83PTNXE/w1_v_avcvbr_0_540_960_0_1500.mp4', // Les Choristes
+  22: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10817_BA/01JQY3VH6MPCZS3KRE31KRJ8RS/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Les Dents de la Mer
+  23: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21436_BA/01JBH7T57FYCA2FC6T02Q4BMZJ/w1_v_avc_0_540_960_0_1500.mp4', // Space Jam
+  24: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_112460_BA/01JP4VQF8RWN47XJNK8C5N0R02/w1_v_avc_10_720_1280_0_3400.mp4', // Space Jam: Nouvelle Ère
+  25: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_140620_BA/01JXCVQG9WXPQS2QF84WNSDG05/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Beetlejuice Beetlejuice
+  26: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16767_BA/2525/canalplay.com_16767_BA_ATM_OTT_SD_4_AACLC_20_VF_video_190_avc.mp4', // Le Dîner de Cons
+  27: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_311_BA/01K3GJT7ZJCTTPE8178Q105BHK/w1_v_avcvbr_0_540_960_0_1500.mp4', // Astérix & Obélix: Mission Cléopâtre
+  28: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_70207_BA/117103/canalplay.com_70207_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Alibi.com
+  30: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_127282_BA/01HHCENPDG1SATJHW70VQWMQ27/w1_v_avc_10_720_1280_0_3400.mp4', // Super Mario Bros Le Film
+  31: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_123501_BA/01HBQSPDJYYQR4GS47S0D4EYQQ/w1_v_avc_10_720_1280_0_3400.mp4', // Ticket to Paradise
+  32: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_124886_BA/212457/canalplay.com_124886_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Le Clan
+  33: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_136760_BA/01J5XA0QB5NNNAYR35XX35F4Y3/w1_v_avc_10_720_1280_0_3400.mp4', // Back to Black
+  34: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3403_BA/145862/canalplay.com_3403_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Mort ou Vif
+  35: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_24735_BA/136160/canalplay.com_24735_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Les Looney Tunes Passent à l'Action
+  36: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16724_BA/01J2X7CXZP5N4M8GB8HC8DWC3N/w1_v_avc_0_540_960_0_1500.mp4', // Le Cinquième Élément
+  37: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_124229_BA/01HB5M9GEAMZXYED80PM9PZRC7/w1_v_avc_10_720_1280_0_3400.mp4', // Whitney Houston
+  38: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_71274_BA/140248/canalplay.com_71274_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // E.T. L'Extra-Terrestre
+  103: 'https://replay-dshclear1.p-cdnvod-edge010501-dual.scy.canalplus-cdn.net/__token__id%3Dcf9386f512fa1b68fbe381f8f502f51f~hmac%3D43ad848dcb8e161edde222336f64cd3fa253e4b256c0efd8ed021ae81c1c45ef/wal/dash/clear/canalplus/canalplus/ANT_1273353_447_CPSV/01K4WK2ARW0R5M55S0XXVW84MM/w1_v_avcvbr_20_1080_1920_0_3500.mp4', // La Flamme
+  104: 'https://replay-dshclear1.p-cdnvod-edge010507-dual.scy.canalplus-cdn.net/__token__id%3Dc02352ec6c88c35da819a86ec5758f77~hmac%3Dd97cd153e1d403413e41b204125af83daa5ea572f5b3a151c0338c009ede576b/wal/dash/clear/canalplus/canalplus/ANT_1273353_448_CPSV/01K8B8EQNPVZ776F0XNW907SXC/w1_v_avcvbr_20_1080_1920_0_3500.mp4', // Le Flambeau: Les Aventuriers de Chupacabra
+  701: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_19667_BA/01HK5P7S9V87X1NGACJWGDTVVV/w1_v_avc_10_720_1280_0_3400.mp4', // Friends
+  706: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_126865_BA/01H5SH2AX57S857YQS3N95VH2P/w1_v_avc_10_720_1280_0_3400.mp4', // Tulsa King
+  707: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_139041_BA/01J9JS6SJ2YHAJ8CG0SCGB2WY5/w1_v_avc_10_720_1280_0_3400.mp4', // Zorro
+  800: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16449_BA/01K80ME0DA7BDRPKGE79N7DB84/w1_v_avcvbr_0_540_960_0_1500.mp4', // Harry Potter à l'École des Sorciers
+  801: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16450_BA/71202/canalplay.com_16450_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et la Chambre des Secrets
+  802: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16451_BA/1218/canalplay.com_16451_BA_ATM_OTT_SD_4_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et le Prisonnier d'Azkaban
+  803: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3093_BA/01KA0RCH4T8MCZGR04NYP1J2D8/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Harry Potter et la Coupe de Feu
+  804: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_7616_BA/115780/canalplay.com_7616_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et l'Ordre du Phénix
+  805: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10953_BA/1210/canalplay.com_10953_BA_ATM_OTT_SD_4_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et le Prince de Sang-Mêlé
+  806: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16239_BA/26277/canalplay.com_16239_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et les Reliques de la Mort — Partie 1
+  807: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17926_BA/65415/canalplay.com_17926_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et les Reliques de la Mort — Partie 2
+  808: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_4500_BA/01HTHE2CBZK4P5Z5ME4JFF1SQV/w1_v_avc_0_540_960_0_1500.mp4', // La Cité de la Peur
+  809: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68649_BA/144079/canalplay.com_68649_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Gremlins
+  810: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10533_BA/134672/canalplay.com_10533_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // SOS Fantômes
+  811: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21071_BA/135382/canalplay.com_21071_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Beetlejuice
+  812: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3011_BA/142677/canalplay.com_3011_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Charlie et la Chocolaterie
+  813: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_18037_BA/01J9VBQAMJXY7YCJBMFHAFWTJY/w1_v_avc_0_540_960_0_1500.mp4', // L'Exorciste
+  814: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_120025_BA/01HX91P0XY0CF00PRQN6NE5DEJ/w1_v_avc_10_720_1280_0_3400.mp4', // Elvis
+  816: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_97473_BA/01KTXZJR2S9NJZ1D1YCK922B88/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Sonic le Film
+  817: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_118440_BA/121692/canalplay.com_118440_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Sonic 2 le Film
+  818: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37959_BA/01HH496RSPNTRB2WEPT390XRE7/w1_v_avc_10_720_1280_0_3400.mp4', // Top Gun
+  819: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_119838_BA/01HQX52EN814GA6FFYK8TR9610/w1_v_avc_10_720_1280_0_3400.mp4', // Top Gun Maverick
+  820: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_12959_BA/144194/canalplay.com_12959_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Grease
+  821: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37960_BA/143257/canalplay.com_37960_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // The Truman Show
+  822: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37710_BA/143621/canalplay.com_37710_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Flashdance
+  823: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_135123_BA/01HZMFY7HF5KXJ87J2NADB5V89/w1_v_avc_10_720_1280_0_3400.mp4', // Bob Marley: One Love
+  825: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37711_BA/01JD77DG87YHHY8FF9RGYJ9XTP/w1_v_avc_10_720_1280_0_3400.mp4', // Forrest Gump
+  826: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57966_BA/147023/canalplay.com_57966_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Rocky
+  827: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57976_BA/147020/canalplay.com_57976_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Rocky
+  828: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57968_BA/144211/canalplay.com_57968_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Rocky
+  829: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57967_BA/143252/canalplay.com_57967_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Rocky
+  830: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57971_BA/153400/canalplay.com_57971_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Rocky
+  831: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57970_BA/151692/canalplay.com_57970_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Rocky
+  837: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_79098_BA/155118/canalplay.com_79098_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Michael Jackson: Moonwalker
+  839: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17332_BA/109684/canalplay.com_17332_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Shining
+  841: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91581_BA/01K7ETAV363HMKQKYHZZJFAXQN/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Terminator
+  847: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17334_BA/42780/canalplay.com_17334_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Full Metal Jacket
+  848: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17669_BA/146634/canalplay.com_17669_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // L'Arme Fatale
+  849: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17668_BA/150431/canalplay.com_17668_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // L'Arme Fatale 2
+  850: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17667_BA/150434/canalplay.com_17667_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // L'Arme Fatale 3
+  851: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17670_BA/81904/canalplay.com_17670_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // L'Arme Fatale 4
+  852: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_142666_BA/01JNGJXF3BSKQ2GQCJVB5W0NQK/w1_v_avc_10_720_1280_0_3400.mp4', // Over the Top : Le Bras de Fer
+  854: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21139_BA/82204/canalplay.com_21139_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Tango & Cash
+  855: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_8507_BA/100653/canalplay.com_8507_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // La Gloire de mon Père
+  856: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_8496_BA/126750/canalplay.com_8496_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Le Château de ma Mère
+  857: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21075_BA/109795/canalplay.com_21075_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Bodyguard
+  858: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_51034_BA/130505/canalplay.com_51034_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Ghost
+  859: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_8486_BA/73866/canalplay.com_8486_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // 1492 : Christophe Colomb
+  860: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_4292_BA/131604/canalplay.com_4292_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Dracula
+  862: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_13858_BA/146613/canalplay.com_13858_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Michael Jackson's This Is It
+  863: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_42639_BA/143589/canalplay.com_42639_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Interstellar
+  864: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_128682_BA/01JYR7RQPP0M4WMZ5NA103S1D8/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Seven
+  865: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_61231_BA/144589/canalplay.com_61231_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Suicide Squad
+  867: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91604_BA/152327/canalplay.com_91604_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // West Side Story
+  868: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_12296_BA/129630/canalplay.com_12296_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Un Monstre A Paris
+  869: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_22062_BA/129362/canalplay.com_22062_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Cloclo
+  870: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_136723_BA/01J445GVFPZ37498GQQ34Z503C/w1_v_avc_10_720_1280_0_3400.mp4', // Un P'tit Truc En Plus
+  873: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_93006_BA/8057/canalplay.com_93006_BA_ATM_OTT_SD_4_AACLC_20_VF_video_1500_avc.mp4', // Rocketman
+  875: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_22425_BA/136015/canalplay.com_22425_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Sur la piste du marsupilami
+  876: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91537_BA/134193/canalplay.com_91537_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Nicky Larson et le parfum de cupidon
+  877: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16456_BA/144460/canalplay.com_16456_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Troie
+  879: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3638_BA/153836/canalplay.com_3638_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Desperado
+  880: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_33728_BA/92888/canalplay.com_33728_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Les Évadés
+  890: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_153480_BA/01KSE2ES97BRZ3P62P6N4KWCSF/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Marsupilami
+  894: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_155493_BA/01KXQQPR2SC4PTE1FD14809ZGT/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Super Mario Galaxy Le Film
+  932: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_118078_BA/117183/canalplay.com_118078_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Permis De Construire
+  933: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_131478_BA/01HPHCF8MQ64NY93DMNT90A2HR/w1_v_avc_10_720_1280_0_3400.mp4', // Inestimable
+  934: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_30912_BA/144199/canalplay.com_30912_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Conjuring : Les Dossiers Warren
+  935: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_61224_BA/131776/canalplay.com_61224_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Conjuring 2 : Le Cas Enfield
+  936: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_111112_BA/01HX8ZV81DN1SHB0JV3EJCNJ3X/w1_v_avc_10_720_1280_0_3400.mp4', // Conjuring : Sous L'Emprise Du Diable
+  937: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_150442_BA/01KE77A999B1H9WCTWVXSW3WRE/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Conjuring : L'Heure Du Jugement
+  938: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_126925_BA/01H66KSSA7C68DSHSHMFF2XP0E/w1_v_avc_10_720_1280_0_3400.mp4', // Les Trois Mousquetaires : D'Artagnan
+  939: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_133768_BA/01KV88AQNGNGBZ0MYRJRGMBS8D/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Les Trois Mousquetaires : Milady
+  941: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_50612_BA/143038/canalplay.com_50612_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Astérix Et Cléopâtre
+  942: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_50606_BA/145047/canalplay.com_50606_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Astérix Le Gaulois
+  943: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_50613_BA/144478/canalplay.com_50613_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Les Douze Travaux D'Astérix
+  944: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_5155_BA/144555/canalplay.com_5155_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Arthur Et Les Minimoys
+  945: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_12297_BA/149018/canalplay.com_12297_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Arthur Et La Vengeance De Maltazard
+  946: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16915_BA/139429/canalplay.com_16915_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Arthur 3 : La Guerre Des Deux Mondes
+};
+const FILM_BG_VIDEO_DELAY = 2500; // délai en ms avant le lancement de la vidéo de fond
+let filmBgVideoTimer = null;
+
+function getFilmBgVideoUrl(filmId) {
+  return filmBgVideoMap[filmId] || null;
+}
+
+// Programme (ou annule) le lancement de la vidéo de fond pour le film actuellement ouvert
+function scheduleFilmBgVideo(m) {
+  clearFilmBgVideo(); // on repart toujours d'un état propre
+  const url = getFilmBgVideoUrl(m.id);
+  if (!url) return;
+
+  filmBgVideoTimer = setTimeout(() => {
+    // Sécurité : la modal doit toujours être ouverte, et toujours sur le même film
+    if (!currentModalMovie || currentModalMovie.id !== m.id) return;
+    if (!document.getElementById('filmModal').classList.contains('open')) return;
+
+    const video = document.getElementById('filmModalBgVideo');
+    video.src = url;
+    video.play().catch(() => {}); // autoplay muted, ignore les rejets navigateur
+    video.classList.add('show');
+  }, FILM_BG_VIDEO_DELAY);
+}
+
+// Stoppe la vidéo de fond et annule le minuteur (à la fermeture de la modal ou au changement de film)
+function clearFilmBgVideo() {
+  if (filmBgVideoTimer) { clearTimeout(filmBgVideoTimer); filmBgVideoTimer = null; }
+  const video = document.getElementById('filmModalBgVideo');
+  if (video) {
+    video.classList.remove('show');
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+  }
+}
+
 function handleTrailerClick(m) {
   const ytId = getTrailerYtId(m.id);
   if (ytId) {
@@ -8276,6 +8452,8 @@ const platformContent = {
         934, // Conjuring : Les Dossiers Warren
         935, // Conjuring 2 : Le Cas Enfield
         936, // Conjuring : Sous L'Emprise Du Diable
+        879, // Desperado
+         38, // E.T. L'Extra-Terrestre
   ],
   // Hulu
   hulu: [866,  // West Side Story 2019
