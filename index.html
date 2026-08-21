@@ -783,6 +783,19 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   transform-origin:center center;
 }
 .film-modal-hero video.backdrop-video.show { opacity:1; }
+/* ── VIDÉO DE FOND YOUTUBE (alternative aux liens .mp4, même effet) ── */
+/* Technique "cover" : l'iframe est surdimensionné et centré pour toujours remplir le cadre 16:9 */
+.film-modal-hero iframe.backdrop-video-yt {
+  position:absolute; top:50%; left:50%;
+  width:100vw; height:56.25vw;          /* 16:9 basé sur la largeur */
+  min-height:100vh; min-width:177.78vh; /* 16:9 basé sur la hauteur, pour toujours couvrir l'écran */
+  transform:translate(-50%,-50%);
+  border:0; pointer-events:none; display:block;
+  filter:brightness(0.40) saturate(1.2);
+  opacity:0;
+  transition:opacity 1s ease;
+}
+.film-modal-hero iframe.backdrop-video-yt.show { opacity:1; }
 /* Dégradé double : bas vers haut + gauche vers droite pour effet cinéma */
 .film-modal-hero::after {
   content:''; position:absolute; inset:0;
@@ -1984,6 +1997,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     <div class="film-modal-hero">
       <img class="backdrop-img" id="filmModalImg" src="" alt="">
       <video class="backdrop-video" id="filmModalBgVideo" muted loop playsinline preload="none"></video>
+      <iframe class="backdrop-video-yt" id="filmModalBgVideoYT" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen title="Vidéo de fond"></iframe>
       <button class="film-modal-close" onclick="closeFilmModal()">✕</button>
       <div class="film-modal-hero-content">
         <!-- Logo officiel : géré par JS (preload + fallback) -->
@@ -7834,9 +7848,11 @@ function getTrailerYtId(filmId) {
 //  ── VIDÉO DE FOND SUR LA FICHE FILM ──
 //  Après quelques secondes passées sur la fiche (backdrop + infos),
 //  une courte vidéo se lance automatiquement en fond, façon Netflix.
-//  Ajoutez ici l'id du film → url .mp4 pour activer l'effet sur d'autres fiches.
+//  Ajoutez ici l'id du film → url .mp4 OU lien YouTube (watch, youtu.be, embed, shorts…)
+//  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+  947: 'https://www.youtube.com/watch?v=3IZtGLLXDMg' // The Mandalorian And Grogu
   896: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_155495_BA/01KZBNEJNQHTP293J6FQKK72JN/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Michael
   2: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_147750_BA/01K8RZKCTMNFC861B09CMYYB6W/w1_v_avcvbr_10_720_1280_0_2400.mp4', // F1 Le Film
   3: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_138390_BA/01JB1FD91GRW8SATJ5X3RC2J7H/w1_v_avc_10_720_1280_0_3400.mp4', // Le Comte de Monte-Cristo
@@ -7961,6 +7977,15 @@ function getFilmBgVideoUrl(filmId) {
   return filmBgVideoMap[filmId] || null;
 }
 
+// Extrait l'ID d'une vidéo YouTube depuis à peu près n'importe quel format de lien
+// (watch?v=, youtu.be/, embed/, shorts/, avec ou sans paramètres additionnels).
+// Renvoie null si l'url n'est pas un lien YouTube (ex: un .mp4 classique).
+function extractYouTubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return match ? match[1] : null;
+}
+
 // Programme (ou annule) le lancement de la vidéo de fond pour le film actuellement ouvert
 function scheduleFilmBgVideo(m) {
   clearFilmBgVideo(); // on repart toujours d'un état propre
@@ -7972,14 +7997,23 @@ function scheduleFilmBgVideo(m) {
     if (!currentModalMovie || currentModalMovie.id !== m.id) return;
     if (!document.getElementById('filmModal').classList.contains('open')) return;
 
-    const video = document.getElementById('filmModalBgVideo');
-    video.src = url;
-    video.play().catch(() => {}); // autoplay muted, ignore les rejets navigateur
-    video.classList.add('show');
+    const ytId = extractYouTubeId(url);
+    if (ytId) {
+      // Lien YouTube : on utilise un iframe embed (autoplay, muet, en boucle, sans contrôles)
+      const videoYT = document.getElementById('filmModalBgVideoYT');
+      videoYT.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1&playsinline=1`;
+      videoYT.classList.add('show');
+    } else {
+      // Lien vidéo direct (.mp4 et autres formats lisibles nativement)
+      const video = document.getElementById('filmModalBgVideo');
+      video.src = url;
+      video.play().catch(() => {}); // autoplay muted, ignore les rejets navigateur
+      video.classList.add('show');
+    }
   }, FILM_BG_VIDEO_DELAY);
 }
 
-// Stoppe la vidéo de fond et annule le minuteur (à la fermeture de la modal ou au changement de film)
+// Stoppe la vidéo de fond (mp4 ou YouTube) et annule le minuteur (à la fermeture de la modal ou au changement de film)
 function clearFilmBgVideo() {
   if (filmBgVideoTimer) { clearTimeout(filmBgVideoTimer); filmBgVideoTimer = null; }
   const video = document.getElementById('filmModalBgVideo');
@@ -7988,6 +8022,11 @@ function clearFilmBgVideo() {
     video.pause();
     video.removeAttribute('src');
     video.load();
+  }
+  const videoYT = document.getElementById('filmModalBgVideoYT');
+  if (videoYT) {
+    videoYT.classList.remove('show');
+    videoYT.src = ''; // vide le src pour couper la lecture de l'iframe
   }
 }
 
