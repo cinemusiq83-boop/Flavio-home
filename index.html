@@ -8094,9 +8094,6 @@ const filmBgVideoMap = {
 };
 const FILM_BG_VIDEO_DELAY = 2500; // délai en ms avant le lancement de la vidéo de fond
 let filmBgVideoTimer = null;
-let filmBgYTPlayer = null;     // instance YT.Player active pour la vidéo de fond en cours
-let filmBgYTIsPlaying = false; // true dès que le player YouTube confirme l'état "en lecture"
-let filmBgYTRetryTimer = null;
 
 function getFilmBgVideoUrl(filmId) {
   return filmBgVideoMap[filmId] || null;
@@ -8111,63 +8108,23 @@ function extractYouTubeId(url) {
   return match ? match[1] : null;
 }
 
-// Charge une seule fois le script officiel de l'API YouTube IFrame (nécessaire pour
-// pouvoir piloter la lecture par JS et vérifier si elle a réellement démarré).
-let __ytApiPromise = null;
-function loadYouTubeIframeAPI() {
-  if (window.YT && window.YT.Player) return Promise.resolve();
-  if (__ytApiPromise) return __ytApiPromise;
-  __ytApiPromise = new Promise((resolve) => {
-    const prevCallback = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => { if (prevCallback) prevCallback(); resolve(); };
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(tag);
-  });
-  return __ytApiPromise;
-}
-
 // Programme (ou annule) le lancement de la vidéo de fond pour le film actuellement ouvert
 function scheduleFilmBgVideo(m) {
   clearFilmBgVideo(); // on repart toujours d'un état propre
   const url = getFilmBgVideoUrl(m.id);
   if (!url) return;
 
-  const ytId = extractYouTubeId(url);
-
-  if (ytId) {
-    // IMPORTANT (mobile/iOS) : on charge et on démarre la vidéo YouTube tout de suite,
-    // pendant le même geste utilisateur que l'ouverture de la fiche (le tap sur l'affiche).
-    // Safari iOS bloque l'autoplay des iframes tierces (YouTube) dès qu'il est déclenché
-    // après un setTimeout, car ce n'est plus considéré comme une action de l'utilisateur.
-    // On ne retarde donc que l'AFFICHAGE (fondu) : la vidéo tourne déjà, muette, derrière
-    // le backdrop pendant le délai, puis on la révèle simplement au bout de 2,5s.
-    const videoYT = document.getElementById('filmModalBgVideoYT');
-    const ytOrigin = encodeURIComponent(window.location.origin);
-    videoYT.src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1&playsinline=1&disablekb=1&fs=0&origin=${ytOrigin}`;
-
-    // On instancie l'API pour piloter et vérifier la lecture (indispensable sur iOS/WKWebView
-    // où l'autoplay via simple paramètre d'URL est très souvent silencieusement ignoré).
-    loadYouTubeIframeAPI().then(() => {
-      if (!currentModalMovie || currentModalMovie.id !== m.id) return; // la fiche a changé entre-temps
-      try {
-        filmBgYTPlayer = new YT.Player('filmModalBgVideoYT', {
-          events: {
-            onReady: (e) => { try { e.target.mute(); e.target.playVideo(); } catch (_) {} },
-            onStateChange: (e) => { if (e.data === YT.PlayerState.PLAYING) filmBgYTIsPlaying = true; }
-          }
-        });
-      } catch (_) {}
-    });
-  }
-
   filmBgVideoTimer = setTimeout(() => {
     // Sécurité : la modal doit toujours être ouverte, et toujours sur le même film
     if (!currentModalMovie || currentModalMovie.id !== m.id) return;
     if (!document.getElementById('filmModal').classList.contains('open')) return;
 
+    const ytId = extractYouTubeId(url);
     if (ytId) {
-      revealFilmBgYTIfPlaying(m, 0);
+      // Lien YouTube : on utilise un iframe embed (autoplay, muet, en boucle, sans contrôles)
+      const videoYT = document.getElementById('filmModalBgVideoYT');
+      videoYT.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1&playsinline=1`;
+      videoYT.classList.add('show');
     } else {
       // Lien vidéo direct (.mp4 et autres formats lisibles nativement)
       const video = document.getElementById('filmModalBgVideo');
@@ -8178,40 +8135,9 @@ function scheduleFilmBgVideo(m) {
   }, FILM_BG_VIDEO_DELAY);
 }
 
-// Ne révèle la vidéo YouTube que si elle est réellement en lecture. Si l'autoplay a été
-// bloqué (courant sur iOS/WKWebView), on retente quelques fois puis on abandonne proprement :
-// on garde alors simplement le backdrop statique plutôt que d'afficher le lecteur bloqué
-// (gros bouton play rouge de YouTube).
-function revealFilmBgYTIfPlaying(m, attempt) {
-  if (!currentModalMovie || currentModalMovie.id !== m.id) return;
-  const videoYT = document.getElementById('filmModalBgVideoYT');
-  if (!videoYT) return;
-
-  if (filmBgYTIsPlaying) {
-    videoYT.classList.add('show');
-    return;
-  }
-
-  // Nouvelle tentative de lecture forcée
-  if (filmBgYTPlayer && typeof filmBgYTPlayer.playVideo === 'function') {
-    try { filmBgYTPlayer.mute(); filmBgYTPlayer.playVideo(); } catch (_) {}
-  }
-
-  if (attempt < 6) { // ~1,8s de tentatives supplémentaires avant d'abandonner
-    filmBgYTRetryTimer = setTimeout(() => revealFilmBgYTIfPlaying(m, attempt + 1), 300);
-  }
-  // Au-delà : on n'affiche rien, le backdrop statique reste visible (pas de bouton play cassé)
-}
-
 // Stoppe la vidéo de fond (mp4 ou YouTube) et annule le minuteur (à la fermeture de la modal ou au changement de film)
 function clearFilmBgVideo() {
   if (filmBgVideoTimer) { clearTimeout(filmBgVideoTimer); filmBgVideoTimer = null; }
-  if (filmBgYTRetryTimer) { clearTimeout(filmBgYTRetryTimer); filmBgYTRetryTimer = null; }
-  filmBgYTIsPlaying = false;
-  if (filmBgYTPlayer) {
-    try { filmBgYTPlayer.destroy(); } catch (_) {}
-    filmBgYTPlayer = null;
-  }
   const video = document.getElementById('filmModalBgVideo');
   if (video) {
     video.classList.remove('show');
