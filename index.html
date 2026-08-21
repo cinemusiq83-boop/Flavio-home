@@ -8114,20 +8114,28 @@ function scheduleFilmBgVideo(m) {
   const url = getFilmBgVideoUrl(m.id);
   if (!url) return;
 
+  const ytId = extractYouTubeId(url);
+
+  if (ytId) {
+    // IMPORTANT (mobile/iOS) : on charge et on démarre la vidéo YouTube tout de suite,
+    // pendant le même geste utilisateur que l'ouverture de la fiche (le tap sur l'affiche).
+    // Safari iOS bloque l'autoplay des iframes tierces (YouTube) dès qu'il est déclenché
+    // après un setTimeout, car ce n'est plus considéré comme une action de l'utilisateur.
+    // On ne retarde donc que l'AFFICHAGE (fondu) : la vidéo tourne déjà, muette, derrière
+    // le backdrop pendant le délai, puis on la révèle simplement au bout de 2,5s.
+    const videoYT = document.getElementById('filmModalBgVideoYT');
+    const ytOrigin = encodeURIComponent(window.location.origin);
+    videoYT.src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1&playsinline=1&disablekb=1&fs=0&origin=${ytOrigin}`;
+  }
+
   filmBgVideoTimer = setTimeout(() => {
     // Sécurité : la modal doit toujours être ouverte, et toujours sur le même film
     if (!currentModalMovie || currentModalMovie.id !== m.id) return;
     if (!document.getElementById('filmModal').classList.contains('open')) return;
 
-    const ytId = extractYouTubeId(url);
     if (ytId) {
-      // Lien YouTube : on utilise un iframe embed (autoplay, muet, en boucle, sans contrôles)
-      // → domaine "youtube-nocookie.com" : évite l'écran de consentement cookies qui,
-      //   sur youtube.com, bloque l'autoplay et n'affiche que le logo/bouton "regarder sur YouTube".
-      const videoYT = document.getElementById('filmModalBgVideoYT');
-      const ytOrigin = encodeURIComponent(window.location.origin);
-      videoYT.src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1&playsinline=1&disablekb=1&fs=0&origin=${ytOrigin}`;
-      videoYT.classList.add('show');
+      // La vidéo YouTube tourne déjà en fond (chargée plus haut) : on ne fait que la révéler
+      document.getElementById('filmModalBgVideoYT').classList.add('show');
     } else {
       // Lien vidéo direct (.mp4 et autres formats lisibles nativement)
       const video = document.getElementById('filmModalBgVideo');
