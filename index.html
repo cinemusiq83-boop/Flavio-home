@@ -8421,10 +8421,20 @@ function finishIntroVideo(){
   setTimeout(()=>{ introScreen.remove(); }, 900);
 }
 
-// L'intro vidéo ne concerne que la version app mobile (pas la version ordinateur).
 function isMobileApp(){
   return window.matchMedia('(max-width:768px)').matches;
 }
+
+// Les 6 vidéos d'intro possibles (une est choisie au hasard à chaque lancement,
+// sur ordinateur comme sur l'app mobile).
+const INTRO_VIDEOS = [
+  "https://files.catbox.moe/ntl4wk.mp4",
+  "https://files.catbox.moe/wkgiac.mp4",
+  "https://files.catbox.moe/b43lrb.mp4",
+  "https://files.catbox.moe/q0e5o6.mp4",
+  "https://files.catbox.moe/pnz6s1.mp4",
+  "https://files.catbox.moe/dufzf9.mp4"
+];
 
 // Choisit le backdrop adapté à l'appareil (mobile vs ordinateur).
 // Priorité mobile : meta.backdropMobile > meta.backdrop > m.backdropMobile > m.backdrop > m.thumb
@@ -8442,11 +8452,11 @@ function initIntroVideo(){
   const introVideo=document.getElementById('introVideo');
   if(!introScreen || !introVideo){ return; }
 
-  // Sur ordinateur : pas d'intro, on retire l'écran immédiatement.
-  if(!isMobileApp()){
-    introScreen.remove();
-    return;
-  }
+  // Une des 6 vidéos d'intro est choisie au hasard, aussi bien sur ordinateur
+  // (affichage 16/9) que sur l'app mobile (affichage 9/16). object-fit:cover
+  // s'occupe d'adapter la vidéo au format de l'écran dans les deux cas.
+  const randomIntro = INTRO_VIDEOS[Math.floor(Math.random() * INTRO_VIDEOS.length)];
+  introVideo.src = randomIntro;
 
   // Tentative de lecture avec le son ; si le navigateur bloque l'autoplay sonore, on repasse en muet.
   const playPromise=introVideo.play();
