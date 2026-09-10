@@ -4133,6 +4133,9 @@ const allContent = [
   {id:931,title:"Le Diable S'Habille En Prada 2",genre:"Comedie",type:"film",thumb:"https://files.catbox.moe/n5n0wa.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",logo:"https://lumiere-a.akamaihd.net/v1/images/avatar_3_logo_en_us_1_f8d4e7b3.png?region=0,0,1280,640",src:"https://vidzy.org/embed-0fgno6f0z2bf.html",embed:true,hero:true},
   {id:896,title:"Michael",genre:"Biopic",type:"film",thumb:"https://images.justwatch.com/poster/343089542/s718/michael-2025-0.jpg",backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/STD169/MICHAEL_myCANAL_16x9_MEA_1920x1080_jpg80_-vk1p",logo:"https://lumiere-a.akamaihd.net/v1/images/avatar_3_logo_en_us_1_f8d4e7b3.png?region=0,0,1280,640",src:"https://hlsplayer.net/embed?type=m3u8&src=https://files.catbox.moe/i2pbyn.m3u",embed:true,hero:true},
   {id:960,title:"Rio Bravo",genre:"Western",type:"film",thumb:"https://image.tmdb.org/t/p/original/nzkY8mq34p5VFijUdDv0ysXBdeR.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",logo:"",src:"https://vidzy.org/embed-qq45yeoatdfu.html",embed:true,hero:true},
+  {id:964,title:"Mad Max",genre:"Action",type:"film",thumb:"https://image.tmdb.org/t/p/original/nv5DtpzgjrILNusr3JiTE3O4tlL.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",logo:"",src:"https://vidzy.org/embed-flok0hwdu4dr.html",embed:true,hero:true},
+  {id:965,title:"Mad Max 2 : Le Defi",genre:"Action",type:"film",thumb:"https://image.tmdb.org/t/p/original/ruMcepF8S4kLTwDhBlniV37KGI2.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",logo:"",src:"https://vidzy.org/embed-fivyshsfij6r.html",embed:true,hero:true},
+  {id:966,title:"Mad Max 3 : Au Dela Du Dome Du Tonerre",genre:"Action",type:"film",thumb:"https://image.tmdb.org/t/p/original/fHo2AJ9brsXKWbYJ2LA087UDBwZ.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",logo:"",src:"https://hlsplayer.net/embed?type=m3u8&src=https://files.catbox.moe/gkpmva.m3u",embed:true,hero:true},
   {id:961,title:"La Mort Aux Trousses",genre:"Thriller",type:"film",thumb:"https://image.tmdb.org/t/p/original/fxwVitOtjxw2M2lz9SRmAgJNQMz.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",logo:"",src:"https://vidzy.org/embed-l1o99q64h7x2.html",embed:true,hero:true},
   {id:962,title:"Jurassic Park",genre:"Fantastique",type:"film",thumb:"https://image.tmdb.org/t/p/original/2E2dKGPTWoyiaSzgNaer9zpP49n.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",logo:"",src:"https://hlsplayer.net/embed?type=m3u8&src=https://files.catbox.moe/6qdand.m3u",embed:true,hero:true},
   {id:963,title:"Eyes Wide Shut",genre:"Thriller",type:"film",thumb:"https://image.tmdb.org/t/p/original/zrkNeLqUBm6bE2cqY5SBiM6LIf8.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",logo:"",src:"https://hlsplayer.net/embed?type=m3u8&src=https://files.catbox.moe/54jexv.m3u",embed:true,hero:true},
@@ -8034,6 +8037,9 @@ const trailerMap = {
   960: 'SD8jZspQjgc', // Rio Bravo
   961: 'BC9uXuXf3o8', // La Mort Aux Trousses
   962: '7cCbj-9Ww1o', // Jurassic Park
+  964: 'W-nRV83ixeg', // Mad Max
+  965: 'm5hyLg7yZtI', // Mad Max 2 : Le Defi
+  966: '4588wWWf5WU', // Mad Max 3 : Au Dela Du Dome Du Tonerre
     };
 
 function getTrailerYtId(filmId) {
@@ -8048,6 +8054,8 @@ function getTrailerYtId(filmId) {
 //  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+965: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_18962_BA/148239/canalplay.com_18962_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Mad Max 2 : Le Defi
+966: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_18963_BA/153846/canalplay.com_18963_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Mad Max 3 : Au Dela Du Dome Du Tonerre
 960: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_24740_BA/83301/canalplay.com_24740_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Rio Bravo
 961: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21052_BA/145923/canalplay.com_21052_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // La Mort Aux Trousses
 962: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10818_BA/01JQY2M15C0BV9PKFETZD6G85G/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Jurassic Park
@@ -8832,6 +8840,9 @@ const platformContent = {
         954, // The Pitt
         959, // 2001 L'Odyssee De L'Espace
         961, // La Mort Aux Trousses
+        964, // Mad Max
+        965, // Mad Max 2 : Le Defi
+        966, // Mad Max 3 : Au Dela Du Dome Du Tonerre
   ],
   // Hulu
   hulu: [866,  // West Side Story 2019
