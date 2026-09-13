@@ -4247,6 +4247,16 @@ const filmMeta = {
   logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/f291e305bf6d5b2b37dc22fc847f51f5.png",
   backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/6977ccbabcd0c52fa479ba2380efd3a3.jpg"
 },
+984:{
+  desc:"Une jeune chanteuse québécoise devient une diva internationale de la chanson grâce à son talent, à son mari producteur et au soutien de sa grande famille.",
+  director:"Valérie Lemercier",
+  cast:"Valérie Lemercier, Sylvain Marcel, Danielle Fichaud",
+  year:"2020",
+  duration:"2h06",
+  country:"États-Unis, France, Canada, Belgique, Espagne",
+  logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/105794622",
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/109292547"
+},
 };
 
 // ══════════════════════════════════════════
@@ -4282,6 +4292,7 @@ const allContent = [
   {id:947,title:"The Mandalorian And Grogu",genre:"Star Wars",type:"film",thumb:"https://files.catbox.moe/oloxah.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://hlsplayer.net/embed?type=m3u8&src=https://files.catbox.moe/d8kfjf.m3u",embed:true,hero:true},
   {id:931,title:"Le Diable S'Habille En Prada 2",genre:"Comedie",type:"film",thumb:"https://files.catbox.moe/n5n0wa.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-0fgno6f0z2bf.html",embed:true,hero:true},
   {id:896,title:"Michael",genre:"Biopic",type:"film",thumb:"https://images.justwatch.com/poster/343089542/s718/michael-2025-0.jpg",backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/STD169/MICHAEL_myCANAL_16x9_MEA_1920x1080_jpg80_-vk1p",src:"https://hlsplayer.net/embed?type=m3u8&src=https://files.catbox.moe/i2pbyn.m3u",embed:true,hero:true},
+  {id:984,title:"Aline",genre:"Biopic",type:"film",thumb:"https://image.tmdb.org/t/p/original/2v21n2RwbcMagYjcWDYT6rrFdMJ.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://hlsplayer.net/embed?type=m3u8&src=https://files.catbox.moe/bg6b4y.m3u",embed:true,hero:true},
   {id:980,title:"Le Parrain",genre:"Thriller",type:"film",thumb:"https://image.tmdb.org/t/p/original/k3uIbYtiuK8pwbCcbma29nTqmgG.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://hlsplayer.net/embed?type=m3u8&src=https://files.catbox.moe/677zge.m3u",embed:true,hero:true},
   {id:981,title:"La Fievre Du Samedi Soir",genre:"Musique",type:"film",thumb:"https://image.tmdb.org/t/p/original/psg46TubysFxNxxy20VBK1hc4nk.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://hlsplayer.net/embed?type=m3u8&src=https://files.catbox.moe/i70o6p.m3u",embed:true,hero:true},
   {id:982,title:"Footloose",genre:"Musique",type:"film",thumb:"https://image.tmdb.org/t/p/original/9JEDjBCXCx3eKTSkXwispf0UN3O.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-x96jo7sdql0z.html",embed:true,hero:true},
@@ -8213,6 +8224,7 @@ const trailerMap = {
   978: '01g70mO-VrI', // L'Age De Glace 4
   979: '9v44tabqvoo', // L'Age De Glace 5
   983: 'rcOKL69bKpQ', // Premier Contact
+  984: 'ol0fH2WWSmU', // Aline
     };
 
 function getTrailerYtId(filmId) {
@@ -8227,6 +8239,7 @@ function getTrailerYtId(filmId) {
 //  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+984: 'https://youtu.be/m1rbvHk1GGo', // Aline
 980: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37712_BA/108196/canalplay.com_37712_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Le Parrain
 981: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37950_BA/148470/canalplay.com_37950_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // La Fievre Du Samedi Soir
 982: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68919_BA/2563/canalplay.com_68919_BA_ATM_OTT_SD_4_AACLC_20_VF_video_1500_avc.mp4', // Footloose
