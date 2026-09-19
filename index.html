@@ -1243,6 +1243,8 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 
 .fmp-ui{ position:absolute; inset:0; z-index:5; pointer-events:none; transition:opacity .3s ease; background:linear-gradient(to bottom,rgba(0,0,0,.6),transparent 22%,transparent 62%,rgba(0,0,0,.75)); }
 .fmp-ui *{ pointer-events:auto; }
+.fmp-ui .fmp-top,.fmp-ui .fmp-bottom,.fmp-ui .fmp-brand,.fmp-ui .fmp-seekrow,.fmp-ui .fmp-actions,.fmp-ui .fmp-tr{ pointer-events:none; }
+.fmp-ui button,.fmp-ui .fmp-seek{ pointer-events:auto; }
 .fmp-ui.hide{ opacity:0; }
 .fmp-ui.hide *{ pointer-events:none; }
 
@@ -1292,12 +1294,6 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 @keyframes fmpSpin{ to{ transform:rotate(360deg); } }
 .fmp-toast{ position:absolute; left:50%; bottom:calc(150px + env(safe-area-inset-bottom,0px)); transform:translate(-50%,10px); z-index:40; background:rgba(20,20,31,.96); border:1px solid var(--glass-border); padding:10px 20px; border-radius:3px; font-size:.85rem; opacity:0; pointer-events:none; transition:opacity .25s,transform .25s; max-width:90vw; text-align:center; }
 .fmp-toast.show{ opacity:1; transform:translate(-50%,0); }
-.fmp-err{ position:absolute; inset:0; z-index:15; display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; text-align:center; padding:24px; background:rgba(0,0,0,.85); }
-.fmp-err.show{ display:flex; }
-.fmp-err p{ max-width:480px; font-size:.95rem; line-height:1.5; }
-.fmp-err-btns{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-.fmp-btn{ padding:10px 20px; border:1px solid var(--glass-border); border-radius:3px; background:rgba(201,168,76,.08); color:var(--gold); font-weight:600; font-size:.82rem; letter-spacing:.06em; transition:background .2s,border-color .2s; }
-.fmp-btn:hover{ background:rgba(201,168,76,.18); border-color:var(--gold); }
 .fmp-fx{ position:absolute; top:0; bottom:0; width:32%; z-index:2; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.1rem; opacity:0; pointer-events:none; background:radial-gradient(ellipse at center,rgba(255,255,255,.16),transparent 70%); }
 .fmp-fx.l{ left:0; } .fmp-fx.r{ right:0; }
 .fmp-fx.show{ animation:fmpFx .55s ease; }
@@ -2328,15 +2324,6 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
           <span>Suivant</span>
         </button>
       </div>
-    </div>
-  </div>
-
-  <div class="fmp-err" id="fmpErr">
-    <p id="fmpErrMsg"></p>
-    <div class="fmp-err-btns">
-      <button class="fmp-btn" id="fmpRetry">Réessayer</button>
-      <button class="fmp-btn" id="fmpAlt">Lecteur alternatif</button>
-      <button class="fmp-btn" id="fmpErrClose">Fermer</button>
     </div>
   </div>
 
@@ -9994,7 +9981,7 @@ function parseList(text){
 }
 async function load(url){
   const tk = ++token;
-  teardown(); errHide(); buffering(true);
+  teardown(); buffering(true);
   entries = []; entryIdx = 0; netRetry = 0; mediaRetry = 0;
   const text = await fetchText(url);
   if(tk !== token || !isOpen) return;
@@ -10006,7 +9993,7 @@ async function load(url){
   playStream(url, false);
 }
 function playEntry(i){
-  entryIdx = i; netRetry = 0; mediaRetry = 0; errHide(); buffering(true); resumeAt = 0;
+  entryIdx = i; netRetry = 0; mediaRetry = 0; buffering(true); resumeAt = 0;
   const e = entries[i]; updateNav(); setMediaSession();
   if(/\.(mp4|webm|mkv|mov|m4v|ogv)(\?|#|$)/i.test(e.url)) playDirect(e.url, false);
   else playStream(e.url, false);
@@ -10077,25 +10064,8 @@ V.addEventListener('error', () => {
   const c = V.error && V.error.code;
   fail(c === 4 ? 'Format non pris en charge par le navigateur (fichier .mkv ou codec non compatible).' : null);
 });
-function fail(msg){
-  buffering(false);
-  if(!msg){
-    msg = 'Ce film ne peut pas être lu pour le moment : le flux est hors ligne ou bloque la lecture depuis le navigateur.';
-    if(streamUrl && location.protocol === 'https:' && /^http:/i.test(streamUrl) && !PROXY) msg = 'Ce lien est en http:// alors que la page est en https:// : le navigateur le bloque.';
-  }
-  $('fmpErrMsg').textContent = msg;
-  $('fmpErr').classList.add('show'); showUI(true);
-}
-function errHide(){ $('fmpErr').classList.remove('show'); }
-$('fmpRetry').onclick = () => { if(V.currentTime > 5) resumeAt = V.currentTime; load(baseUrl); };
-$('fmpErrClose').onclick = () => closeAll();
-$('fmpAlt').onclick = () => {
-  // Bascule sur l'ancien lecteur intégré (hlsplayer.net) si celui-ci convient mieux pour ce lien.
-  const emb = /hlsplayer\.net/i.test(origSrc) ? origSrc : 'https://hlsplayer.net/embed?type=m3u8&src=' + baseUrl;
-  hide();
-  const frame = document.getElementById('playerFrame');
-  if(frame) frame.innerHTML = '<iframe src="' + emb + '" allowfullscreen allow="autoplay; fullscreen"></iframe>';
-};
+// Aucun message affiché en cas d'échec : on arrête simplement le chargement.
+function fail(){ buffering(false); showUI(true); }
 
 /* ═════════ Ouverture / fermeture ═════════ */
 window.fmpOpen = function(url, src){
@@ -10124,7 +10094,7 @@ function hide(){
   if(!isOpen) return;
   savePos(); token++; teardown(); entries = [];
   isOpen = false; closeSheet();
-  P.classList.remove('open','playing','buffering','fmp-nocursor'); errHide();
+  P.classList.remove('open','playing','buffering','fmp-nocursor');
   if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
   try{ screen.orientation.unlock(); }catch(e){}
   clearTimeout(hideT);
@@ -10138,7 +10108,7 @@ V.addEventListener('play',  () => { P.classList.add('playing'); showUI(); });
 V.addEventListener('pause', () => { P.classList.remove('playing'); showUI(true); });
 V.addEventListener('waiting', () => buffering(true));
 V.addEventListener('stalled', () => buffering(true));
-V.addEventListener('playing', () => { buffering(false); errHide(); });
+V.addEventListener('playing', () => buffering(false));
 V.addEventListener('canplay', () => buffering(false));
 V.addEventListener('loadedmetadata', () => {
   if(resumeAt > 10 && isFinite(V.duration) && resumeAt < V.duration - 30){
@@ -10237,16 +10207,21 @@ $('fmpMute').onclick = () => { V.muted = !V.muted; };
 $('fmpClose').onclick = closeAll;
 
 /* ═════════ Affichage / masquage des commandes ═════════ */
+let lastPT = '';
+P.addEventListener('pointerdown', e => { lastPT = e.pointerType; }, true);
+const isTouch = () => lastPT ? lastPT !== 'mouse' : matchMedia('(pointer:coarse)').matches;
 function showUI(keep){
   UI.classList.remove('hide'); P.classList.remove('fmp-nocursor');
   clearTimeout(hideT);
   if(keep === true) return;
+  const touch = isTouch();
   hideT = setTimeout(() => {
-    if(V.paused || dragging || sheetOpen || $('fmpErr').classList.contains('show')) return;
-    UI.classList.add('hide'); P.classList.add('fmp-nocursor');
-  }, 3500);
+    if((V.paused && !touch) || dragging || sheetOpen) return;
+    UI.classList.add('hide'); if(!touch) P.classList.add('fmp-nocursor');
+  }, touch ? 5000 : 3500);
 }
-P.addEventListener('mousemove', () => showUI());
+// Souris uniquement : sur mobile, le toucher gère l'affichage (évite les faux mouvements de souris émulés).
+P.addEventListener('pointermove', e => { if(e.pointerType === 'mouse') showUI(); });
 
 /* Toucher = afficher/masquer, double toucher gauche/droite = ±10 s, souris = lecture/pause */
 const g = $('fmpGesture'); let lastTap = 0, lastSide = '', tapT;
