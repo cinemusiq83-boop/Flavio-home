@@ -817,6 +817,77 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 }
 .film-modal-close:hover { background:rgba(201,168,76,0.35); border-color:var(--gold); transform:scale(1.08); }
 
+/* Bouton son de la vidéo de fond (visible seulement si le film a une piste audio associée) */
+.film-modal-sound {
+  position:absolute; top:22px; right:134px; z-index:10;
+  width:42px; height:42px; border-radius:50%;
+  background:rgba(5,5,8,0.85); border:1px solid rgba(255,255,255,0.15);
+  color:white; font-size:1.05rem; cursor:pointer;
+  display:none; align-items:center; justify-content:center;
+  transition:all .25s; backdrop-filter:blur(12px);
+}
+.film-modal-sound.show { display:flex; }
+.film-modal-sound:hover { background:rgba(201,168,76,0.35); border-color:var(--gold); transform:scale(1.08); }
+/* Le navigateur a bloqué le son automatique : le bouton pulse pour inviter à cliquer */
+.film-modal-sound.attention { border-color:var(--gold); animation:filmSoundPulse 1.6s ease-in-out infinite; }
+@keyframes filmSoundPulse { 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.55)} 50%{box-shadow:0 0 0 10px rgba(201,168,76,0)} }
+
+/* Bouton plein écran de la vidéo de fond (visible dès que la vidéo de fond est lancée) */
+.film-modal-fs {
+  position:absolute; top:22px; right:80px; z-index:10;
+  width:42px; height:42px; border-radius:50%;
+  background:rgba(5,5,8,0.85); border:1px solid rgba(255,255,255,0.15);
+  color:white; cursor:pointer;
+  display:none; align-items:center; justify-content:center;
+  transition:all .25s; backdrop-filter:blur(12px);
+}
+.film-modal-fs.show { display:flex; }
+.film-modal-fs:hover { background:rgba(201,168,76,0.35); border-color:var(--gold); transform:scale(1.08); }
+.film-modal-fs .fs-ico-exit { display:none; }
+
+/* ── Mode plein écran : on ne garde que la vidéo, en pleine luminosité ── */
+.film-modal-hero.is-fs { background:#000; }
+.film-modal-hero.is-fs::after,
+.film-modal-hero.is-fs .film-modal-hero-content,
+.film-modal-hero.is-fs .film-modal-close { display:none; }
+.film-modal-hero.is-fs { display:flex; align-items:center; justify-content:center; }
+/* Format 16/9 respecté : l'image entière est affichée (bandes noires si l'écran n'est pas en 16/9), rien n'est rogné */
+.film-modal-hero.is-fs video.backdrop-video { filter:none; transform:none; object-fit:contain; background:#000; }
+.film-modal-hero.is-fs iframe.backdrop-video-yt {
+  filter:none;
+  width:min(100vw, 177.78vh); height:min(56.25vw, 100vh); /* plus grand rectangle 16/9 qui tient dans l'écran */
+  min-width:0; min-height:0;
+}
+.film-modal-hero.is-fs .film-modal-fs { right:26px; }
+.film-modal-hero.is-fs .film-modal-sound { right:80px; }
+.film-modal-hero.is-fs .film-modal-fs .fs-ico-enter { display:none; }
+.film-modal-hero.is-fs .film-modal-fs .fs-ico-exit { display:block; }
+/* Les boutons s'effacent après quelques secondes d'inactivité (comme un vrai lecteur) */
+.film-modal-hero.is-fs .film-modal-fs,
+.film-modal-hero.is-fs .film-modal-sound { transition:opacity .4s ease, background .25s, border-color .25s, transform .25s; }
+.film-modal-hero.is-fs.fs-idle { cursor:none; }
+
+/* ── Barre de progression (plein écran uniquement) : clic ou glisser pour avancer / reculer ── */
+.film-fs-progress {
+  display:none; position:absolute; left:0; right:0; bottom:0; z-index:10;
+  align-items:center; gap:14px;
+  padding:52px clamp(14px,3vw,28px) 22px;
+  background:linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  transition:opacity .4s ease;
+}
+.film-modal-hero.is-fs .film-fs-progress { display:flex; }
+.film-modal-hero.is-fs.fs-idle .film-fs-progress { opacity:0; pointer-events:none; }
+.fsp-time { min-width:46px; text-align:center; font-size:.8rem; color:#fff; font-variant-numeric:tabular-nums; text-shadow:0 1px 4px rgba(0,0,0,.8); }
+.fsp-track { flex:1; height:28px; display:flex; align-items:center; cursor:pointer; touch-action:none; }
+.fsp-rail { position:relative; width:100%; height:4px; border-radius:4px; background:rgba(255,255,255,0.28); transition:height .15s; }
+.fsp-track:hover .fsp-rail, .fsp-track.dragging .fsp-rail { height:7px; }
+.fsp-fill { position:absolute; left:0; top:0; bottom:0; width:0; border-radius:4px; background:var(--gold); transition:width .25s linear; }
+.fsp-thumb { position:absolute; top:50%; left:0; width:15px; height:15px; margin:-7.5px 0 0 -7.5px; border-radius:50%; background:var(--gold); box-shadow:0 0 8px rgba(0,0,0,.6); transform:scale(0); transition:transform .15s, left .25s linear; }
+.fsp-track:hover .fsp-thumb, .fsp-track.dragging .fsp-thumb { transform:scale(1); }
+.fsp-track.dragging .fsp-fill, .fsp-track.dragging .fsp-thumb { transition:none; }
+.film-modal-hero.is-fs.fs-idle .film-modal-fs,
+.film-modal-hero.is-fs.fs-idle .film-modal-sound { opacity:0; pointer-events:none; }
+
 /* Contenu superposé en bas du hero : logo/titre, badges, description, actions */
 .film-modal-hero-content {
   position:absolute; left:0; right:0; bottom:0; z-index:2;
@@ -1390,6 +1461,8 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   .film-modal-logo-img { max-width:260px; max-height:100px; }
   .film-modal-title { font-size:1.9rem; }
   .film-modal-close { top:14px; right:14px; }
+  .film-modal-fs { top:14px; right:66px; }
+  .film-modal-sound { top:14px; right:118px; }
   /* Sur mobile, la ligne d'infos / description / actions du hero sont remplacées
      par le bloc app ci-dessous (quickmeta, actions pleine largeur, icônes, description, méta compacte) */
   .film-modal-hero-content .film-modal-quickline,
@@ -2000,6 +2073,19 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       <img class="backdrop-img" id="filmModalImg" src="" alt="">
       <video class="backdrop-video" id="filmModalBgVideo" muted loop playsinline preload="none"></video>
       <iframe class="backdrop-video-yt" id="filmModalBgVideoYT" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen title="Vidéo de fond"></iframe>
+      <audio id="filmModalBgAudio" preload="none" playsinline style="display:none"></audio>
+      <button class="film-modal-sound" id="filmModalSoundBtn" onclick="toggleFilmBgSound()" title="Activer le son" aria-label="Activer ou couper le son">🔇</button>
+      <button class="film-modal-fs" id="filmModalFsBtn" onclick="toggleFilmBgFullscreen()" title="Plein écran" aria-label="Plein écran">
+        <svg class="fs-ico-enter" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        <svg class="fs-ico-exit" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h3a2 2 0 0 0 2-2V3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M21 16h-3a2 2 0 0 0-2 2v3"/></svg>
+      </button>
+      <div class="film-fs-progress" id="filmFsProgress">
+        <span class="fsp-time" id="filmFsCur">0:00</span>
+        <div class="fsp-track" id="filmFsTrack" role="slider" aria-label="Progression de la vidéo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="fsp-rail"><div class="fsp-fill" id="filmFsFill"></div><div class="fsp-thumb" id="filmFsThumb"></div></div>
+        </div>
+        <span class="fsp-time" id="filmFsDur">0:00</span>
+      </div>
       <button class="film-modal-close" onclick="closeFilmModal()">✕</button>
       <div class="film-modal-hero-content">
         <!-- Logo officiel : géré par JS (preload + fallback) -->
@@ -8503,6 +8589,351 @@ const filmBgVideoMap = {
   945: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_12297_BA/149018/canalplay.com_12297_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Arthur Et La Vengeance De Maltazard
   946: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16915_BA/139429/canalplay.com_16915_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Arthur 3 : La Guerre Des Deux Mondes
 };
+
+// ══════════════════════════════════════════
+//  ── SON DE LA VIDÉO DE FOND ──
+//  Les vidéos de fond Canal+ sont « vidéo seule » (pas de piste audio).
+//  Pour donner du son à une fiche, ajoutez ici :  id du film → url de la piste audio (.mp4 audio-only).
+//  L'audio est joué dans une balise <audio> cachée et resynchronisé en continu sur la vidéo
+//  (démarrage, pause, mise en mémoire tampon, boucle, dérive).
+// ══════════════════════════════════════════
+const filmBgAudioMap = {
+980: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37712_BA/108196/canalplay.com_37712_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Le Parrain
+981: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37950_BA/148470/canalplay.com_37950_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // La Fievre Du Samedi Soir
+982: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68919_BA/2563/canalplay.com_68919_BA_ATM_OTT_SD_4_AACLC_20_VF_audio_64_aaclc_fre.ts', // Footloose
+983: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_67862_BA/01JPQ3XH661Q5K1W48DSTZM4NQ/w1_a_aac_0_fra_0_0_128.mp4', // Premier Contact
+896: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_155495_BA/01KZBNEJNQHTP293J6FQKK72JN/w1_a_aac_0_fra_0_1_128.mp4', // Michael
+};
+const FILM_BG_AUDIO_MAX_DRIFT = 0.25; // écart max toléré (en secondes) entre image et son
+let filmBgSoundPref = true;           // préférence utilisateur (son activé par défaut)
+try { filmBgSoundPref = localStorage.getItem('luminor_bg_sound') !== 'off'; } catch (e) {}
+let filmBgAudioAbort = null;          // AbortController : retire tous les écouteurs d'un coup
+let filmBgAudioFade = null;
+
+function setFilmSoundBtn(state) { // 'on' | 'off' | 'blocked'
+  const btn = document.getElementById('filmModalSoundBtn');
+  if (!btn) return;
+  btn.textContent = state === 'on' ? '🔊' : '🔇';
+  btn.title = state === 'on' ? 'Couper le son' : 'Activer le son';
+  btn.classList.toggle('attention', state === 'blocked');
+}
+
+function fadeInFilmBgAudio(audio) {
+  clearInterval(filmBgAudioFade);
+  audio.volume = 0;
+  filmBgAudioFade = setInterval(() => {
+    audio.volume = Math.min(1, audio.volume + 0.05);
+    if (audio.volume >= 1) clearInterval(filmBgAudioFade);
+  }, 60);
+}
+
+function startFilmBgAudio(video, url) {
+  const audio = document.getElementById('filmModalBgAudio');
+  const btn = document.getElementById('filmModalSoundBtn');
+  if (!audio || !btn) return;
+  stopFilmBgAudio();
+
+  const ac = new AbortController();
+  filmBgAudioAbort = ac;
+  const opt = { signal: ac.signal };
+
+  audio.muted = !filmBgSoundPref;
+  audio.preload = 'auto';
+  audio.src = url;
+  audio.load();
+  btn.classList.add('show');
+  setFilmSoundBtn(filmBgSoundPref ? 'on' : 'off');
+
+  let faded = false;
+
+  // Recale l'audio sur la vidéo si l'écart dépasse le seuil (ou si force = true)
+  const align = (force) => {
+    if (force || Math.abs(audio.currentTime - video.currentTime) > FILM_BG_AUDIO_MAX_DRIFT) {
+      try { audio.currentTime = video.currentTime; } catch (e) {}
+    }
+  };
+
+  const play = () => {
+    if (video.paused || video.readyState < 2 || audio.readyState < 2) return;
+    if (document.hidden) return;
+    align(false);
+    if (!faded && !audio.muted) { fadeInFilmBgAudio(audio); faded = true; }
+    const p = audio.play();
+    if (p && p.catch) p.catch(() => {
+      // Autoplay avec son refusé par le navigateur : on joue en muet (toujours autorisé)
+      // et on invite l'utilisateur à cliquer sur le bouton pour activer le son.
+      if (!audio.muted) {
+        audio.muted = true;
+        setFilmSoundBtn('blocked');
+        audio.play().catch(() => {});
+      }
+    });
+  };
+
+  video.addEventListener('playing',   play, opt);
+  video.addEventListener('pause',     () => audio.pause(), opt);
+  video.addEventListener('waiting',   () => audio.pause(), opt);
+  video.addEventListener('seeked',    () => { align(true); play(); }, opt);
+  video.addEventListener('timeupdate', () => {
+    align(false);                                     // corrige la dérive + le retour au début (boucle)
+    if (audio.paused && !video.paused) play();        // ex. piste terminée avant la boucle vidéo
+  }, opt);
+  audio.addEventListener('canplay', play, opt);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) audio.pause(); else { align(true); play(); }
+  }, opt);
+}
+
+function stopFilmBgAudio() {
+  if (filmBgAudioAbort) { filmBgAudioAbort.abort(); filmBgAudioAbort = null; }
+  clearInterval(filmBgAudioFade);
+  const audio = document.getElementById('filmModalBgAudio');
+  if (audio) {
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();
+    audio.volume = 1;
+  }
+  const btn = document.getElementById('filmModalSoundBtn');
+  if (btn) btn.classList.remove('show', 'attention');
+}
+
+// Clic sur le bouton 🔊 / 🔇 (c'est aussi le geste utilisateur qui débloque l'audio si le navigateur l'avait bloqué)
+function toggleFilmBgSound() {
+  const audio = document.getElementById('filmModalBgAudio');
+  const video = document.getElementById('filmModalBgVideo');
+  if (!audio || !audio.getAttribute('src')) return;
+  if (audio.muted || audio.paused) {
+    filmBgSoundPref = true;
+    audio.muted = false;
+    audio.volume = 1;
+    try { audio.currentTime = video.currentTime; } catch (e) {}
+    audio.play().catch(() => {});
+    setFilmSoundBtn('on');
+  } else {
+    filmBgSoundPref = false;
+    audio.muted = true;
+    setFilmSoundBtn('off');
+  }
+  try { localStorage.setItem('luminor_bg_sound', filmBgSoundPref ? 'on' : 'off'); } catch (e) {}
+}
+
+
+// ══════════════════════════════════════════
+//  ── PLEIN ÉCRAN DE LA VIDÉO DE FOND ──
+//  On passe toute la zone « hero » en plein écran (et non la balise <video> seule) :
+//  ça marche pareil pour un .mp4 et pour une vidéo YouTube, et le son <audio> continue sans interruption.
+//  En plein écran, le titre/dégradé sont masqués et la vidéo est en pleine luminosité.
+//  Échap (ou le même bouton) pour quitter. Sur iPhone (pas d'API plein écran sur les div),
+//  on bascule sur le plein écran natif de la balise <video> quand c'est un .mp4.
+// ══════════════════════════════════════════
+let filmFsIdleTimer = null;
+
+function getFsElement() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+
+function filmFsSupported() {
+  const hero  = document.querySelector('.film-modal-hero');
+  const video = document.getElementById('filmModalBgVideo');
+  if (hero && (hero.requestFullscreen || hero.webkitRequestFullscreen)) return true;
+  return !!(video && video.webkitEnterFullscreen && video.classList.contains('show'));
+}
+
+function showFilmFsBtn() {
+  const btn = document.getElementById('filmModalFsBtn');
+  if (btn && filmFsSupported()) btn.classList.add('show');
+}
+
+function hideFilmFsBtn() {
+  const btn  = document.getElementById('filmModalFsBtn');
+  const hero = document.querySelector('.film-modal-hero');
+  if (btn) btn.classList.remove('show');
+  if (hero) hero.classList.remove('is-fs', 'fs-idle');
+  clearTimeout(filmFsIdleTimer);
+  stopFilmFsTicker();
+  filmYt.cur = 0; filmYt.dur = 0;
+}
+
+function exitFilmBgFullscreen() {
+  const hero = document.querySelector('.film-modal-hero');
+  if (getFsElement() === hero) {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen;
+    if (exit) { const p = exit.call(document); if (p && p.catch) p.catch(() => {}); }
+  }
+}
+
+function toggleFilmBgFullscreen() {
+  const hero  = document.querySelector('.film-modal-hero');
+  const video = document.getElementById('filmModalBgVideo');
+  if (getFsElement()) { exitFilmBgFullscreen(); return; }
+  const req = hero.requestFullscreen || hero.webkitRequestFullscreen;
+  if (req) {
+    const p = req.call(hero);
+    if (p && p.catch) p.catch(() => {});
+  } else if (video && video.webkitEnterFullscreen) {
+    video.webkitEnterFullscreen(); // iPhone : plein écran natif de la vidéo
+  }
+}
+
+function armFilmFsIdle() {
+  const hero = document.querySelector('.film-modal-hero');
+  if (!hero) return;
+  hero.classList.remove('fs-idle');
+  clearTimeout(filmFsIdleTimer);
+  filmFsIdleTimer = setTimeout(() => hero.classList.add('fs-idle'), 3000);
+}
+
+function onFilmFsChange() {
+  const hero = document.querySelector('.film-modal-hero');
+  const btn  = document.getElementById('filmModalFsBtn');
+  if (!hero) return;
+  const on = getFsElement() === hero;
+  hero.classList.toggle('is-fs', on);
+  hero.classList.remove('fs-idle');
+  clearTimeout(filmFsIdleTimer);
+  if (on) { armFilmFsIdle(); startFilmFsTicker(); } else { stopFilmFsTicker(); }
+  // Sur mobile : bascule en paysage pour exploiter tout l'écran en 16/9 (ignoré si non supporté)
+  try {
+    if (on) { const l = screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape'); if (l && l.catch) l.catch(() => {}); }
+    else if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+  } catch (e) {}
+  if (btn) { btn.title = on ? 'Quitter le plein écran' : 'Plein écran'; btn.setAttribute('aria-label', btn.title); }
+}
+document.addEventListener('fullscreenchange', onFilmFsChange);
+document.addEventListener('webkitfullscreenchange', onFilmFsChange);
+['mousemove', 'touchstart', 'keydown'].forEach(evt =>
+  document.addEventListener(evt, () => {
+    const hero = document.querySelector('.film-modal-hero');
+    if (hero && hero.classList.contains('is-fs')) armFilmFsIdle();
+  }, { passive: true })
+);
+
+
+// ══════════════════════════════════════════
+//  ── BARRE DE PROGRESSION EN PLEIN ÉCRAN ──
+//  Clic ou glisser sur la barre pour avancer / reculer ; flèches ← → = ∓10 s.
+//  • .mp4     : on lit/écrit video.currentTime (l'audio se recale tout seul via l'événement « seeked »).
+//  • YouTube  : on dialogue avec le lecteur par postMessage (enablejsapi=1 est déjà dans l'URL).
+// ══════════════════════════════════════════
+const filmYt = { cur: 0, dur: 0 };   // temps / durée renvoyés par le lecteur YouTube
+let filmFsDragging = false, filmFsDragRatio = 0, filmFsTicker = null;
+
+function fmtFilmTime(sec) {
+  if (!isFinite(sec) || sec < 0) sec = 0;
+  sec = Math.floor(sec);
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), r = sec % 60;
+  const ss = String(r).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
+}
+
+function filmBgIsYT() {
+  const y = document.getElementById('filmModalBgVideoYT');
+  return !!(y && y.classList.contains('show'));
+}
+
+function filmYtPost(payload) {
+  const y = document.getElementById('filmModalBgVideoYT');
+  try { y.contentWindow.postMessage(JSON.stringify(payload), 'https://www.youtube.com'); } catch (e) {}
+}
+function filmYtListen() { filmYtPost({ event: 'listening', id: 1, channel: 'widget' }); }
+
+function filmBgTimes() {
+  if (filmBgIsYT()) return { cur: filmYt.cur, dur: filmYt.dur };
+  const v = document.getElementById('filmModalBgVideo');
+  return { cur: v.currentTime || 0, dur: isFinite(v.duration) ? v.duration : 0 };
+}
+
+function filmBgSeekTo(t) {
+  const { dur } = filmBgTimes();
+  t = Math.max(0, dur ? Math.min(t, dur - 0.05) : t);
+  if (filmBgIsYT()) {
+    filmYt.cur = t;
+    filmYtPost({ event: 'command', func: 'seekTo', args: [t, true] });
+  } else {
+    document.getElementById('filmModalBgVideo').currentTime = t;
+  }
+}
+
+function renderFilmFsProgress() {
+  const fill = document.getElementById('filmFsFill');
+  if (!fill) return;
+  const thumb = document.getElementById('filmFsThumb');
+  const { cur, dur } = filmBgTimes();
+  const ratio = filmFsDragging ? filmFsDragRatio : (dur ? Math.min(1, cur / dur) : 0);
+  fill.style.width = (ratio * 100) + '%';
+  thumb.style.left = (ratio * 100) + '%';
+  document.getElementById('filmFsCur').textContent = fmtFilmTime(filmFsDragging ? ratio * dur : cur);
+  document.getElementById('filmFsDur').textContent = fmtFilmTime(dur);
+  document.getElementById('filmFsTrack').setAttribute('aria-valuenow', Math.round(ratio * 100));
+}
+
+function startFilmFsTicker() {
+  stopFilmFsTicker();
+  let n = 0;
+  filmFsTicker = setInterval(() => {
+    // YouTube : tant qu'on n'a pas reçu la durée, on redemande l'abonnement aux infos du lecteur
+    if (filmBgIsYT() && !filmYt.dur && n++ % 8 === 0) filmYtListen();
+    renderFilmFsProgress();
+  }, 250);
+  if (filmBgIsYT()) filmYtListen();
+  renderFilmFsProgress();
+}
+function stopFilmFsTicker() { clearInterval(filmFsTicker); filmFsTicker = null; filmFsDragging = false; }
+
+// Réponses du lecteur YouTube (temps courant + durée)
+window.addEventListener('message', (e) => {
+  if (typeof e.origin !== 'string' || e.origin.indexOf('youtube') === -1) return;
+  let d = e.data;
+  if (typeof d === 'string') { try { d = JSON.parse(d); } catch (err) { return; } }
+  if (!d || !d.info) return;
+  if (typeof d.info.currentTime === 'number') filmYt.cur = d.info.currentTime;
+  if (typeof d.info.duration === 'number' && d.info.duration > 0) filmYt.dur = d.info.duration;
+});
+// Dès que l'iframe YouTube est chargé, on s'abonne aux infos du lecteur
+document.addEventListener('load', (e) => {
+  if (e.target && e.target.id === 'filmModalBgVideoYT' && e.target.getAttribute('src')) filmYtListen();
+}, true);
+
+// Souris / doigt sur la barre
+function filmFsRatioFromEvent(e) {
+  const r = document.getElementById('filmFsTrack').getBoundingClientRect();
+  return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+}
+document.addEventListener('pointerdown', (e) => {
+  const tr = e.target.closest && e.target.closest('#filmFsTrack');
+  if (!tr) return;
+  filmFsDragging = true;
+  tr.classList.add('dragging');
+  try { tr.setPointerCapture(e.pointerId); } catch (err) {}
+  filmFsDragRatio = filmFsRatioFromEvent(e);
+  renderFilmFsProgress();
+  e.preventDefault();
+});
+document.addEventListener('pointermove', (e) => {
+  if (!filmFsDragging) return;
+  filmFsDragRatio = filmFsRatioFromEvent(e);
+  renderFilmFsProgress();
+});
+function endFilmFsDrag(commit) {
+  if (!filmFsDragging) return;
+  filmFsDragging = false;
+  document.getElementById('filmFsTrack').classList.remove('dragging');
+  const { dur } = filmBgTimes();
+  if (commit && dur) filmBgSeekTo(filmFsDragRatio * dur);
+  renderFilmFsProgress();
+}
+document.addEventListener('pointerup',     () => endFilmFsDrag(true));
+document.addEventListener('pointercancel', () => endFilmFsDrag(false));
+
+// Clavier : ← / → = reculer / avancer de 10 s
+document.addEventListener('keydown', (e) => {
+  const hero = document.querySelector('.film-modal-hero');
+  if (!hero || !hero.classList.contains('is-fs')) return;
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  e.preventDefault();
+  filmBgSeekTo(filmBgTimes().cur + (e.key === 'ArrowRight' ? 10 : -10));
+  renderFilmFsProgress();
+});
+
 const FILM_BG_VIDEO_DELAY = 2500; // délai en ms avant le lancement de la vidéo de fond
 let filmBgVideoTimer = null;
 
@@ -8536,12 +8967,17 @@ function scheduleFilmBgVideo(m) {
       const videoYT = document.getElementById('filmModalBgVideoYT');
       videoYT.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1&playsinline=1`;
       videoYT.classList.add('show');
+      showFilmFsBtn();
     } else {
       // Lien vidéo direct (.mp4 et autres formats lisibles nativement)
       const video = document.getElementById('filmModalBgVideo');
       video.src = url;
+      // Si le film a une piste audio dédiée, on la branche AVANT de lancer la vidéo pour qu'elle suive tous les événements
+      const audioUrl = filmBgAudioMap[m.id];
+      if (audioUrl) startFilmBgAudio(video, audioUrl);
       video.play().catch(() => {}); // autoplay muted, ignore les rejets navigateur
       video.classList.add('show');
+      showFilmFsBtn();
     }
   }, FILM_BG_VIDEO_DELAY);
 }
@@ -8549,6 +8985,9 @@ function scheduleFilmBgVideo(m) {
 // Stoppe la vidéo de fond (mp4 ou YouTube) et annule le minuteur (à la fermeture de la modal ou au changement de film)
 function clearFilmBgVideo() {
   if (filmBgVideoTimer) { clearTimeout(filmBgVideoTimer); filmBgVideoTimer = null; }
+  stopFilmBgAudio(); // coupe aussi le son associé
+  exitFilmBgFullscreen(); // quitte le plein écran si actif
+  hideFilmFsBtn();
   const video = document.getElementById('filmModalBgVideo');
   if (video) {
     video.classList.remove('show');
