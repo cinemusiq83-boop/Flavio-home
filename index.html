@@ -350,6 +350,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .chp-media { position:relative; width:100%; aspect-ratio:16/9; background:#000; overflow:hidden; }
 .chp-media-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .chp-media-video { position:absolute; inset:0; width:100%; height:100%; border:none; }
+.chp-media-mp4 { object-fit:cover; pointer-events:none; background:#000; } /* vidéo .mp4 de la fiche film */
 .chp-media::after { content:''; position:absolute; inset:0; background:linear-gradient(to top,rgba(13,13,20,0.85) 0%,transparent 40%); pointer-events:none; }
 .chp-sound-btn {
   position:absolute; bottom:10px; right:10px; z-index:2;
@@ -2306,6 +2307,8 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <div class="chp-media" id="chpMedia">
     <img class="chp-media-img" id="chpMediaImg" src="" alt="">
     <iframe class="chp-media-video" id="chpMediaVideo" style="display:none" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen title="Bande-annonce"></iframe>
+    <video class="chp-media-video chp-media-mp4" id="chpMediaMp4" style="display:none" muted loop playsinline preload="none"></video>
+    <audio id="chpMediaAudio" preload="none" style="display:none"></audio>
     <button class="chp-sound-btn" id="chpSoundBtn" title="Activer le son" style="display:none">🔇</button>
   </div>
   <div class="chp-body">
@@ -6294,6 +6297,10 @@ function handleCardPlay(m) {
 //  APERÇU AU SURVOL (façon Netflix) — ordinateur uniquement
 //  Bande-annonce si disponible, sinon simple fond ; logo, actions et infos en dessous
 // ══════════════════════════════════════════
+// Aperçu au survol : on joue la MÊME vidéo que celle de la fiche film (filmBgVideoMap, .mp4 ou YouTube),
+// avec son associé (filmBgAudioMap) activable par le bouton 🔊.
+const CHP_USE_MODAL_VIDEO     = true;  // true = vidéo de la fiche film au lieu de la bande-annonce
+const CHP_FALLBACK_TO_TRAILER = true;  // film sans vidéo de fiche : true = bande-annonce (comme avant) · false = simple image
 let chpHoverTimer = null;
 let chpHideTimer = null;
 let chpActiveCard = null;
@@ -6390,10 +6397,26 @@ function showCardHoverPreview(card){
   const soundBtn = document.getElementById('chpSoundBtn');
   const trailerYtId = getTrailerYtId(m.id);
 
-  // Fond : bande-annonce si disponible, sinon simple image de fond
+  // Fond : vidéo de présentation de la fiche film (comme dans la modale) ; sinon bande-annonce ; sinon image
   img.src = getBackdropFor(m, meta);
-  if (trailerYtId) {
-    video.src = `https://www.youtube.com/embed/${trailerYtId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerYtId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1`;
+  chpStopBgMedia();
+  const mp4 = document.getElementById('chpMediaMp4');
+  const bgUrl  = CHP_USE_MODAL_VIDEO ? getFilmBgVideoUrl(m.id) : null;
+  const bgYtId = bgUrl ? extractYouTubeId(bgUrl) : null;
+  const ytId   = bgUrl ? bgYtId : (CHP_FALLBACK_TO_TRAILER ? trailerYtId : null);
+  chpAudioUrl = null;
+
+  if (bgUrl && !bgYtId) {
+    // Lien .mp4 → balise <video> (muette) ; si le film a une piste audio, le bouton 🔊 la joue en synchro
+    mp4.src = bgUrl;
+    mp4.style.display = 'block';
+    mp4.play().catch(() => {});
+    chpAudioUrl = (typeof filmBgAudioMap !== 'undefined' && filmBgAudioMap[m.id]) || null;
+    soundBtn.style.display = chpAudioUrl ? 'flex' : 'none';
+    soundBtn.textContent = '🔇';
+  } else if (ytId) {
+    // Lien YouTube (vidéo de fiche ou bande-annonce) → iframe
+    video.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1`;
     video.style.display = 'block';
     soundBtn.style.display = 'flex';
     soundBtn.textContent = '🔇';
@@ -6455,13 +6478,73 @@ function hideCardHoverPreview(immediate){
   const clearVideo = () => {
     const video = document.getElementById('chpMediaVideo');
     if (video) { video.src = ''; video.style.display = 'none'; }
+    chpStopBgMedia();
   };
-  if (immediate) clearVideo(); else setTimeout(clearVideo, 200);
+  // (si un nouvel aperçu s'est ouvert entre-temps, on ne le coupe pas)
+  if (immediate) clearVideo(); else setTimeout(() => { if (!chpActiveCard) clearVideo(); }, 200);
+}
+
+let chpAudioUrl = null;     // piste audio associée à la vidéo .mp4 affichée (ou null)
+let chpAudioAbort = null;
+
+// Coupe le .mp4 et l'audio de l'aperçu
+function chpStopBgMedia() {
+  chpStopAudio();
+  const mp4 = document.getElementById('chpMediaMp4');
+  if (mp4) { mp4.pause(); mp4.removeAttribute('src'); mp4.load(); mp4.style.display = 'none'; }
+}
+
+function chpStopAudio() {
+  if (chpAudioAbort) { chpAudioAbort.abort(); chpAudioAbort = null; }
+  const a = document.getElementById('chpMediaAudio');
+  if (a) { a.pause(); a.removeAttribute('src'); a.load(); a.playbackRate = 1; }
+}
+
+// Joue la piste audio synchronisée sur la vidéo (mêmes règles anti-coupure que la fiche film :
+// petit écart = ±5 % de vitesse, saut brutal seulement au-delà de 1 s). Déclenché par un clic → autoplay autorisé.
+function chpStartAudio(mp4, url) {
+  const audio = document.getElementById('chpMediaAudio');
+  if (!audio) return;
+  chpStopAudio();
+  const ac = new AbortController();
+  chpAudioAbort = ac;
+  const opt = { signal: ac.signal };
+  audio.preload = 'auto'; audio.muted = false; audio.volume = 1; audio.playbackRate = 1;
+  audio.src = url; audio.load();
+  let last = 0;
+  const drift = () => audio.currentTime - mp4.currentTime;
+  const hard  = () => { try { audio.currentTime = mp4.currentTime; } catch (e) {} last = performance.now(); };
+  const play  = () => {
+    if (mp4.paused || !audio.paused || audio.readyState < 2) return;
+    if (Math.abs(drift()) > 1) hard();
+    const p = audio.play(); if (p && p.catch) p.catch(() => {});
+  };
+  const align = () => {
+    if (mp4.seeking || audio.seeking || audio.readyState < 3) return;
+    const d = drift(), abs = Math.abs(d);
+    if (abs > 1) { if (performance.now() - last > 3000) hard(); }
+    else if (abs > 0.15) audio.playbackRate = d > 0 ? 0.95 : 1.05;
+    else if (audio.playbackRate !== 1) audio.playbackRate = 1;
+  };
+  mp4.addEventListener('playing', play, opt);
+  mp4.addEventListener('pause', () => audio.pause(), opt);
+  mp4.addEventListener('seeked', () => { if (Math.abs(drift()) > 1) hard(); play(); }, opt);
+  mp4.addEventListener('timeupdate', () => { align(); if (audio.paused && !mp4.paused) play(); }, opt);
+  audio.addEventListener('canplay', play, opt);
+  play();
 }
 
 function chpToggleSound(){
   const btn = document.getElementById('chpSoundBtn');
   const video = document.getElementById('chpMediaVideo');
+  const mp4 = document.getElementById('chpMediaMp4');
+  if (mp4 && mp4.style.display !== 'none') {           // vidéo .mp4 : on joue / coupe la piste audio associée
+    if (!chpAudioUrl) return;
+    chpMuted = !chpMuted;
+    if (chpMuted) chpStopAudio(); else chpStartAudio(mp4, chpAudioUrl);
+    btn.textContent = chpMuted ? '🔇' : '🔊';
+    return;
+  }
   if (!video || video.style.display === 'none') return;
   chpMuted = !chpMuted;
   const func = chpMuted ? 'mute' : 'unMute';
@@ -8598,13 +8681,13 @@ const filmBgVideoMap = {
 //  (démarrage, pause, mise en mémoire tampon, boucle, dérive).
 // ══════════════════════════════════════════
 const filmBgAudioMap = {
-980: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37712_BA/108196/canalplay.com_37712_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Le Parrain
-981: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37950_BA/148470/canalplay.com_37950_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // La Fievre Du Samedi Soir
-982: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68919_BA/2563/canalplay.com_68919_BA_ATM_OTT_SD_4_AACLC_20_VF_audio_64_aaclc_fre.ts', // Footloose
-983: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_67862_BA/01JPQ3XH661Q5K1W48DSTZM4NQ/w1_a_aac_0_fra_0_0_128.mp4', // Premier Contact
-896: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_155495_BA/01KZBNEJNQHTP293J6FQKK72JN/w1_a_aac_0_fra_0_1_128.mp4', // Michael
+  980: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37712_BA/108196/canalplay.com_37712_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Le Parrain
+  981: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37950_BA/148470/canalplay.com_37950_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // La Fievre Du Samedi Soir
+  982: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68919_BA/2563/canalplay.com_68919_BA_ATM_OTT_SD_4_AACLC_20_VF_audio_64_aaclc_fre.ts', // Footloose
+  983: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_67862_BA/01JPQ3XH661Q5K1W48DSTZM4NQ/w1_a_aac_0_fra_0_0_128.mp4', // Premier Contact
+  896: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_155495_BA/01KZBNEJNQHTP293J6FQKK72JN/w1_a_aac_0_fra_0_1_128.mp4', // Michael
 };
-const FILM_BG_AUDIO_MAX_DRIFT = 0.25; // écart max toléré (en secondes) entre image et son
+const FILM_BG_AUDIO_MAX_DRIFT = 0.15; // écart toléré (en secondes) avant correction douce (±5 % de vitesse) ; au-delà de 1 s : saut
 let filmBgSoundPref = true;           // préférence utilisateur (son activé par défaut)
 try { filmBgSoundPref = localStorage.getItem('luminor_bg_sound') !== 'off'; } catch (e) {}
 let filmBgAudioAbort = null;          // AbortController : retire tous les écouteurs d'un coup
@@ -8639,24 +8722,44 @@ function startFilmBgAudio(video, url) {
 
   audio.muted = !filmBgSoundPref;
   audio.preload = 'auto';
+  audio.playbackRate = 1;
   audio.src = url;
   audio.load();
   btn.classList.add('show');
   setFilmSoundBtn(filmBgSoundPref ? 'on' : 'off');
 
   let faded = false;
+  let lastHardSeek = 0;
+  let stallTimer = null;
+  ac.signal.addEventListener('abort', () => clearTimeout(stallTimer));
 
-  // Recale l'audio sur la vidéo si l'écart dépasse le seuil (ou si force = true)
-  const align = (force) => {
-    if (force || Math.abs(audio.currentTime - video.currentTime) > FILM_BG_AUDIO_MAX_DRIFT) {
-      try { audio.currentTime = video.currentTime; } catch (e) {}
+  const drift = () => audio.currentTime - video.currentTime; // > 0 : le son est en avance
+
+  // Saut brutal de l'audio : à réserver aux gros écarts (boucle, avance rapide), car sur Safari
+  // chaque changement de currentTime provoque une micro-coupure du son.
+  const hardSeek = () => {
+    try { audio.currentTime = video.currentTime; } catch (e) {}
+    lastHardSeek = performance.now();
+  };
+
+  // Correction DOUCE : pour un petit écart, on accélère / ralentit très légèrement le son (±5 %)
+  // au lieu de le « sauter » → aucune coupure audible. Saut brutal seulement au-delà de 1 s.
+  const align = () => {
+    if (video.seeking || audio.seeking || audio.readyState < 3) return;
+    const d = drift(), abs = Math.abs(d);
+    if (abs > 1) {
+      if (performance.now() - lastHardSeek > 3000) hardSeek();
+    } else if (abs > FILM_BG_AUDIO_MAX_DRIFT) {
+      audio.playbackRate = d > 0 ? 0.95 : 1.05;
+    } else if (audio.playbackRate !== 1) {
+      audio.playbackRate = 1;
     }
   };
 
   const play = () => {
-    if (video.paused || video.readyState < 2 || audio.readyState < 2) return;
-    if (document.hidden) return;
-    align(false);
+    if (video.paused || document.hidden) return;
+    if (!audio.paused || audio.readyState < 2) return;   // déjà en lecture : on ne touche à rien
+    if (Math.abs(drift()) > 1) hardSeek();
     if (!faded && !audio.muted) { fadeInFilmBgAudio(audio); faded = true; }
     const p = audio.play();
     if (p && p.catch) p.catch(() => {
@@ -8670,17 +8773,25 @@ function startFilmBgAudio(video, url) {
     });
   };
 
-  video.addEventListener('playing',   play, opt);
-  video.addEventListener('pause',     () => audio.pause(), opt);
-  video.addEventListener('waiting',   () => audio.pause(), opt);
-  video.addEventListener('seeked',    () => { align(true); play(); }, opt);
+  video.addEventListener('playing', () => { clearTimeout(stallTimer); play(); }, opt);
+  video.addEventListener('pause',   () => { clearTimeout(stallTimer); audio.pause(); }, opt);
+  // Petite coupure de chargement de la vidéo : on ne coupe le son que si ça dure vraiment (> 0,8 s)
+  video.addEventListener('waiting', () => {
+    clearTimeout(stallTimer);
+    stallTimer = setTimeout(() => audio.pause(), 800);
+  }, opt);
+  video.addEventListener('seeked', () => {               // boucle de la vidéo, ou saut de la barre de progression
+    if (Math.abs(drift()) > 1) hardSeek();
+    play();
+  }, opt);
   video.addEventListener('timeupdate', () => {
-    align(false);                                     // corrige la dérive + le retour au début (boucle)
-    if (audio.paused && !video.paused) play();        // ex. piste terminée avant la boucle vidéo
+    align();
+    if (audio.paused && !video.paused && !stallTimer) play();   // ex. piste terminée avant la boucle vidéo
   }, opt);
   audio.addEventListener('canplay', play, opt);
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) audio.pause(); else { align(true); play(); }
+    if (document.hidden) audio.pause();
+    else { if (Math.abs(drift()) > 1) hardSeek(); play(); }
   }, opt);
 }
 
@@ -8693,6 +8804,7 @@ function stopFilmBgAudio() {
     audio.removeAttribute('src');
     audio.load();
     audio.volume = 1;
+    audio.playbackRate = 1;
   }
   const btn = document.getElementById('filmModalSoundBtn');
   if (btn) btn.classList.remove('show', 'attention');
