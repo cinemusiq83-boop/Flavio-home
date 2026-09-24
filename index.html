@@ -1,4 +1,32 @@
 <!DOCTYPE html>
+<html lang='en' class=''>
+
+<head>
+
+  <meta charset='UTF-8'>
+  <title>CodePen Demo</title>
+
+  <meta name="robots" content="noindex">
+
+  <link rel="shortcut icon" type="image/x-icon" href="https://cpwebassets.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico">
+  <link rel="mask-icon" href="https://cpwebassets.codepen.io/assets/favicon/logo-pin-b4b4269c16397ad2f0f7a01bcdf513a1994f4c94b8af2f191c09eb0d601762b1.svg" color="#111">
+  <link rel="canonical" href="https://codepen.io/pen">
+
+  
+  
+
+  <style id="INLINE_PEN_STYLESHEET_ID">
+    
+  </style>
+
+  
+<script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-f07739098a39bd4e74ddd974652dac904146f33fdc1ecab356e8c809a05faccb.js"></script>
+<script src="https://cpwebassets.codepen.io/assets/editor/iframe/iframeConsoleRunner-100b2a29d7a68d0f5c9eb0b3f9e63783410ea00dcab106def20a0ab3cf4a8804.js"></script>
+<script src="https://cpwebassets.codepen.io/assets/editor/iframe/iframeRuntimeErrors-4f205f2c14e769b448bcf477de2938c681660d5038bc464e3700256713ebe261.js"></script>
+</head>
+
+<body>
+  <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -9903,7 +9931,7 @@ window.fmpExtract = function(src){
 
 /* ═════════ État ═════════ */
 let hls = null, token = 0, isOpen = false;
-let baseUrl = '', origSrc = '', baseTitle = '', streamUrl = '', usedProxy = false, netRetry = 0, mediaRetry = 0;
+let baseUrl = '', origSrc = '', baseTitle = '', streamUrl = '', usedProxy = false, reloadRetry = 0, reloadT = null;
 let entries = [], entryIdx = 0;
 let dragging = false, pendingT = 0, hideT, toastT, resumeAt = 0, sheetOpen = false;
 
@@ -9982,7 +10010,7 @@ function parseList(text){
 async function load(url){
   const tk = ++token;
   teardown(); buffering(true);
-  entries = []; entryIdx = 0; netRetry = 0; mediaRetry = 0;
+  entries = []; entryIdx = 0; reloadRetry = 0;
   const text = await fetchText(url);
   if(tk !== token || !isOpen) return;
   if(text && !/#EXT-X-/.test(text)){
@@ -9993,12 +10021,13 @@ async function load(url){
   playStream(url, false);
 }
 function playEntry(i){
-  entryIdx = i; netRetry = 0; mediaRetry = 0; buffering(true); resumeAt = 0;
+  entryIdx = i; reloadRetry = 0; buffering(true); resumeAt = 0;
   const e = entries[i]; updateNav(); setMediaSession();
   if(/\.(mp4|webm|mkv|mov|m4v|ogv)(\?|#|$)/i.test(e.url)) playDirect(e.url, false);
   else playStream(e.url, false);
 }
 function teardown(){
+  clearTimeout(reloadT);
   if(hls){ try{ hls.destroy(); }catch(e){} hls = null; }
   streamUrl = '';
   try{ V.pause(); }catch(e){}
@@ -10028,44 +10057,86 @@ function playStream(url, viaProxy){
   const useProxy = !!PROXY && (viaProxy || needsProxy(url));
   usedProxy = useProxy; streamUrl = url;
   if(window.Hls && Hls.isSupported()){
-    const cfg = { enableWorker:true, maxBufferLength:40, maxMaxBufferLength:120 };
+    const cfg = { enableWorker:true, maxBufferLength:40, maxMaxBufferLength:120, liveDurationInfinity:true };
     if(useProxy) cfg.loader = makeLoader();
     hls = new Hls(cfg);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => { const p = V.play(); if(p && p.catch) p.catch(()=>{}); });
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      if(resumeAt > 1){ try{ V.currentTime = resumeAt; }catch(e){} }
+      const p = V.play(); if(p && p.catch) p.catch(()=>{});
+      reloadRetry = 0;
+    });
+    hls.on(Hls.Events.FRAG_LOADED, () => { softNet = 0; softMedia = 0; });
     hls.on(Hls.Events.ERROR, (ev, d) => onHlsError(d, url));
     hls.loadSource(url); hls.attachMedia(V);
   } else if(V.canPlayType('application/vnd.apple.mpegurl')){
     V.src = useProxy ? PROXY + encodeURIComponent(url) : url;
     const p = V.play(); if(p && p.catch) p.catch(()=>{});
   } else {
-    fail('Ce navigateur ne sait pas lire ce type de flux vidéo.');
+    // Format non pris en charge par ce navigateur : rien à faire de plus, on ne bloque pas l'appli.
+    buffering(false);
   }
-}
-function onHlsError(d, url){
-  if(!d || !d.fatal) return;
-  if(d.type === Hls.ErrorTypes.NETWORK_ERROR){
-    if(!usedProxy && PROXY){ if(V.currentTime > 5) resumeAt = V.currentTime; playStream(url, true); return; }
-    if(netRetry++ < 2 && hls){ hls.startLoad(); return; }
-  } else if(d.type === Hls.ErrorTypes.MEDIA_ERROR && mediaRetry++ < 2 && hls){
-    hls.recoverMediaError(); return;
-  }
-  fail();
 }
 function playDirect(url, viaProxy){
   if(hls){ try{ hls.destroy(); }catch(e){} hls = null; }
   const useProxy = !!PROXY && (viaProxy || needsProxy(url));
   usedProxy = useProxy; streamUrl = url;
   V.src = useProxy ? PROXY + encodeURIComponent(url) : url;
+  if(resumeAt > 1){ try{ V.currentTime = resumeAt; }catch(e){} }
   const p = V.play(); if(p && p.catch) p.catch(()=>{});
+}
+
+/* — Reconnexion automatique et illimitée —
+   Les flux passent souvent par un CDN à lien temporaire (token qui expire après
+   quelques dizaines de secondes). Plutôt que d'abandonner, on relance entièrement
+   le flux (nouvelle requête = nouveau lien/token) en reprenant à la même position,
+   avec un délai croissant. Ça continue de réessayer tant que le lecteur est ouvert. */
+function currentEntryUrl(){ return entries.length ? entries[entryIdx].url : baseUrl; }
+function isDirectFile(u){ return /\.(mp4|webm|mkv|mov|m4v|ogv)(\?|#|$)/i.test(u || ''); }
+function scheduleReload(){
+  if(!isOpen || sheetOpen) return;
+  clearTimeout(reloadT);
+  if(V.currentTime > 3) resumeAt = V.currentTime; else if(resumeAt <= 1) resumeAt = 0;
+  reloadRetry++;
+  buffering(true);
+  const delay = Math.min(1000 * reloadRetry, 6000);
+  const tk = token;
+  reloadT = setTimeout(() => {
+    if(tk !== token || !isOpen) return;
+    const url = currentEntryUrl();
+    // Alterne direct / proxy à chaque nouvelle tentative pour contourner un éventuel blocage ponctuel.
+    const viaProxy = !!PROXY && (reloadRetry % 2 === 0);
+    if(isDirectFile(url)) playDirect(url, viaProxy); else playStream(url, viaProxy);
+  }, delay);
+}
+// D'abord une reprise "douce" (sans rien recharger ni couper l'image) via les mécanismes
+// intégrés de hls.js : c'est ce qu'elle recommande elle-même, et ça suffit à résoudre la
+// grande majorité des erreurs signalées "fatales" (petit accroc réseau, décodeur temporairement
+// perdu…). On ne recharge tout le flux (scheduleReload, visible) que si ça persiste vraiment.
+let softNet = 0, softMedia = 0;
+const SOFT_MAX = 6;
+function onHlsError(d, url){
+  if(!d || !d.fatal) return;
+  if(d.type === Hls.ErrorTypes.NETWORK_ERROR && softNet++ < SOFT_MAX && hls){ hls.startLoad(); return; }
+  if(d.type === Hls.ErrorTypes.MEDIA_ERROR && softMedia++ < SOFT_MAX && hls){ hls.recoverMediaError(); return; }
+  scheduleReload();
 }
 V.addEventListener('error', () => {
   if(!isOpen || hls || !streamUrl) return;
-  if(!usedProxy && PROXY){ playDirect(streamUrl, true); return; }
-  const c = V.error && V.error.code;
-  fail(c === 4 ? 'Format non pris en charge par le navigateur (fichier .mkv ou codec non compatible).' : null);
+  scheduleReload();
 });
-// Aucun message affiché en cas d'échec : on arrête simplement le chargement.
-function fail(){ buffering(false); showUI(true); }
+
+/* — Surveillance : détecte une lecture figée (image bloquée, en attente de données
+   qui ne reviendront jamais faute de token/CDN valide) sans attendre une erreur de
+   hls.js, qui ne se déclenche pas toujours dans ce cas précis. */
+let watchLastT = -1, watchStuck = 0;
+setInterval(() => {
+  if(!isOpen || sheetOpen || V.paused || V.seeking || dragging) { watchStuck = 0; watchLastT = V.currentTime; return; }
+  if(Math.abs(V.currentTime - watchLastT) < 0.15){
+    watchStuck++;
+    if(watchStuck >= 3) { watchStuck = 0; scheduleReload(); }
+  } else { watchStuck = 0; }
+  watchLastT = V.currentTime;
+}, 2500);
 
 /* ═════════ Ouverture / fermeture ═════════ */
 window.fmpOpen = function(url, src){
@@ -10270,4 +10341,9 @@ function setMediaSession(){
 
 
 </body>
+</html>
+  
+  
+</body>
+
 </html>
