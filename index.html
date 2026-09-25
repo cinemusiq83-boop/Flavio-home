@@ -10007,21 +10007,11 @@ function playEntry(i){
   else playStream(e.url, false);
 }
 function teardown(){
-  clearTimeout(reloadT); clearTimeout(startupT);
+  clearTimeout(reloadT);
   if(hls){ try{ hls.destroy(); }catch(e){} hls = null; }
   streamUrl = '';
   try{ V.pause(); }catch(e){}
   V.removeAttribute('src'); try{ V.load(); }catch(e){}
-}
-// Le film n'est pas encore vraiment parti (première image pas encore affichée) : on laisse
-// le chargement initial tranquille et on ne surveille pas de blocage pendant ce temps, pour ne
-// pas le couper en pleine mise en mémoire tampon. Un filet de sécurité, plus large, ne se
-// déclenche que si rien ne s'affiche au bout d'un long moment (lien vraiment mort).
-let hasStartedPlaying = false, startupT = null;
-function armStartupWatch(){
-  hasStartedPlaying = false; clearTimeout(startupT);
-  const tk = token;
-  startupT = setTimeout(() => { if(tk === token && isOpen && !hasStartedPlaying) scheduleReload(); }, 20000);
 }
 function makeLoader(){
   const Base = Hls.DefaultConfig.loader;
@@ -10044,7 +10034,6 @@ function makeLoader(){
 }
 function playStream(url, viaProxy){
   if(hls){ try{ hls.destroy(); }catch(e){} hls = null; }
-  armStartupWatch();
   const useProxy = !!PROXY && (viaProxy || needsProxy(url));
   usedProxy = useProxy; streamUrl = url;
   if(window.Hls && Hls.isSupported()){
@@ -10069,7 +10058,6 @@ function playStream(url, viaProxy){
 }
 function playDirect(url, viaProxy){
   if(hls){ try{ hls.destroy(); }catch(e){} hls = null; }
-  armStartupWatch();
   const useProxy = !!PROXY && (viaProxy || needsProxy(url));
   usedProxy = useProxy; streamUrl = url;
   V.src = useProxy ? PROXY + encodeURIComponent(url) : url;
@@ -10123,7 +10111,7 @@ V.addEventListener('error', () => {
    hls.js, qui ne se déclenche pas toujours dans ce cas précis. */
 let watchLastT = -1, watchStuck = 0;
 setInterval(() => {
-  if(!isOpen || sheetOpen || V.paused || V.seeking || dragging || !hasStartedPlaying) { watchStuck = 0; watchLastT = V.currentTime; return; }
+  if(!isOpen || sheetOpen || V.paused || V.seeking || dragging) { watchStuck = 0; watchLastT = V.currentTime; return; }
   if(Math.abs(V.currentTime - watchLastT) < 0.15){
     watchStuck++;
     if(watchStuck >= 3) { watchStuck = 0; scheduleReload(); }
@@ -10172,7 +10160,7 @@ V.addEventListener('play',  () => { P.classList.add('playing'); showUI(); });
 V.addEventListener('pause', () => { P.classList.remove('playing'); showUI(true); });
 V.addEventListener('waiting', () => buffering(true));
 V.addEventListener('stalled', () => buffering(true));
-V.addEventListener('playing', () => { buffering(false); hasStartedPlaying = true; clearTimeout(startupT); });
+V.addEventListener('playing', () => buffering(false));
 V.addEventListener('canplay', () => buffering(false));
 V.addEventListener('loadedmetadata', () => {
   if(resumeAt > 10 && isFinite(V.duration) && resumeAt < V.duration - 30){
