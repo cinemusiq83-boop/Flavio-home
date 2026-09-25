@@ -9961,7 +9961,7 @@ async function fetchText(url){
   if(PROXY) tries.push(PROXY + encodeURIComponent(url));
   for(const u of tries){
     try{
-      const ctl = new AbortController(); const t = setTimeout(()=>ctl.abort(), 12000);
+      const ctl = new AbortController(); const t = setTimeout(()=>ctl.abort(), 6000);
       const r = await fetch(u, { signal: ctl.signal }); clearTimeout(t);
       if(!r.ok) throw new Error('HTTP '+r.status);
       return await r.text();
@@ -9979,18 +9979,26 @@ function parseList(text){
   });
   return out;
 }
-async function load(url){
-  const tk = ++token;
+let triedListFallback = false;
+// On lance la lecture tout de suite, sans jamais télécharger le lien à l'avance pour l'inspecter :
+// c'est cette pré-lecture qui provoquait l'attente avant le démarrage. Si jamais hls.js n'arrive
+// vraiment pas à lire le lien comme un flux (ce n'est en fait qu'une simple liste de liens), on
+// bascule alors sur cette liste — mais seulement à ce moment-là, jamais avant.
+function load(url){
+  token++;
   teardown(); buffering(true);
-  entries = []; entryIdx = 0; reloadRetry = 0;
-  const text = await fetchText(url);
-  if(tk !== token || !isOpen) return;
-  if(text && !/#EXT-X-/.test(text)){
-    const list = parseList(text);
-    if(list.length){ entries = list; playEntry(0); return; }
-  }
+  entries = []; entryIdx = 0; reloadRetry = 0; triedListFallback = false;
   updateNav();
   playStream(url, false);
+}
+async function tryListFallback(url){
+  triedListFallback = true;
+  const tk = token;
+  const text = await fetchText(url);
+  if(!isOpen || tk !== token) return;
+  const list = text ? parseList(text) : [];
+  if(list.length){ entries = list; playEntry(0); }
+  else scheduleReload();
 }
 function playEntry(i){
   entryIdx = i; reloadRetry = 0; buffering(true); resumeAt = 0;
@@ -10088,6 +10096,7 @@ let softNet = 0, softMedia = 0;
 const SOFT_MAX = 6;
 function onHlsError(d, url){
   if(!d || !d.fatal) return;
+  if(d.details === 'manifestParsingError' && !triedListFallback){ tryListFallback(url); return; }
   if(d.type === Hls.ErrorTypes.NETWORK_ERROR && softNet++ < SOFT_MAX && hls){ hls.startLoad(); return; }
   if(d.type === Hls.ErrorTypes.MEDIA_ERROR && softMedia++ < SOFT_MAX && hls){ hls.recoverMediaError(); return; }
   scheduleReload();
