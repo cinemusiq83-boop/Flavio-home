@@ -10004,8 +10004,7 @@ function load(url){
   teardown(); buffering(true);
   entries = []; entryIdx = 0; reloadRetry = 0; triedListFallback = false;
   updateNav();
-  if(isListFile(url)) tryListFallback(url);
-  else playStream(url, false);
+  playStream(url, false);
 }
 async function tryListFallback(url){
   triedListFallback = true;
@@ -10014,8 +10013,7 @@ async function tryListFallback(url){
   if(!isOpen || tk !== token) return;
   const list = text ? parseList(text) : [];
   if(list.length){ entries = list; playEntry(0); }
-  // Si ce n'était finalement pas une liste, on retente comme un flux direct au cas où.
-  else playStream(url, false);
+  else scheduleReload();
 }
 function playEntry(i){
   entryIdx = i; reloadRetry = 0; buffering(true); resumeAt = 0;
@@ -10055,13 +10053,13 @@ function playStream(url, viaProxy){
   const useProxy = !!PROXY && (viaProxy || needsProxy(url));
   usedProxy = useProxy; streamUrl = url;
   if(window.Hls && Hls.isSupported()){
-    const cfg = { enableWorker:true, maxBufferLength:60, maxMaxBufferLength:300, maxBufferSize:180*1000*1000, backBufferLength:90, maxBufferHole:1, liveDurationInfinity:true };
+    const cfg = { enableWorker:true, maxBufferLength:40, maxMaxBufferLength:120, liveDurationInfinity:true };
     if(useProxy) cfg.loader = makeLoader();
     hls = new Hls(cfg);
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
       if(resumeAt > 1){ try{ V.currentTime = resumeAt; }catch(e){} }
-      reloadRetry = 0;
       const p = V.play(); if(p && p.catch) p.catch(()=>{});
+      reloadRetry = 0;
     });
     hls.on(Hls.Events.FRAG_LOADED, () => { softNet = 0; softMedia = 0; });
     hls.on(Hls.Events.ERROR, (ev, d) => onHlsError(d, url));
@@ -10091,11 +10089,6 @@ function playDirect(url, viaProxy){
    avec un délai croissant. Ça continue de réessayer tant que le lecteur est ouvert. */
 function currentEntryUrl(){ return entries.length ? entries[entryIdx].url : baseUrl; }
 function isDirectFile(u){ return /\.(mp4|webm|mkv|mov|m4v|ogv)(\?|#|$)/i.test(u || ''); }
-// Un lien qui finit en ".m3u" (et non ".m3u8") est chez nous toujours une simple liste de liens,
-// jamais un vrai flux HLS. Le savoir tout de suite évite de perdre du temps à laisser hls.js
-// essayer de le lire comme un flux, échouer, puis seulement là aller chercher la liste : c'est
-// cet aller-retour inutile qui causait l'attente de 15-30 secondes avant le démarrage.
-function isListFile(u){ return /\.m3u(\?|#|$)/i.test(u || ''); }
 function scheduleReload(){
   if(!isOpen || sheetOpen) return;
   clearTimeout(reloadT);
@@ -10138,10 +10131,7 @@ setInterval(() => {
   if(!isOpen || sheetOpen || V.paused || V.seeking || dragging) { watchStuck = 0; watchLastT = V.currentTime; return; }
   if(Math.abs(V.currentTime - watchLastT) < 0.15){
     watchStuck++;
-    // Première tentative (5 s) : on relance juste le chargement hls.js en silence, sans rien
-    // couper à l'écran. On ne passe à la reconnexion complète (visible) que si ça persiste.
-    if(watchStuck === 2 && hls){ try{ hls.startLoad(); }catch(e){} }
-    if(watchStuck >= 4) { watchStuck = 0; scheduleReload(); }
+    if(watchStuck >= 3) { watchStuck = 0; scheduleReload(); }
   } else { watchStuck = 0; }
   watchLastT = V.currentTime;
 }, 2500);
