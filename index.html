@@ -9097,13 +9097,71 @@ function closePlayer(){
 // ══════════════════════════════════════════
 //  SEARCH
 // ══════════════════════════════════════════
+// ── Recherche tolérante : accents, majuscules, ponctuation (' , . : - …) + réalisateurs / acteurs ──
+function searchNorm(s){
+  return String(s||'')
+    .toLowerCase()
+    .replace(/œ/g,'oe').replace(/æ/g,'ae')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^\p{L}\p{N}]+/gu,' ')
+    .trim();
+}
+const _searchIdx = new WeakMap();
+let _searchWhy = new Map();
+function getSearchIdx(m){
+  let o=_searchIdx.get(m);
+  if(o) return o;
+  const meta=(typeof filmMeta!=='undefined' && filmMeta[m.id]) ? filmMeta[m.id] : {};
+  const splitNames=s=>String(s||'').split(/[,;\/]/).map(x=>x.trim()).filter(Boolean);
+  const dirs=splitNames(meta.director||m.director);
+  const cast=splitNames(meta.cast||m.cast);
+  o={
+    title:searchNorm(m.title),
+    genre:searchNorm(m.genre),
+    dirs:dirs.map(n=>({raw:n,n:searchNorm(n)})),
+    cast:cast.map(n=>({raw:n,n:searchNorm(n)}))
+  };
+  _searchIdx.set(m,o);
+  return o;
+}
+function searchFieldMatch(h,q){
+  if(!h) return false;
+  if(h.includes(q.n)) return true;                           // "l etrange noel"
+  if(h.replace(/ /g,'').includes(q.c)) return true;          // "letrange noel", "l'etrange"
+  return q.tokens.length>1 && q.tokens.every(t=>h.includes(t)); // mots dans le désordre
+}
+// Renvoie les contenus correspondants (titre d'abord, puis genre, réalisateur, acteurs)
+function searchContent(query){
+  const n=searchNorm(query);
+  _searchWhy=new Map();
+  if(!n) return [];
+  const q={n, c:n.replace(/ /g,''), tokens:n.split(' ')};
+  const out=[];
+  allContent.forEach(m=>{
+    const ix=getSearchIdx(m);
+    let score=-1, why='';
+    if(searchFieldMatch(ix.title,q)) score=0;
+    else if(searchFieldMatch(ix.genre,q)) score=1;
+    else {
+      const d=ix.dirs.find(p=>searchFieldMatch(p.n,q));
+      if(d){ score=2; why='Réalisé par '+d.raw; }
+      else {
+        const a=ix.cast.find(p=>searchFieldMatch(p.n,q));
+        if(a){ score=3; why='Avec '+a.raw; }
+      }
+    }
+    if(score>=0){ out.push({m,score}); if(why) _searchWhy.set(m.id,why); }
+  });
+  out.sort((x,y)=>x.score-y.score);
+  return out.map(r=>r.m);
+}
 function handleSearch(query){
-  const q=query.trim().toLowerCase();
+  const q=query.trim();
   const dropdown=document.getElementById('searchDropdown');
   if(!q){dropdown.classList.remove('open');hideSearchResults();return;}
-  const results=allContent.filter(m=>m.title.toLowerCase().includes(q)||m.genre.toLowerCase().includes(q));
+  const results=searchContent(q);
   if(results.length===0){dropdown.innerHTML='<div class="search-no-result">Aucun résultat</div>';}
-  else{dropdown.innerHTML=results.slice(0,8).map(m=>`<div class="search-result-item" onclick="showFilmModal(allContent.find(x=>x.id===${m.id}));closeSearchDropdown()"><img class="search-result-img" src="${m.thumb}" alt=""><div class="search-result-info"><div class="title">${m.title}</div><div class="genre">${m.genre} · ${m.type==='serie'?'Série':'Film'}</div></div></div>`).join('');}
+  else{dropdown.innerHTML=results.slice(0,8).map(m=>`<div class="search-result-item" onclick="showFilmModal(allContent.find(x=>x.id===${m.id}));closeSearchDropdown()"><img class="search-result-img" src="${m.thumb}" alt=""><div class="search-result-info"><div class="title">${m.title}</div><div class="genre">${_searchWhy.get(m.id)||m.genre} · ${m.type==='serie'?'Série':'Film'}</div></div></div>`).join('');}
   dropdown.classList.add('open');
   showFullSearchResults(results,query.trim());
 }
@@ -9146,6 +9204,7 @@ function onNavSearchFocus(){
 
 // Contenus déjà cliqués/visionnés par l'utilisateur + contenus similaires en complément
 function getMobileSearchSuggestions(){
+  _searchWhy=new Map();
   const clickedIds = getContinueWatching().map(x=>x.id);
   let suggestions = clickedIds.map(id=>allContent.find(m=>m.id===id)).filter(Boolean);
 
@@ -9174,7 +9233,7 @@ function createMssRow(m){
   const thumbInner = logo
     ? `<img class="mss-item-thumb-logo" src="${logo}" alt="${m.title}" loading="lazy">`
     : `<div class="mss-item-thumb-title">${m.title}</div>`;
-  row.innerHTML = `<div class="mss-item-thumb" style="background-image:url('${backdrop}')">${thumbInner}</div><div class="mss-item-info"><div class="mss-item-title">${m.title}</div><div class="mss-item-sub">${m.genre} · ${m.type==='serie'?'Série':'Film'}</div></div><button class="mss-item-play liquid-glass" title="Regarder">▶</button>`;
+  row.innerHTML = `<div class="mss-item-thumb" style="background-image:url('${backdrop}')">${thumbInner}</div><div class="mss-item-info"><div class="mss-item-title">${m.title}</div><div class="mss-item-sub">${_searchWhy.get(m.id)||m.genre} · ${m.type==='serie'?'Série':'Film'}</div></div><button class="mss-item-play liquid-glass" title="Regarder">▶</button>`;
   row.onclick = () => { closeMobileSearch(); showFilmModal(m); };
   row.querySelector('.mss-item-play').onclick = (e) => { e.stopPropagation(); closeMobileSearch(); handleCardPlay(m); };
   return row;
@@ -9188,14 +9247,14 @@ function renderMssList(items, emptyMsg){
 }
 
 function handleMobileSearch(query){
-  const q = query.trim().toLowerCase();
+  const q = query.trim();
   const titleEl = document.getElementById('mssSectionTitle');
   if (!q) {
     titleEl.textContent = 'Séries et films suggérés';
     renderMssList(getMobileSearchSuggestions(), 'Aucune suggestion pour le moment.');
     return;
   }
-  const results = allContent.filter(m => m.title.toLowerCase().includes(q) || m.genre.toLowerCase().includes(q));
+  const results = searchContent(q);
   titleEl.textContent = `Résultats pour "${query.trim()}"`;
   renderMssList(results, 'Aucun résultat trouvé.');
 }
