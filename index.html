@@ -3317,8 +3317,8 @@ const filmMeta = {
   year:"2019",
   duration:"2h",
   country:"France",
-  logo:"https://images-fio.6play.fr/v2/images/3264090/raw?auto=webp&blur=0&fit=max&height=180&interlace=1&optimize=high&width=320&hash=8c39ebdce5a5dedf49b297b51b48551189c8d9d7",
-  backdrop:"https://images.justwatch.com/backdrop/302837413/s640/mylene-farmer-2019-le-film.jpg"
+  logo:"https://images-fio.6play.fr/v2/images/3264090/raw?blur=0&fit=max&format=auto&height=1440&interlace=1&optimize=high&width=2560&hash=ef70b37aca6e1564827850cf95683866e32773c3",
+  backdrop:"https://images-fio.6play.fr/v2/images/3264088/raw?blur=0&fit=scale_crop&format=auto&height=1440&interlace=1&optimize=high&width=2560&hash=baf1300775749dfaeaa849ec6e24b7ca74293ba0"
 },
 839:{
   desc:"Dans un immense hôtel, vide de clients et noyé sous la neige, un écrivain en panne d'inspiration sombre peu à peu dans une folie meurtrière incontrôlable.",
@@ -4697,6 +4697,16 @@ const filmMeta = {
   logo:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/131a08f3-1730-44cf-a007-ec0325fd4461/trim?format=webp&max=800%7C300",
   backdrop:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/98894d93-c87a-4487-b5f3-02b816e68291/compose?format=webp&width=2880"
 },
+1012:{
+  desc:"Le film du concert événement de Mylène Farmer offre une expérience immersive saisissante au coeur d'un spectacle monumental. Avec quatorze stades, Nevermore est la plus grande tournée des stades de l'histoire de la musique proposée en France par une artiste.",
+  director:"François Hanss",
+  cast:"Mylène Farmer",
+  year:"2024",
+  duration:"2h04",
+  country:"France",
+  logo:"https://images-fio.6play.fr/v2/images/4495060/raw?blur=0&fit=max&format=auto&height=1440&interlace=1&optimize=high&width=2560&hash=f42573ae0225fd114d8ef0ea54b0f189bc920a77",
+  backdrop:"https://images-fio.6play.fr/v2/images/4495062/raw?blur=0&fit=scale_crop&format=auto&height=1170&interlace=1&optimize=high&width=2080&hash=81ec9e246fd606c6a3e1ea4e34f017dfebe7cfc0"
+},
 };
 
 // ══════════════════════════════════════════
@@ -4735,6 +4745,7 @@ const allContent = [
   {id:947,title:"The Mandalorian And Grogu",genre:"Star Wars",type:"film",thumb:"https://files.catbox.moe/oloxah.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/d8kfjf.m3u",embed:true,hero:true},
   {id:931,title:"Le Diable S'Habille En Prada 2",genre:"Comedie",type:"film",thumb:"https://files.catbox.moe/n5n0wa.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-0fgno6f0z2bf.html",embed:true,hero:true},
   {id:896,title:"Michael",genre:"Biopic",type:"film",thumb:"https://images.justwatch.com/poster/343089542/s718/michael-2025-0.jpg",backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/STD169/MICHAEL_myCANAL_16x9_MEA_1920x1080_jpg80_-vk1p",src:"https://files.catbox.moe/i2pbyn.m3u",embed:true,hero:true},
+  {id:1012,title:"Mylene Farmer Nevermore",genre:"Musique",type:"film",thumb:"https://image.tmdb.org/t/p/original/lLO6ATAviPjvZxrEsdSGHINblqR.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-szsu5w2ijbrs.html",embed:true,hero:true},
   {id:1009,title:"L'Impossible Monsieur Bebe",genre:"Comedie",type:"film",thumb:"https://image.tmdb.org/t/p/original/bIqLibVWopRn1RqRSyS3EvNDTtu.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-1kj7ukyrz56y.html",embed:true,hero:true},
   {id:1010,title:"Certains L'Aiment Chaud",genre:"Comedie",type:"film",thumb:"https://image.tmdb.org/t/p/original/euufDAwaAcCOxD4l0c5nsS8YBca.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/pr5a5o.m3u",embed:true,hero:true},
   {id:994,title:"Spider Man",genre:"Marvel",type:"film",thumb:"https://image.tmdb.org/t/p/original/pNz1NREgddPdlzytlR8mW4B26fW.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/pty0ad.m3u",embed:true,hero:true},
@@ -8725,7 +8736,8 @@ const trailerMap = {
   1008: 'BXntL3Ks_CE', // Insidious L'Invasion Du Lointain
   1009: 'ke0FBdcQIfM', // L'Impossible Monsieur Bebe
   1011: 'eIWs2IUr3Vs', // Avengers Infinity War
-    };
+  1012: 'ETX7eodmvyg', // Mylene Farmer Nevermore
+  };
 
 function getTrailerYtId(filmId) {
   return trailerMap[filmId] || null;
