@@ -804,6 +804,39 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
     linear-gradient(to right, rgba(13,13,20,0.55) 0%, transparent 65%);
 }
 
+/* ── Barre de progression de la vidéo de fond (TVOD) ── */
+.film-bg-progress {
+  position:absolute; left:0; right:0; bottom:0; height:14px; z-index:10;
+  cursor:pointer; opacity:0; pointer-events:none; transition:opacity .3s;
+  touch-action:none; display:none; /* visible uniquement en plein écran */
+}
+.film-modal-hero:fullscreen .film-bg-progress, .film-modal-hero:-webkit-full-screen .film-bg-progress { display:block; }
+.film-bg-progress.show { opacity:1; pointer-events:auto; }
+.film-bg-progress::before { content:''; position:absolute; left:0; right:0; bottom:0; height:4px; background:rgba(255,255,255,0.18); transition:height .2s; }
+.film-bg-progress-fill { position:absolute; left:0; bottom:0; height:4px; width:0; background:var(--gold); transition:width .25s linear, height .2s; pointer-events:none; }
+.film-bg-progress:hover::before, .film-bg-progress.drag::before,
+.film-bg-progress:hover .film-bg-progress-fill, .film-bg-progress.drag .film-bg-progress-fill { height:8px; }
+/* ── Boutons plein écran / son de la vidéo de fond (liens TVOD uniquement) ── */
+.film-modal-bgctl {
+  position:absolute; top:22px; z-index:10;
+  width:42px; height:42px; border-radius:50%;
+  background:rgba(5,5,8,0.85); border:1px solid rgba(255,255,255,0.15);
+  color:white; font-size:1.05rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .25s; backdrop-filter:blur(12px);
+  opacity:0; pointer-events:none;
+}
+.film-modal-bgctl.show { opacity:1; pointer-events:auto; }
+.film-modal-bgctl.show:hover { background:rgba(201,168,76,0.35); border-color:var(--gold); transform:scale(1.08); }
+/* En plein écran : on met le hero entier en plein écran pour garder barre de progression + boutons visibles */
+.film-modal-hero:fullscreen, .film-modal-hero:-webkit-full-screen { width:100vw; height:100vh; background:#000; }
+.film-modal-hero:fullscreen::after, .film-modal-hero:-webkit-full-screen::after { display:none !important; }
+.film-modal-hero:fullscreen > :not(video.backdrop-video):not(.film-bg-progress):not(.film-modal-bgctl):not(audio),
+.film-modal-hero:-webkit-full-screen > :not(video.backdrop-video):not(.film-bg-progress):not(.film-modal-bgctl):not(audio) { display:none !important; }
+.film-modal-hero:fullscreen video.backdrop-video, .film-modal-hero:-webkit-full-screen video.backdrop-video { filter:none !important; transform:none !important; object-fit:contain !important; opacity:1 !important; pointer-events:auto !important; cursor:pointer; }
+.film-modal-hero:fullscreen .film-bg-progress, .film-modal-hero:-webkit-full-screen .film-bg-progress { height:22px; }
+.film-modal-hero.fs-idle { cursor:none; }
+.film-modal-hero.fs-idle .film-modal-bgctl { opacity:0 !important; pointer-events:none !important; }
 /* Bouton fermer */
 .film-modal-close {
   position:absolute; top:22px; right:26px; z-index:10;
@@ -2091,11 +2124,16 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <div class="film-modal" id="filmModalContent">
 
     <!-- ── HERO PLEIN ÉCRAN ── -->
-    <div class="film-modal-hero">
+    <div class="film-modal-hero" id="filmModalHero">
       <img class="backdrop-img" id="filmModalImg" src="" alt="">
       <video class="backdrop-video" id="filmModalBgVideo" muted loop playsinline preload="none"></video>
       <iframe class="backdrop-video-yt" id="filmModalBgVideoYT" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen title="Vidéo de fond"></iframe>
+      <audio id="filmModalBgAudio" preload="none" playsinline></audio>
       <button class="film-modal-close" onclick="closeFilmModal()">✕</button>
+      <button class="film-modal-bgctl" id="filmBgSoundBtn" title="Activer / couper le son" onclick="toggleFilmBgSound()" style="right:80px;">🔊</button>
+      <button class="film-modal-bgctl" id="filmBgFsBtn" title="Plein écran" onclick="toggleFilmBgFullscreen()" style="right:134px;">⛶</button>
+      <button class="film-modal-bgctl" id="filmBgPlayBtn" title="Pause / Lecture" onclick="toggleFilmBgPlay()" style="right:188px;">⏸</button>
+      <div class="film-bg-progress" id="filmBgProgress" title="Progression de la vidéo"><div class="film-bg-progress-fill" id="filmBgProgressFill"></div></div>
       <div class="film-modal-hero-content">
         <!-- Logo officiel : géré par JS (preload + fallback) -->
         <img class="film-modal-logo-img" id="filmModalLogoImg" src="" alt="">
@@ -8770,7 +8808,6 @@ const filmBgVideoMap = {
 984: 'https://youtu.be/m1rbvHk1GGo', // Aline
 980: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37712_BA/108196/canalplay.com_37712_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Le Parrain
 981: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37950_BA/148470/canalplay.com_37950_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // La Fievre Du Samedi Soir
-982: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68919_BA/2563/canalplay.com_68919_BA_ATM_OTT_SD_4_AACLC_20_VF_video_1500_avc.mp4', // Footloose
 983: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_67862_BA/01JPQ3XH661Q5K1W48DSTZM4NQ/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Premier Contact
 979: 'https://youtu.be/0tXozyWB1B8', // L'Age De Glace 5
 974: 'https://youtu.be/6Ba6EkLmulY', // Cleopatre
@@ -8778,9 +8815,6 @@ const filmBgVideoMap = {
 972: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10510_BA/146448/canalplay.com_10510_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Men In Black
 973: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3369_BA/148391/canalplay.com_3369_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Men In Black II
 969: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10838_BA/149277/canalplay.com_10838_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Psychose
-970: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10786_BA/73839/canalplay.com_10786_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // The Blues Brothers
-967: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_113855_BA/01JJYC95WYXDE4RK0B3Z9VF47N/w1_v_avc_10_720_1280_0_3400.mp4', // Dune
-968: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_135040_BA/01JXFJCJMD275M6KDQJH1JQJNR/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Dune Deuxieme Partie
 965: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_18962_BA/148239/canalplay.com_18962_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Mad Max 2 : Le Defi
 966: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_18963_BA/153846/canalplay.com_18963_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Mad Max 3 : Au Dela Du Dome Du Tonerre
 960: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_24740_BA/83301/canalplay.com_24740_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Rio Bravo
@@ -8789,7 +8823,6 @@ const filmBgVideoMap = {
 963: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17335_BA/01J9VAXHKWTWV6HTFYGKX9N9RH/w1_v_avc_10_720_1280_0_3400.mp4', // Eyes Wide Shut
 957: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68573_BA/146158/canalplay.com_68573_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Le Magicien D'Oz
 958: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21059_BA/144197/canalplay.com_21059_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Chantons Sous La Pluie
-959: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16436_BA/27824/canalplay.com_16436_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // 2001 L'Odyssee De L'Espace
 953: 'https://youtu.be/3u2J2AYhWaQ', // Rasta Rockett
 947: 'https://youtu.be/1xP0JBt77j0', // The Mandalorian And Grogu
 895: 'https://youtu.be/8mhB7-AbYVw', // Jumpers
@@ -8915,32 +8948,23 @@ const filmBgVideoMap = {
 621: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10764_BA/144434/canalplay.com_10764_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Retour Vers Le Futur 2
 622: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10765_BA/145654/canalplay.com_10765_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Retour Vers Le Futur 3
 896: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_155495_BA/01KZBNEJNQHTP293J6FQKK72JN/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Michael
-  2: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_147750_BA/01K8RZKCTMNFC861B09CMYYB6W/w1_v_avcvbr_10_720_1280_0_2400.mp4', // F1 Le Film
-  3: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_138390_BA/01JB1FD91GRW8SATJ5X3RC2J7H/w1_v_avc_10_720_1280_0_3400.mp4', // Le Comte de Monte-Cristo
   4: 'https://replay-dshclear1.p-cdnvod-edge010501-dual.scy.canalplus-cdn.net/__token__id%3D5ca11ef8c0448dc7408999cf85b3d4e0~hmac%3D031d2fec7a7bf682d2a034ef434f4f5d0f9a60a4758406c7b93904249b8ae8fc/wal/dash/clear/canalplus/canalplus/ANT_1273353_567_CPSV/01KXR95X6WNRBDBYNFYRNH8R90/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Ferrari: La Tournée du Trio
   5: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_78612_BA/133090/canalplay.com_78612_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Épouse-Moi Mon Pote
   6: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_6520_BA/01HZ2JF05F0GH82XJ3GF93HGAQ/w1_v_avc_10_720_1280_0_3400.mp4', // La Môme
-  8: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_147400_BA/01KE6XD6JDFWH92NH1KM3ZJE1M/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Mission: Impossible – The Final Reckoning
   9: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_25753_BA/128503/canalplay.com_25753_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Stars 80
-  11: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_146001_BA/01K8XN6NFCAC5VZCPGVS9HZPKA/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Minecraft Le Film
   12: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68769_BA/122449/canalplay.com_68769_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Dalida
-  13: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_71350_BA/01JN4ESN3JJ7D8V8WKY6HBJH4Z/w1_v_avc_10_720_1280_0_3400.mp4', // Dirty Dancing
   14: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3982_BA/145869/canalplay.com_3982_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Jean-Philippe
   15: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_2767_BA/144035/canalplay.com_2767_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Ray
   16: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_145533_BA/01JWBMF353FBP5YG44W4FM1WGG/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Bridget Jones: Folle de Lui
   17: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_19310_BA/145884/canalplay.com_19310_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Les Aventures de Tintin : Le Secret De La Licorne
   18: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_110316_BA/01JMVQG0434ZX00TC67V5XV86W/w1_v_avc_10_720_1280_0_3400.mp4', // Tom & Jerry
   19: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_5277_BA/01J3N134EVYAXKPX5CWEMJ0CW1/w1_v_avc_0_540_960_0_1500.mp4', // La Soupe aux Choux
-  20: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_141235_BA/01KWGSZP73C5EBJRNN9PCRH1XD/w1_v_avcvbr_10_720_1280_0_2400.mp4', // L'Amour Ouf
   21: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_226_BA/01K47WTKMJRX6WV6ZGA83PTNXE/w1_v_avcvbr_0_540_960_0_1500.mp4', // Les Choristes
   22: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10817_BA/01JQY3VH6MPCZS3KRE31KRJ8RS/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Les Dents de la Mer
   23: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21436_BA/01JBH7T57FYCA2FC6T02Q4BMZJ/w1_v_avc_0_540_960_0_1500.mp4', // Space Jam
   24: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_112460_BA/01JP4VQF8RWN47XJNK8C5N0R02/w1_v_avc_10_720_1280_0_3400.mp4', // Space Jam: Nouvelle Ère
   25: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_140620_BA/01JXCVQG9WXPQS2QF84WNSDG05/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Beetlejuice Beetlejuice
-  26: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16767_BA/2525/canalplay.com_16767_BA_ATM_OTT_SD_4_AACLC_20_VF_video_190_avc.mp4', // Le Dîner de Cons
-  27: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_311_BA/01K3GJT7ZJCTTPE8178Q105BHK/w1_v_avcvbr_0_540_960_0_1500.mp4', // Astérix & Obélix: Mission Cléopâtre
   28: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_70207_BA/117103/canalplay.com_70207_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Alibi.com
-  30: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_127282_BA/01HHCENPDG1SATJHW70VQWMQ27/w1_v_avc_10_720_1280_0_3400.mp4', // Super Mario Bros Le Film
   31: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_123501_BA/01HBQSPDJYYQR4GS47S0D4EYQQ/w1_v_avc_10_720_1280_0_3400.mp4', // Ticket to Paradise
   32: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_124886_BA/212457/canalplay.com_124886_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Le Clan
   33: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_136760_BA/01J5XA0QB5NNNAYR35XX35F4Y3/w1_v_avc_10_720_1280_0_3400.mp4', // Back to Black
@@ -8954,14 +8978,6 @@ const filmBgVideoMap = {
   701: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_19667_BA/01HK5P7S9V87X1NGACJWGDTVVV/w1_v_avc_10_720_1280_0_3400.mp4', // Friends
   706: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_126865_BA/01H5SH2AX57S857YQS3N95VH2P/w1_v_avc_10_720_1280_0_3400.mp4', // Tulsa King
   707: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_139041_BA/01J9JS6SJ2YHAJ8CG0SCGB2WY5/w1_v_avc_10_720_1280_0_3400.mp4', // Zorro
-  800: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16449_BA/01K80ME0DA7BDRPKGE79N7DB84/w1_v_avcvbr_0_540_960_0_1500.mp4', // Harry Potter à l'École des Sorciers
-  801: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16450_BA/71202/canalplay.com_16450_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et la Chambre des Secrets
-  802: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16451_BA/1218/canalplay.com_16451_BA_ATM_OTT_SD_4_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et le Prisonnier d'Azkaban
-  803: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3093_BA/01KA0RCH4T8MCZGR04NYP1J2D8/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Harry Potter et la Coupe de Feu
-  804: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_7616_BA/115780/canalplay.com_7616_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et l'Ordre du Phénix
-  805: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10953_BA/1210/canalplay.com_10953_BA_ATM_OTT_SD_4_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et le Prince de Sang-Mêlé
-  806: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16239_BA/26277/canalplay.com_16239_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et les Reliques de la Mort — Partie 1
-  807: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17926_BA/65415/canalplay.com_17926_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Harry Potter et les Reliques de la Mort — Partie 2
   808: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_4500_BA/01HTHE2CBZK4P5Z5ME4JFF1SQV/w1_v_avc_0_540_960_0_1500.mp4', // La Cité de la Peur
   809: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68649_BA/144079/canalplay.com_68649_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Gremlins
   810: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10533_BA/134672/canalplay.com_10533_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // SOS Fantômes
@@ -8969,10 +8985,7 @@ const filmBgVideoMap = {
   812: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3011_BA/142677/canalplay.com_3011_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Charlie et la Chocolaterie
   813: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_18037_BA/01J9VBQAMJXY7YCJBMFHAFWTJY/w1_v_avc_0_540_960_0_1500.mp4', // L'Exorciste
   814: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_120025_BA/01HX91P0XY0CF00PRQN6NE5DEJ/w1_v_avc_10_720_1280_0_3400.mp4', // Elvis
-  816: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_97473_BA/01KTXZJR2S9NJZ1D1YCK922B88/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Sonic le Film
-  817: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_118440_BA/121692/canalplay.com_118440_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Sonic 2 le Film
   818: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37959_BA/01HH496RSPNTRB2WEPT390XRE7/w1_v_avc_10_720_1280_0_3400.mp4', // Top Gun
-  819: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_119838_BA/01HQX52EN814GA6FFYK8TR9610/w1_v_avc_10_720_1280_0_3400.mp4', // Top Gun Maverick
   820: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_12959_BA/144194/canalplay.com_12959_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Grease
   821: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37960_BA/143257/canalplay.com_37960_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // The Truman Show
   822: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37710_BA/143621/canalplay.com_37710_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Flashdance
@@ -8987,7 +9000,6 @@ const filmBgVideoMap = {
   837: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_79098_BA/155118/canalplay.com_79098_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Michael Jackson: Moonwalker
   839: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17332_BA/109684/canalplay.com_17332_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Shining
   841: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91581_BA/01K7ETAV363HMKQKYHZZJFAXQN/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Terminator
-  847: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17334_BA/42780/canalplay.com_17334_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Full Metal Jacket
   848: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17669_BA/146634/canalplay.com_17669_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // L'Arme Fatale
   849: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17668_BA/150431/canalplay.com_17668_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // L'Arme Fatale 2
   850: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17667_BA/150434/canalplay.com_17667_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // L'Arme Fatale 3
@@ -8998,7 +9010,6 @@ const filmBgVideoMap = {
   856: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_8496_BA/126750/canalplay.com_8496_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Le Château de ma Mère
   857: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21075_BA/109795/canalplay.com_21075_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Bodyguard
   858: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_51034_BA/130505/canalplay.com_51034_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Ghost
-  859: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_8486_BA/73866/canalplay.com_8486_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // 1492 : Christophe Colomb
   860: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_4292_BA/131604/canalplay.com_4292_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Dracula
   862: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_13858_BA/146613/canalplay.com_13858_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Michael Jackson's This Is It
   863: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_42639_BA/143589/canalplay.com_42639_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Interstellar
@@ -9007,21 +9018,14 @@ const filmBgVideoMap = {
   867: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91604_BA/152327/canalplay.com_91604_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // West Side Story
   868: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_12296_BA/129630/canalplay.com_12296_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Un Monstre A Paris
   869: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_22062_BA/129362/canalplay.com_22062_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Cloclo
-  870: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_136723_BA/01J445GVFPZ37498GQQ34Z503C/w1_v_avc_10_720_1280_0_3400.mp4', // Un P'tit Truc En Plus
-  873: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_93006_BA/8057/canalplay.com_93006_BA_ATM_OTT_SD_4_AACLC_20_VF_video_1500_avc.mp4', // Rocketman
   875: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_22425_BA/136015/canalplay.com_22425_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Sur la piste du marsupilami
   876: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91537_BA/134193/canalplay.com_91537_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Nicky Larson et le parfum de cupidon
   877: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16456_BA/144460/canalplay.com_16456_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Troie
   879: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3638_BA/153836/canalplay.com_3638_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Desperado
   880: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_33728_BA/92888/canalplay.com_33728_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Les Évadés
-  890: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_153480_BA/01KSE2ES97BRZ3P62P6N4KWCSF/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Marsupilami
-  894: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_155493_BA/01KXQQPR2SC4PTE1FD14809ZGT/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Super Mario Galaxy Le Film
-  932: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_118078_BA/117183/canalplay.com_118078_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Permis De Construire
-  933: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_131478_BA/01HPHCF8MQ64NY93DMNT90A2HR/w1_v_avc_10_720_1280_0_3400.mp4', // Inestimable
   934: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_30912_BA/144199/canalplay.com_30912_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Conjuring : Les Dossiers Warren
   935: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_61224_BA/131776/canalplay.com_61224_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Conjuring 2 : Le Cas Enfield
   936: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_111112_BA/01HX8ZV81DN1SHB0JV3EJCNJ3X/w1_v_avc_10_720_1280_0_3400.mp4', // Conjuring : Sous L'Emprise Du Diable
-  937: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_150442_BA/01KE77A999B1H9WCTWVXSW3WRE/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Conjuring : L'Heure Du Jugement
   938: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_126925_BA/01H66KSSA7C68DSHSHMFF2XP0E/w1_v_avc_10_720_1280_0_3400.mp4', // Les Trois Mousquetaires : D'Artagnan
   939: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_133768_BA/01KV88AQNGNGBZ0MYRJRGMBS8D/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Les Trois Mousquetaires : Milady
   941: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_50612_BA/143038/canalplay.com_50612_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Astérix Et Cléopâtre
@@ -9031,6 +9035,337 @@ const filmBgVideoMap = {
   945: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_12297_BA/149018/canalplay.com_12297_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Arthur Et La Vengeance De Maltazard
   946: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16915_BA/139429/canalplay.com_16915_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Arthur 3 : La Guerre Des Deux Mondes
 };
+// ── PISTE AUDIO SÉPARÉE (liens TVOD) ──
+// Les flux TVOD sont souvent vidéo seule : l'audio est un second fichier, lu en parallèle et resynchronisé sur la vidéo.
+// Ajoutez ici : id du film → url du fichier audio (.mp4 / .m4a).
+const filmBgAudioMap = {
+  896: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_155495_BA/01KZBNEJNQHTP293J6FQKK72JN/w1_a_aac_0_fra_0_1_128.mp4', // Michael
+  1010: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91590_BA/150677/canalplay.com_91590_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Certains L'Aiment Chaud
+  994: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3347_BA/145864/canalplay.com_3347_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Spider Man
+  995: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3348_BA/145226/canalplay.com_3348_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Spider Man 2
+  996: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_5433_BA/146077/canalplay.com_5433_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Spider Man 3
+  997: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_19281_BA/145241/canalplay.com_19281_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // The Amazing Spider Man
+  998: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37415_BA/137210/canalplay.com_37415_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // The Amazing Spider Man 2
+  999: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_74398_BA/01JPM8FV7BREXFXEVEVTQBZ39K/w1_a_aac_0_fra_0_0_128.mp4', // Spider Man Homecoming
+  1000: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_93431_BA/01JNJSZEVZX57FD3HR21CEH416/w1_a_aac_0_fra_0_0_128.mp4', // Spider Man Far From Home
+  1001: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_116003_BA/01JP2874NZKQ6AW7J1XGNTRNYK/w1_a_aac_0_fra_0_0_128.mp4', // Spider Man No Way Home
+  1003: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_18043_BA/145893/canalplay.com_18043_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Insidious
+  1004: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_34143_BA/114045/canalplay.com_34143_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Insidious Chapitre 2
+  1005: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_51254_BA/138124/canalplay.com_51254_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Insidious Chapitre 3
+  1007: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_128853_BA/01HGTNW1Y09YJSCN0K1DXVVKAB/w1_a_aac_0_fra_0_0_128.mp4', // Insidious The Red Door
+  992: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_156995_BA/01M2VN10R7V5Z6F36PRK50NA63/w1_a_aac_0_fra_0_1_128.mp4', // La Bataille De Gaulle L'Age De Fer
+  980: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37712_BA/108196/canalplay.com_37712_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Le Parrain
+  981: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37950_BA/148470/canalplay.com_37950_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // La Fievre Du Samedi Soir
+  983: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_67862_BA/01JPQ3XH661Q5K1W48DSTZM4NQ/w1_a_aac_0_fra_0_0_128.mp4', // Premier Contact
+  971: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_4302_BA/150175/canalplay.com_4302_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Stand By Me
+  972: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10510_BA/146448/canalplay.com_10510_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Men In Black
+  973: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3369_BA/148391/canalplay.com_3369_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Men In Black II
+  969: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10838_BA/149277/canalplay.com_10838_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Psychose
+  965: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_18962_BA/148239/canalplay.com_18962_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Mad Max 2 : Le Defi
+  966: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_18963_BA/153846/canalplay.com_18963_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Mad Max 3 : Au Dela Du Dome Du Tonerre
+  960: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_24740_BA/83301/canalplay.com_24740_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Rio Bravo
+  961: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21052_BA/145923/canalplay.com_21052_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // La Mort Aux Trousses
+  962: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10818_BA/01JQY2M15C0BV9PKFETZD6G85G/w1_a_aac_0_fra_0_0_128.mp4', // Jurassic Park
+  963: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17335_BA/01J9VAXHKWTWV6HTFYGKX9N9RH/w1_a_aac_0_fra_0_0_128.mp4', // Eyes Wide Shut
+  957: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68573_BA/146158/canalplay.com_68573_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Le Magicien D'Oz
+  958: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21059_BA/144197/canalplay.com_21059_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Chantons Sous La Pluie
+  617: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_28818_BA/01JQECKA8Y8XQWJEA9482SPF3J/w1_a_aac_0_fra_0_1_64.mp4', // Le Grand Bleu
+  618: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_36604_BA/137470/canalplay.com_36604_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Babysitting
+  619: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_56513_BA/122593/canalplay.com_56513_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Babysitting 2
+  620: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_72529_BA/144113/canalplay.com_72529_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Retour Vers Le Futur
+  621: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10764_BA/144434/canalplay.com_10764_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Retour Vers Le Futur 2
+  622: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10765_BA/145654/canalplay.com_10765_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Retour Vers Le Futur 3
+  4: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/canalplus/ANT_1273353_567_CPSV/01KXR95X6WNRBDBYNFYRNH8R90/w1_a_aac_0_fra_0_1_64.mp4', // Ferrari : La Tournée du Trio
+  5: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_78612_BA/133090/canalplay.com_78612_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Épouse-Moi Mon Pote
+  6: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_6520_BA/01HZ2JF05F0GH82XJ3GF93HGAQ/w1_a_aac_0_fra_0_1_128.mp4', // La Môme
+  9: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_25753_BA/128503/canalplay.com_25753_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Stars 80
+  12: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68769_BA/122449/canalplay.com_68769_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Dalida
+  14: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3982_BA/145869/canalplay.com_3982_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Jean-Philippe
+  15: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_2767_BA/144035/canalplay.com_2767_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Ray
+  16: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_145533_BA/01JWBMF353FBP5YG44W4FM1WGG/w1_a_aac_0_fra_0_0_128.mp4', // Bridget Jones: Folle de Lui
+  17: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_19310_BA/145884/canalplay.com_19310_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Les Aventures de Tintin : Le Secret De La Licorne
+  18: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_110316_BA/01JMVQG0434ZX00TC67V5XV86W/w1_a_aac_0_fra_0_0_128.mp4', // Tom & Jerry
+  19: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_5277_BA/01J3N134EVYAXKPX5CWEMJ0CW1/w1_a_aac_0_fra_0_1_64.mp4', // La Soupe aux Choux
+  21: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_226_BA/01K47WTKMJRX6WV6ZGA83PTNXE/w1_a_aac_0_fra_0_1_64.mp4', // Les Choristes
+  22: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10817_BA/01JQY3VH6MPCZS3KRE31KRJ8RS/w1_a_aac_0_fra_0_0_128.mp4', // Les Dents de la Mer
+  23: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21436_BA/01JBH7T57FYCA2FC6T02Q4BMZJ/w1_a_aac_0_fra_0_0_64.mp4', // Space Jam
+  24: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_112460_BA/01JP4VQF8RWN47XJNK8C5N0R02/w1_a_aac_0_fra_0_0_128.mp4', // Space Jam: Nouvelle Ère
+  25: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_140620_BA/01JXCVQG9WXPQS2QF84WNSDG05/w1_a_aac_0_fra_0_0_128.mp4', // Beetlejuice Beetlejuice
+  28: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_70207_BA/117103/canalplay.com_70207_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Alibi.com
+  31: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_123501_BA/01HBQSPDJYYQR4GS47S0D4EYQQ/w1_a_aac_0_fra_0_1_128.mp4', // Ticket to Paradise
+  32: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_124886_BA/212457/canalplay.com_124886_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Le Clan
+  33: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_136760_BA/01J5XA0QB5NNNAYR35XX35F4Y3/w1_a_aac_0_fra_0_0_128.mp4', // Back to Black
+  34: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3403_BA/145862/canalplay.com_3403_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Mort ou Vif
+  35: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_24735_BA/136160/canalplay.com_24735_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Les Looney Tunes Passent à l'Action
+  36: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16724_BA/01J2X7CXZP5N4M8GB8HC8DWC3N/w1_a_aac_0_fra_0_1_64.mp4', // Le Cinquième Élément
+  37: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_124229_BA/01HB5M9GEAMZXYED80PM9PZRC7/w1_a_aac_0_fra_0_1_128.mp4', // Whitney Houston
+  38: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_71274_BA/140248/canalplay.com_71274_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // E.T. L'Extra-Terrestre
+  103: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/canalplus/ANT_1273353_447_CPSV/01K4WK2ARW0R5M55S0XXVW84MM/w1_a_aac_0_fra_0_1_128.mp4', // La Flamme
+  104: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/canalplus/ANT_1273353_448_CPSV/01K8B8EQNPVZ776F0XNW907SXC/w1_a_aac_0_fra_0_1_128.mp4', // Le Flambeau: Les Aventuriers de Chupacabra
+  701: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_19667_BA/01HK5P7S9V87X1NGACJWGDTVVV/w1_a_aac_0_fra_0_0_128.mp4', // Friends
+  706: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_126865_BA/01H5SH2AX57S857YQS3N95VH2P/w1_a_aac_0_fra_0_1_128.mp4', // Tulsa King
+  707: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_139041_BA/01J9JS6SJ2YHAJ8CG0SCGB2WY5/w1_a_aac_0_fra_0_1_128.mp4', // Zorro
+  808: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_4500_BA/01HTHE2CBZK4P5Z5ME4JFF1SQV/w1_a_aac_0_fra_0_1_64.mp4', // La Cité de la Peur
+  809: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_68649_BA/144079/canalplay.com_68649_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Gremlins
+  810: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_10533_BA/134672/canalplay.com_10533_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // SOS Fantômes
+  811: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21071_BA/135382/canalplay.com_21071_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Beetlejuice
+  812: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3011_BA/142677/canalplay.com_3011_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Charlie et la Chocolaterie
+  813: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_18037_BA/01J9VBQAMJXY7YCJBMFHAFWTJY/w1_a_aac_0_fra_0_0_64.mp4', // L'Exorciste
+  814: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_120025_BA/01HX91P0XY0CF00PRQN6NE5DEJ/w1_a_aac_0_fra_0_0_128.mp4', // Elvis
+  818: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37959_BA/01HH496RSPNTRB2WEPT390XRE7/w1_a_aac_0_fra_0_0_128.mp4', // Top Gun
+  820: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_12959_BA/144194/canalplay.com_12959_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Grease
+  821: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37960_BA/143257/canalplay.com_37960_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // The Truman Show
+  822: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37710_BA/143621/canalplay.com_37710_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Flashdance
+  823: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_135123_BA/01HZMFY7HF5KXJ87J2NADB5V89/w1_a_aac_0_fra_0_0_128.mp4', // Bob Marley: One Love
+  825: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37711_BA/01JD77DG87YHHY8FF9RGYJ9XTP/w1_a_aac_0_fra_0_0_128.mp4', // Forrest Gump
+  826: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57966_BA/147023/canalplay.com_57966_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Rocky
+  827: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57976_BA/147020/canalplay.com_57976_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Rocky II
+  828: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57968_BA/144211/canalplay.com_57968_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Rocky III
+  829: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57967_BA/143252/canalplay.com_57967_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Rocky IV
+  830: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57971_BA/153400/canalplay.com_57971_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Rocky V
+  831: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_57970_BA/151692/canalplay.com_57970_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Rocky Balboa
+  837: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_79098_BA/155118/canalplay.com_79098_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Michael Jackson: Moonwalker
+  839: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17332_BA/109684/canalplay.com_17332_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Shining
+  841: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91581_BA/01K7ETAV363HMKQKYHZZJFAXQN/w1_a_aac_0_fra_0_1_128.mp4', // Terminator
+  848: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17669_BA/146634/canalplay.com_17669_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // L’Arme Fatale (L'Arme Fatale)
+  849: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17668_BA/150431/canalplay.com_17668_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // L’Arme Fatale 2 (L'Arme Fatale 2)
+  850: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17667_BA/150434/canalplay.com_17667_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // L’Arme Fatale 3 (L'Arme Fatale 3)
+  851: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_17670_BA/81904/canalplay.com_17670_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // L’Arme Fatale 4 (L'Arme Fatale 4)
+  852: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_142666_BA/01JNGJXF3BSKQ2GQCJVB5W0NQK/w1_a_aac_0_fra_0_0_128.mp4', // Over the Top : Le Bras de Fer
+  854: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21139_BA/82204/canalplay.com_21139_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Tango & Cash
+  855: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_8507_BA/100653/canalplay.com_8507_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // La Gloire de mon Père
+  856: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_8496_BA/126750/canalplay.com_8496_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Le Chateau de ma mere (Le Château de ma Mère)
+  857: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_21075_BA/109795/canalplay.com_21075_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Bodyguard
+  858: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_51034_BA/130505/canalplay.com_51034_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Ghost
+  860: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_4292_BA/131604/canalplay.com_4292_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Dracula
+  862: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_13858_BA/146613/canalplay.com_13858_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Michael Jackson's This Is It
+  863: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_42639_BA/143589/canalplay.com_42639_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Interstellar
+  864: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_128682_BA/01JYR7RQPP0M4WMZ5NA103S1D8/w1_a_aac_0_fra_0_0_128.mp4', // Seven
+  865: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_61231_BA/144589/canalplay.com_61231_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Suicide Squad
+  867: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91604_BA/152327/canalplay.com_91604_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // West Side Story
+  868: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_12296_BA/129630/canalplay.com_12296_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Un Monstre A Paris
+  869: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_22062_BA/129362/canalplay.com_22062_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Cloclo
+  875: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_22425_BA/136015/canalplay.com_22425_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Sur la piste du marsupilami
+  876: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91537_BA/134193/canalplay.com_91537_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Nicky Larson et le parfum de cupidon
+  877: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16456_BA/144460/canalplay.com_16456_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Troie
+  879: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3638_BA/153836/canalplay.com_3638_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Desperado
+  880: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_33728_BA/92888/canalplay.com_33728_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Les Évadés
+  934: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_30912_BA/144199/canalplay.com_30912_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Conjuring : Les Dossiers Warren
+  935: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_61224_BA/131776/canalplay.com_61224_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Conjuring 2 : Le Cas Enfield
+  936: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_111112_BA/01HX8ZV81DN1SHB0JV3EJCNJ3X/w1_a_aac_0_fra_0_0_64.mp4', // Conjuring : Sous L'Emprise Du Diable
+  938: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_126925_BA/01H66KSSA7C68DSHSHMFF2XP0E/w1_a_aac_0_fra_0_1_128.mp4', // Les Trois Mousquetaires : D'Artagnan
+  939: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_133768_BA/01KV88AQNGNGBZ0MYRJRGMBS8D/w1_a_aac_0_fra_0_1_128.mp4', // Les Trois Mousquetaires : Milady
+  941: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_50612_BA/143038/canalplay.com_50612_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Astérix Et Cléopâtre
+  942: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_50606_BA/145047/canalplay.com_50606_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Astérix Le Gaulois
+  943: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_50613_BA/144478/canalplay.com_50613_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Les Douze Travaux D'Astérix
+  944: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_5155_BA/144555/canalplay.com_5155_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Arthur Et Les Minimoys
+  945: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_12297_BA/149018/canalplay.com_12297_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Arthur Et La Vengeance De Maltazard
+  946: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_16915_BA/139429/canalplay.com_16915_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Arthur 3 : La Guerre Des Deux Mondes
+};
+let filmBgSoundOn = false;    // à l'ouverture : vidéo seule, sans son (le son s'active via le bouton 🔊 ou le plein écran)
+let filmBgAudioActive = false;
+let filmBgAudioRetryBound = false;
+
+// ── Safari / iOS : un <audio> ne peut être lancé par script que s'il a déjà été "activé" par un geste utilisateur.
+// Au premier clic / toucher, on lit donc un son silencieux sur l'élément, qui pourra ensuite être relancé plus tard (après le délai).
+const FILM_BG_SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+function unlockFilmBgAudio() {
+  const a = document.getElementById('filmModalBgAudio');
+  if (!a || filmBgAudioActive || a.dataset.unlocked === '1') return;
+  a.dataset.unlocked = '1';
+  a.muted = false;
+  a.src = FILM_BG_SILENT_WAV;
+  const pr = a.play();
+  const done = () => { if (!filmBgAudioActive) { a.pause(); a.removeAttribute('src'); } };
+  if (pr && pr.then) pr.then(done).catch(() => { a.dataset.unlocked = ''; }); else done();
+}
+['pointerdown','touchend','click','keydown'].forEach(ev =>
+  document.addEventListener(ev, unlockFilmBgAudio, { capture:true, passive:true }));
+
+let filmBgLastSeek = 0;
+
+// ── Barre de progression (cliquable / glissable) ──
+(function bindFilmBgProgress() {
+  const v = document.getElementById('filmModalBgVideo');
+  const bar = document.getElementById('filmBgProgress');
+  const fill = document.getElementById('filmBgProgressFill');
+  if (!v || !bar || !fill) return;
+  let lastPct = 0, dragging = false;
+  function render() {
+    if (!v.duration || !isFinite(v.duration)) return;
+    const pct = Math.min(100, Math.max(0, v.currentTime / v.duration * 100));
+    fill.style.transition = (pct < lastPct || dragging) ? 'none' : '';   // pas d'animation arrière (boucle) ni pendant le glissé
+    fill.style.width = pct + '%';
+    lastPct = pct;
+  }
+  function seekFromEvent(e) {
+    if (!v.duration || !isFinite(v.duration)) return;
+    const r = bar.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    v.currentTime = ratio * v.duration;
+    render();
+  }
+  v.addEventListener('timeupdate', () => { if (!dragging) render(); });
+  v.addEventListener('loadedmetadata', render);
+  bar.addEventListener('pointerdown', e => {
+    dragging = true; bar.classList.add('drag');
+    try { bar.setPointerCapture(e.pointerId); } catch(_) {}
+    seekFromEvent(e);
+  });
+  bar.addEventListener('pointermove', e => { if (dragging) seekFromEvent(e); });
+  const end = () => { dragging = false; bar.classList.remove('drag'); };
+  bar.addEventListener('pointerup', end);
+  bar.addEventListener('pointercancel', end);
+})();
+function filmBgSyncAudio(force) {
+  const v = document.getElementById('filmModalBgVideo');
+  const a = document.getElementById('filmModalBgAudio');
+  if (!filmBgAudioActive || !v || !a || !a.src) return;
+  if (!filmBgSoundOn || v.paused || v.readyState < 3) { if (!a.paused) a.pause(); return; }
+  const now = Date.now();
+  if (a.readyState >= 1 && (force || (Math.abs(a.currentTime - v.currentTime) > 0.4 && now - filmBgLastSeek > 1500))) {
+    filmBgLastSeek = now;
+    try { a.currentTime = v.currentTime; } catch(e) {}
+  }
+  if (a.paused) {
+    const pr = a.play();
+    if (pr && pr.catch) pr.catch(() => {
+      // Son bloqué par le navigateur : on réessaie au prochain clic / touche
+      if (filmBgAudioRetryBound) return;
+      filmBgAudioRetryBound = true;
+      const retry = () => {
+        filmBgAudioRetryBound = false;
+        document.removeEventListener('pointerdown', retry, true);
+        document.removeEventListener('keydown', retry, true);
+        filmBgSyncAudio(true);
+      };
+      document.addEventListener('pointerdown', retry, true);
+      document.addEventListener('keydown', retry, true);
+    });
+  }
+}
+(function bindFilmBgAudioSync() {
+  const v = document.getElementById('filmModalBgVideo');
+  if (!v) return;
+  ['playing','seeked','timeupdate'].forEach(ev => v.addEventListener(ev, () => filmBgSyncAudio(ev === 'seeked')));
+  ['pause','waiting','stalled'].forEach(ev => v.addEventListener(ev, () => {
+    const a = document.getElementById('filmModalBgAudio'); if (a && !a.paused) a.pause();
+  }));
+})();
+
+let filmBgAudioUrl = '';
+function startFilmBgAudio(filmId) {
+  const a = document.getElementById('filmModalBgAudio');
+  const url = filmBgAudioMap[filmId];
+  filmBgSoundOn = false;                 // toujours sans son à l'ouverture de la fiche
+  if (a) { a.pause(); a.muted = false; }
+  if (!a || !url) { filmBgAudioActive = false; filmBgAudioUrl = ''; return; }
+  filmBgAudioUrl = url;                  // l'audio ne se charge qu'à la demande (économise la bande passante de la vidéo)
+  filmBgAudioActive = true;
+  updateFilmBgSoundBtn();
+}
+// Active le son (appelé depuis un clic : bouton 🔊 ou plein écran → autorisé par Safari)
+function enableFilmBgSound() {
+  const a = document.getElementById('filmModalBgAudio');
+  if (!filmBgAudioActive || !a) return;
+  filmBgSoundOn = true;
+  a.muted = false;
+  if (a.getAttribute('src') !== filmBgAudioUrl) {
+    a.src = filmBgAudioUrl;
+    a.load();
+    a.addEventListener('canplay', function once() { a.removeEventListener('canplay', once); filmBgSyncAudio(true); });
+  }
+  updateFilmBgSoundBtn();
+  filmBgSyncAudio(true);
+}
+function updateFilmBgSoundBtn() {
+  const b = document.getElementById('filmBgSoundBtn');
+  if (b) b.textContent = filmBgSoundOn ? '🔊' : '🔇';
+}
+let filmBgUserPaused = false;   // vrai seulement si l'utilisateur a mis en pause avec le bouton
+function toggleFilmBgPlay() {
+  const v = document.getElementById('filmModalBgVideo');
+  const a = document.getElementById('filmModalBgAudio');
+  if (!v) return;
+  if (v.paused) {
+    filmBgUserPaused = false;
+    const pr = v.play(); if (pr && pr.catch) pr.catch(() => {});
+    // Son : on le relance directement dans le clic (autorisé par Safari), calé sur la vidéo
+    if (filmBgAudioActive && filmBgSoundOn && a && a.getAttribute('src') === filmBgAudioUrl) {
+      a.muted = false;
+      try { a.currentTime = v.currentTime; } catch(e) {}
+      const ap = a.play(); if (ap && ap.catch) ap.catch(() => {});
+      filmBgLastSeek = Date.now();
+    }
+  } else {
+    filmBgUserPaused = true;
+    v.pause();
+  }
+}
+(function bindFilmBgPlayBtn() {
+  const v = document.getElementById('filmModalBgVideo');
+  const b = document.getElementById('filmBgPlayBtn');
+  if (!v || !b) return;
+  const upd = () => { b.textContent = v.paused ? '▶' : '⏸'; };
+  v.addEventListener('play', upd);
+  v.addEventListener('pause', upd);
+  v.addEventListener('playing', upd);
+})();
+function toggleFilmBgSound() {
+  if (!filmBgAudioActive) return;
+  if (filmBgSoundOn) {
+    filmBgSoundOn = false;
+    const a = document.getElementById('filmModalBgAudio'); if (a) a.pause();
+    updateFilmBgSoundBtn();
+  } else {
+    enableFilmBgSound();
+  }
+}
+function filmBgFsElement() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+function toggleFilmBgFullscreen() {
+  const hero = document.getElementById('filmModalHero');
+  const v = document.getElementById('filmModalBgVideo');
+  if (!hero || !v) return;
+  if (filmBgFsElement()) {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    return;
+  }
+  enableFilmBgSound();   // entrer en plein écran = activer le son
+  if (hero.requestFullscreen) hero.requestFullscreen().catch(() => {});
+  else if (hero.webkitRequestFullscreen) hero.webkitRequestFullscreen();
+  else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen(); // iPhone : lecteur natif (pas de barre perso)
+}
+// Masque les boutons après 3 s d'inactivité en plein écran (la barre de progression reste visible)
+(function bindFilmBgFsIdle() {
+  const hero = document.getElementById('filmModalHero');
+  if (!hero) return;
+  let t = null;
+  const wake = () => {
+    hero.classList.remove('fs-idle');
+    clearTimeout(t);
+    if (filmBgFsElement() === hero) t = setTimeout(() => hero.classList.add('fs-idle'), 3000);
+  };
+  hero.addEventListener('mousemove', wake);
+  hero.addEventListener('pointerdown', wake);
+  ['fullscreenchange','webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => {
+    if (filmBgFsElement() === hero) { wake(); return; }
+    clearTimeout(t); hero.classList.remove('fs-idle');
+    // Sortie du plein écran : Safari met la vidéo en pause → on la relance, sauf si l'utilisateur l'avait mise en pause lui-même
+    const v = document.getElementById('filmModalBgVideo');
+    const resume = () => {
+      if (!v || !v.classList.contains('show') || filmBgUserPaused) return;
+      if (v.paused) { const pr = v.play(); if (pr && pr.catch) pr.catch(() => {}); }
+      filmBgSyncAudio(true);
+    };
+    setTimeout(resume, 150);
+    setTimeout(resume, 700);
+  }));
+})();
+// Clic sur la vidéo en plein écran = quitter
+document.getElementById('filmModalBgVideo').addEventListener('click', () => {
+  if (filmBgFsElement()) toggleFilmBgFullscreen();
+});
+
 const FILM_BG_VIDEO_DELAY = 2500; // délai en ms avant le lancement de la vidéo de fond
 let filmBgVideoTimer = null;
 
@@ -9070,6 +9405,13 @@ function scheduleFilmBgVideo(m) {
       video.src = url;
       video.play().catch(() => {}); // autoplay muted, ignore les rejets navigateur
       video.classList.add('show');
+      // Lien TVOD : audio synchronisé + boutons plein écran / son (jamais pour YouTube)
+      filmBgUserPaused = false;
+      startFilmBgAudio(m.id);
+      document.getElementById('filmBgFsBtn').classList.add('show');
+      document.getElementById('filmBgPlayBtn').classList.add('show');
+      document.getElementById('filmBgProgress').classList.add('show');
+      if (filmBgAudioActive) document.getElementById('filmBgSoundBtn').classList.add('show');
     }
   }, FILM_BG_VIDEO_DELAY);
 }
@@ -9084,6 +9426,12 @@ function clearFilmBgVideo() {
     video.removeAttribute('src');
     video.load();
   }
+  if (filmBgFsElement() === document.getElementById('filmModalHero') && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+  filmBgAudioActive = false; filmBgSoundOn = false; filmBgAudioUrl = '';
+  const bgFill = document.getElementById('filmBgProgressFill'); if (bgFill) bgFill.style.width = '0%';
+  const bgAudio = document.getElementById('filmModalBgAudio');
+  if (bgAudio) { bgAudio.pause(); bgAudio.removeAttribute('src'); bgAudio.load(); }
+  ['filmBgFsBtn','filmBgSoundBtn','filmBgPlayBtn','filmBgProgress'].forEach(id => { const b = document.getElementById(id); if (b) b.classList.remove('show'); });
   const videoYT = document.getElementById('filmModalBgVideoYT');
   if (videoYT) {
     videoYT.classList.remove('show');
