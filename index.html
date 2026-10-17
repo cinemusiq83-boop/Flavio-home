@@ -10649,6 +10649,15 @@ function closePlatformPage() {
 
 <style>
 @media(max-width:768px){
+  /* 6 boutons : colonnes égales, libellés compacts pour éviter qu'ils se chevauchent */
+  .bottom-nav-mobile { left:8px !important; right:8px !important; padding:10px 2px !important; justify-content:stretch !important; }
+  .bn-item { flex:1 1 0 !important; width:0; min-width:0 !important; padding:6px 0 !important; gap:5px !important; align-items:center; }
+  .bn-item span {
+    display:block; max-width:100%; text-align:center;
+    font-size:.54rem !important; letter-spacing:0 !important; text-transform:none !important;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .bn-item .bn-avatar { margin:0 auto; }
   .bn-item .bn-icon-active { display:none; }
   .bn-item.active .bn-icon-default { display:none; }
   .bn-item.active .bn-icon-active { display:block; }
