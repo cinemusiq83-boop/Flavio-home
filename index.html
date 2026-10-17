@@ -1849,6 +1849,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     </button>
     <div class="nav-links" id="navLinks">
       <a class="active" data-tab="accueil" onclick="showTab('accueil',this);closeBurger()">Accueil</a>
+      <a data-tab="halloween" onclick="openHalloweenPage();closeBurger()">🎃 Halloween</a>
       <a data-tab="films" onclick="showTab('films',this);closeBurger()">Films</a>
       <a data-tab="series" onclick="showTab('series',this);closeBurger()">Séries</a>
       <a data-tab="tv" onclick="showTab('tv',this);closeBurger()">TV Direct</a>
@@ -4835,6 +4836,16 @@ const filmMeta = {
   logo:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/09dc0cb8-82a8-4f52-b65d-354f608a3e0c/trim?format=webp&max=800%7C300",
   backdrop:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/a5be2443-5f8a-4504-be71-2ff91e649112/compose?format=webp&width=2880"
 },
+1022:{
+  desc:"A Londres, dans les années 1970, une jeune orpheline, résolue à se faire un nom dans l'univers de la mode, se fait remarquer par une créatrice influente.",
+  director:"Craig Gillespie",
+  cast:"Emma Stone, Mark Strong, Emma Thompson",
+  year:"2021",
+  duration:"2h14",
+  country:"États-Unis, Royaume-Uni, Canada, Irlande",
+  logo:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/515f5f25-f926-494e-a81b-7ec9d86676e6/trim?format=webp&max=800%7C300",
+  backdrop:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/1383c09d-dfbc-4fd6-906b-d3b1b5f86f1e/compose?format=webp&width=2880"
+},
 };
 
 // ══════════════════════════════════════════
@@ -4873,6 +4884,7 @@ const allContent = [
   {id:947,title:"The Mandalorian And Grogu",genre:"Star Wars",type:"film",thumb:"https://files.catbox.moe/oloxah.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/d8kfjf.m3u",embed:true,hero:true},
   {id:931,title:"Le Diable S'Habille En Prada 2",genre:"Comedie",type:"film",thumb:"https://files.catbox.moe/n5n0wa.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-0fgno6f0z2bf.html",embed:true,hero:true},
   {id:896,title:"Michael",genre:"Biopic",type:"film",thumb:"https://images.justwatch.com/poster/343089542/s718/michael-2025-0.jpg",backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/STD169/MICHAEL_myCANAL_16x9_MEA_1920x1080_jpg80_-vk1p",src:"https://files.catbox.moe/i2pbyn.m3u",embed:true,hero:true},
+  {id:1022,title:"Cruella",genre:"Disney",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/3fe5f05d-dd38-4917-8b7b-4e285e68e12c/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/y3qk4z.m3u",embed:true,hero:true},
   {id:1020,title:"Le Village",genre:"Horreur",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/c3f70c54-71e5-4807-b71b-500bb62686a1/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-t2qp9gth80vw.html",embed:true,hero:true},
   {id:1021,title:"Toy Story Angoisse Au Motel",genre:"Pixar",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/407ddf72-8510-439c-8432-1250170e5931/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-aqlilf8jfmcl.html",embed:true,hero:true},
   {id:1014,title:"Mickey Le Club Des Mechants",genre:"Disney",type:"film",thumb:"https://image.tmdb.org/t/p/original/kEY1LI9WAVB7NvmSjJxZ8LlWtNF.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/5d3jk0.m3u",embed:true,hero:true},
@@ -8938,7 +8950,8 @@ const trailerMap = {
   1013: '3zDUp6Iwt6s', // Le Monde Merveilleux De Mickey
   1015: 'kYCCa3XUjhk', // Mystere A Venise
   1017: 'g9mz41vzhwI', // L'Hiver Merveilleux De Mickey
-  };
+  1022: 'VKbJsznd7pg', // Cruella
+    };
 
 function getTrailerYtId(filmId) {
   return trailerMap[filmId] || null;
@@ -8952,6 +8965,7 @@ function getTrailerYtId(filmId) {
 //  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+1022: 'https://youtu.be/0Y-HPkBmxrM', // Cruella
 1010: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91590_BA/150677/canalplay.com_91590_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Certains L'Aiment Chaud
 1011: 'https://youtu.be/qTMKHft6w5o', // Avengers Infinity War
 994: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3347_BA/145864/canalplay.com_3347_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Spider Man
@@ -10111,6 +10125,8 @@ window.closePlayer = function() {
 
 // IDs de contenu par plateforme
 const platformContent = {
+  // Halloween
+  halloween: [993, 232, 902, 1015, 886, 1020, 1021, 318, 1022],
   // HBO Max
   hbo: [800,801,802,803,804,805,806,807, // Harry Potter 1-8
         809,  // Gremlins
@@ -10222,7 +10238,8 @@ const platformContent = {
            1016, // L'Automne Merveilleux De Mickey
            1017, // L'Hiver Merveilleux De Mickey
            1018, // Le Printemps Merveilleux De Mickey
-           1019 // L'Ete Merveilleux De Mickey
+           1019, // L'Ete Merveilleux De Mickey
+           1022 // Cruella
   ],
   // Pixar — tous les films Pixar (ids 300-327) + Luxo Jr
   pixar: [300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,
@@ -10248,6 +10265,7 @@ const platformContent = {
 const platformNames = {
   netflix:   'Netflix',
   disney:    'Disney',
+  halloween: 'Halloween',
   pixar:     'Pixar',
   marvel:    'Marvel',
   starwars:  'Star Wars',
@@ -10316,7 +10334,7 @@ function clickPlatform(card) {
   const platform   = card.dataset.platform;
   const logoSrc    = card.dataset.logo;
   const heroVideo  = card.dataset.heroVideo; // vidéo du hero de la page (différente du survol)
-  openPlatformPage(platform, logoSrc, heroVideo);
+  openPlatformPage(platform, logoSrc, heroVideo, card.dataset.heroImage);
 }
 
 // Marques regroupées sous Paramount+
@@ -10326,6 +10344,7 @@ const paramountBrands = [
 
 // Marques regroupées sous Disney+
 const disneyPlusBrands = [
+  { platform:'halloween', label:'Halloween', heroImage:'https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/DFAD5876E92AACA81FA85B47222A8415212CFD128565E78AD095134E775E988F/compose?format=webp&width=2880', logo:'https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0A9B35E498467B28965EA2E5C6003A820AD7493166FD252944D91FD7B54402D6/compose?format=webp&width=800', bg:'#0b0714' },
   { platform:'disney',   label:'Disney',    video:'https://files.catbox.moe/ayhcjs.mp4', heroVideo:'https://files.catbox.moe/gduobr.mp4', logo:'https://upload.wikimedia.org/wikipedia/commons/8/8f/Disney_logo.png' },
   { platform:'pixar',    label:'Pixar',     video:'https://files.catbox.moe/t9y278.mp4', heroVideo:'https://files.catbox.moe/29xjt7.mp4', logo:'https://storage.googleapis.com/endurance-apps-liip/media/cache/disney_no_filter_grid_fs/65cf18095a1d87d7e4022e89' },
   { platform:'marvel',   label:'Marvel',    video:'https://files.catbox.moe/n9fjsr.mp4', heroVideo:'https://files.catbox.moe/x85ppi.mp4', logo:'https://upload.wikimedia.org/wikipedia/commons/b/b9/Marvel_Logo.svg' },
@@ -10335,14 +10354,29 @@ const disneyPlusBrands = [
   { platform:'espn',     label:'ESPN',      video:'https://files.catbox.moe/as99t6.mp4', heroVideo:'https://files.catbox.moe/as99t6.mp4', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/1280px-ESPN_wordmark.svg.png' }
 ];
 
-function openPlatformPage(platform, logoSrc, videoSrc) {
+function openPlatformPage(platform, logoSrc, videoSrc, imageSrc) {
   // Cacher homeScreen, afficher platformScreen
   document.getElementById('homeScreen').style.display = 'none';
   const ps = document.getElementById('platformScreen');
   ps.style.display = 'flex';
 
   // Hero : vidéo uniquement (pas de logo)
-  document.getElementById('platformHeroLogo').style.display = 'none';
+  const heroLogoEl = document.getElementById('platformHeroLogo');
+  const heroBgEl = document.getElementById('platformHeroBgFallback');
+  if (imageSrc) {
+    // Page avec image de fond + logo (ex : Halloween)
+    heroBgEl.style.background = "url('" + imageSrc + "') center/cover no-repeat";
+    heroLogoEl.src = logoSrc;
+    heroLogoEl.style.display = 'block';
+    heroLogoEl.style.maxHeight = '140px';
+    heroLogoEl.style.maxWidth = '420px';
+    videoSrc = null;
+  } else {
+    heroBgEl.style.background = '';
+    heroLogoEl.style.display = 'none';
+    heroLogoEl.style.maxHeight = '';
+    heroLogoEl.style.maxWidth = '';
+  }
   const heroVid = document.getElementById('platformHeroVideo');
   if (videoSrc) {
     heroVid.src = videoSrc;
@@ -10372,10 +10406,12 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
       card.dataset.video = b.video;
       card.dataset.heroVideo = b.heroVideo;
       card.dataset.logo = b.logo;
+      if (b.heroImage) card.dataset.heroImage = b.heroImage;
+      if (b.bg) card.style.background = b.bg;
       card.setAttribute('onmouseenter', 'hoverPlatform(this)');
       card.setAttribute('onmouseleave', 'leavePlatform()');
       card.setAttribute('onclick', 'clickPlatform(this)');
-      card.innerHTML = `<video class="card-video" muted loop playsinline preload="none"></video><img class="card-logo" src="${b.logo}" alt="${b.label}">`;
+      card.innerHTML = `<video class="card-video" muted loop playsinline preload="none"></video><img class="card-logo" src="${b.logo}" alt="${b.label}"${b.heroImage ? ' style="max-width:140px;max-height:80px;"' : ''}>`;
       row.appendChild(card);
     });
     sec.appendChild(row);
@@ -10564,10 +10600,16 @@ function openPlatformPage(platform, logoSrc, videoSrc) {
   ps.scrollTo(0, 0);
 }
 
+function openHalloweenPage() {
+  const b = disneyPlusBrands.find(x => x.platform === 'halloween');
+  if (b) openPlatformPage('halloween', b.logo, null, b.heroImage);
+}
+
 function closePlatformPage() {
   const heroVid = document.getElementById('platformHeroVideo');
   heroVid.pause();
   heroVid.src = '';
+  document.getElementById('platformHeroBgFallback').style.background = '';
   document.getElementById('platformScreen').style.display = 'none';
   document.getElementById('homeScreen').style.display = 'flex';
   leavePlatform();
@@ -10584,6 +10626,10 @@ function closePlatformPage() {
   <button class="bn-item" data-bn="search" onclick="bnOpenSearch()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
     <span>Rechercher</span>
+  </button>
+  <button class="bn-item" data-bn="halloween" onclick="bnGoHalloween()">
+    <div style="font-size:21px;line-height:23px;height:23px;">🎃</div>
+    <span>Halloween</span>
   </button>
   <button class="bn-item" data-bn="tv" onclick="bnGoTV()">
     <svg class="bn-icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="1.5"/><path d="M8 3l4 3 4-3"/></svg>
@@ -10629,6 +10675,11 @@ function bnOpenSearch(){
   if(ps && ps.style.display !== 'none') closePlatformPage();
   openMobileSearch();
   bnSetActive('search');
+}
+function bnGoHalloween(){
+  if(document.getElementById('mobileSearchScreen').classList.contains('open')) closeMobileSearch();
+  openHalloweenPage();
+  bnSetActive('halloween');
 }
 function bnGoTV(){
   const ps = document.getElementById('platformScreen');
