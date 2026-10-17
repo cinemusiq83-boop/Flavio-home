@@ -2364,6 +2364,10 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
           <svg class="fmp-ic" viewBox="0 0 24 24"><path d="M5 4 15 12 5 20z"/><path d="M19 5v14"/></svg>
           <span>Suivant</span>
         </button>
+        <button class="fmp-act" id="fmpTracks" style="display:none" aria-label="Audio et sous-titres">
+          <svg class="fmp-ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 12h3"/><path d="M14 12h3"/><path d="M7 15.5h6"/></svg>
+          <span id="fmpTracksLbl">Audio &amp; sous-titres</span>
+        </button>
       </div>
     </div>
   </div>
@@ -4877,13 +4881,13 @@ const avatarData = {
 // ══════════════════════════════════════════
 const allContent = [
 
-  {id:1008,title:"Insidious L'Invasion Du Lointain",genre:"Horreur",type:"film",thumb:"https://image.tmdb.org/t/p/original/rX3Ihgw3AGQIsxpis1YqEGVPWZQ.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/ay2bo9.m3u",embed:true,hero:true},
-  {id:1002,title:"Spider Man Brand New Day",genre:"Marvel",type:"film",thumb:"https://image.tmdb.org/t/p/original/6OEtkkzoyusZDm2uMJojlWZSLR9.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/g5k729.m3u",embed:true,hero:true},
+  {id:1008,title:"Insidious L'Invasion Du Lointain",genre:"Horreur",type:"film",thumb:"https://image.tmdb.org/t/p/original/rX3Ihgw3AGQIsxpis1YqEGVPWZQ.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/f3pl1n.m3u",embed:true,hero:true},
+  {id:1002,title:"Spider Man Brand New Day",genre:"Marvel",type:"film",thumb:"https://image.tmdb.org/t/p/original/6OEtkkzoyusZDm2uMJojlWZSLR9.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/0djhob.m3u",embed:true,hero:true},
   {id:992,title:"La Bataille De Gaulle L'Age De Fer",genre:"Biopic",type:"film",thumb:"https://image.tmdb.org/t/p/original/zWuZWFKyga6GF3agrhJn8UtdMSu.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-ersk1n7l9vwb.html",embed:true,hero:true},
   {id:955,title:"Toy Story 5",genre:"Pixar",type:"film",thumb:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=227,height=320/image/552839122/c4a80f78-b39b-45e3-a459-50010248d9a6.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-kdpmzs40okkz.html",embed:true,hero:true},
-  {id:947,title:"The Mandalorian And Grogu",genre:"Star Wars",type:"film",thumb:"https://files.catbox.moe/oloxah.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/d8kfjf.m3u",embed:true,hero:true},
+  {id:947,title:"The Mandalorian And Grogu",genre:"Star Wars",type:"film",thumb:"https://files.catbox.moe/oloxah.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/c2wk0s.m3u",embed:true,hero:true},
   {id:931,title:"Le Diable S'Habille En Prada 2",genre:"Comedie",type:"film",thumb:"https://files.catbox.moe/n5n0wa.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-0fgno6f0z2bf.html",embed:true,hero:true},
-  {id:896,title:"Michael",genre:"Biopic",type:"film",thumb:"https://images.justwatch.com/poster/343089542/s718/michael-2025-0.jpg",backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/STD169/MICHAEL_myCANAL_16x9_MEA_1920x1080_jpg80_-vk1p",src:"https://files.catbox.moe/i2pbyn.m3u",embed:true,hero:true},
+  {id:896,title:"Michael",genre:"Biopic",type:"film",thumb:"https://images.justwatch.com/poster/343089542/s718/michael-2025-0.jpg",backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/STD169/MICHAEL_myCANAL_16x9_MEA_1920x1080_jpg80_-vk1p",src:"https://files.catbox.moe/3y7uot.m3u",embed:true,hero:true},
   {id:1022,title:"Cruella",genre:"Disney",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/3fe5f05d-dd38-4917-8b7b-4e285e68e12c/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/y3qk4z.m3u",embed:true,hero:true},
   {id:1020,title:"Le Village",genre:"Horreur",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/c3f70c54-71e5-4807-b71b-500bb62686a1/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-t2qp9gth80vw.html",embed:true,hero:true},
   {id:1021,title:"Toy Story Angoisse Au Motel",genre:"Pixar",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/407ddf72-8510-439c-8432-1250170e5931/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-aqlilf8jfmcl.html",embed:true,hero:true},
@@ -4895,24 +4899,24 @@ const allContent = [
   {id:1019,title:"L'Ete Merveilleux De Mickey",genre:"Disney",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/019a83db-5e50-779c-a8e8-1d83dc33c01c/compose?format=webp&label=standard_art_vertical_disney-original_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-v4nrkoe13lth.html",embed:true,hero:true},
   {id:1012,title:"Mylene Farmer Nevermore",genre:"Musique",type:"film",thumb:"https://image.tmdb.org/t/p/original/lLO6ATAviPjvZxrEsdSGHINblqR.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-szsu5w2ijbrs.html",embed:true,hero:true},
   {id:1009,title:"L'Impossible Monsieur Bebe",genre:"Comedie",type:"film",thumb:"https://image.tmdb.org/t/p/original/bIqLibVWopRn1RqRSyS3EvNDTtu.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-1kj7ukyrz56y.html",embed:true,hero:true},
-  {id:1010,title:"Certains L'Aiment Chaud",genre:"Comedie",type:"film",thumb:"https://image.tmdb.org/t/p/original/euufDAwaAcCOxD4l0c5nsS8YBca.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/pr5a5o.m3u",embed:true,hero:true},
-  {id:994,title:"Spider Man",genre:"Marvel",type:"film",thumb:"https://image.tmdb.org/t/p/original/pNz1NREgddPdlzytlR8mW4B26fW.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/pty0ad.m3u",embed:true,hero:true},
-  {id:995,title:"Spider Man 2",genre:"Marvel",type:"film",thumb:"https://image.tmdb.org/t/p/original/m8X5HdADsW5YdmVNjwTOArMOUoL.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/8f5r76.m3u",embed:true,hero:true},
-  {id:996,title:"Spider Man 3",genre:"Marvel",type:"film",thumb:"https://image.tmdb.org/t/p/original/4SBTOPWMM3My5nDIlpNHt6dg78d.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/r0kn7w.m3u",embed:true,hero:true},
-  {id:997,title:"The Amazing Spider Man",genre:"Marvel",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/019b4dc6-df15-796b-88a0-ecfbd94d61ce/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/bgr2nz.m3u",embed:true,hero:true},
-  {id:998,title:"The Amazing Spider Man 2",genre:"Marvel",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/019ff11a-0b4b-7ba5-a29f-9fa0702c62dd/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/qlaory.m3u",embed:true,hero:true},
-  {id:999,title:"Spider Man Homecoming",genre:"Marvel",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/30676c67-f691-4494-a60f-d0b282b60e01/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/zav7qg.m3u",embed:true,hero:true},
-  {id:1000,title:"Spider Man Far From Home",genre:"Marvel",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/632450d1-6bcc-4ff7-8a07-da32797e7946/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/9ku5jy.m3u",embed:true,hero:true},
-  {id:1001,title:"Spider Man No Way Home",genre:"Marvel",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/01a0e825-b2b5-7640-904c-b1152287f962/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/0ii4t6.m3u",embed:true,hero:true},
-  {id:1003,title:"Insidious",genre:"Horreur",type:"film",thumb:"https://image.tmdb.org/t/p/original/mmyqYYJTMtCBlUNr0JAp5R59X8H.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/sv9l6z.m3u",embed:true,hero:true},
-  {id:1004,title:"Insidious Chapitre 2",genre:"Horreur",type:"film",thumb:"https://image.tmdb.org/t/p/original/hOlxmQeHtsbOcVZOdiyg3g7smaf.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/3gcng4.m3u",embed:true,hero:true},
+  {id:1010,title:"Certains L'Aiment Chaud",genre:"Comedie",type:"film",thumb:"https://image.tmdb.org/t/p/original/euufDAwaAcCOxD4l0c5nsS8YBca.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/ohoh4j.m3u",embed:true,hero:true},
+  {id:994,title:"Spider Man",genre:"Marvel",type:"film",thumb:"https://image.tmdb.org/t/p/original/pNz1NREgddPdlzytlR8mW4B26fW.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/89csuo.m3u",embed:true,hero:true},
+  {id:995,title:"Spider Man 2",genre:"Marvel",type:"film",thumb:"https://image.tmdb.org/t/p/original/m8X5HdADsW5YdmVNjwTOArMOUoL.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/wfwhfu.m3u",embed:true,hero:true},
+  {id:996,title:"Spider Man 3",genre:"Marvel",type:"film",thumb:"https://image.tmdb.org/t/p/original/4SBTOPWMM3My5nDIlpNHt6dg78d.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/xn5ipv.m3u",embed:true,hero:true},
+  {id:997,title:"The Amazing Spider Man",genre:"Marvel",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/019b4dc6-df15-796b-88a0-ecfbd94d61ce/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/c0u5i4.m3u",embed:true,hero:true},
+  {id:998,title:"The Amazing Spider Man 2",genre:"Marvel",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/019ff11a-0b4b-7ba5-a29f-9fa0702c62dd/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/3836t2.m3u",embed:true,hero:true},
+  {id:999,title:"Spider Man Homecoming",genre:"Marvel",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/30676c67-f691-4494-a60f-d0b282b60e01/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/c4dbfi.m3u",embed:true,hero:true},
+  {id:1000,title:"Spider Man Far From Home",genre:"Marvel",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/632450d1-6bcc-4ff7-8a07-da32797e7946/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/rdk88o.m3u",embed:true,hero:true},
+  {id:1001,title:"Spider Man No Way Home",genre:"Marvel",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/01a0e825-b2b5-7640-904c-b1152287f962/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/8nk022.m3u",embed:true,hero:true},
+  {id:1003,title:"Insidious",genre:"Horreur",type:"film",thumb:"https://image.tmdb.org/t/p/original/mmyqYYJTMtCBlUNr0JAp5R59X8H.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/b2c8wy.m3u",embed:true,hero:true},
+  {id:1004,title:"Insidious Chapitre 2",genre:"Horreur",type:"film",thumb:"https://image.tmdb.org/t/p/original/hOlxmQeHtsbOcVZOdiyg3g7smaf.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/27v1ke.m3u",embed:true,hero:true},
   {id:1005,title:"Insidious Chapitre 3",genre:"Horreur",type:"film",thumb:"https://image.tmdb.org/t/p/original/rkanPmOWSTztjXY2JTvPSuNuB5o.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-9pjdbu39067a.html",embed:true,hero:true},
   {id:1006,title:"Insidious La Derniere Cle",genre:"Horreur",type:"film",thumb:"https://image.tmdb.org/t/p/original/cIqtYK14FviWJWBGIGyTeIgfgsX.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-75gazfshq5po.html",embed:true,hero:true},
   {id:1007,title:"Insidious The Red Door",genre:"Horreur",type:"film",thumb:"https://image.tmdb.org/t/p/original/4Jkz5lqTTCMLVM2MlL4cQZvO73u.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-7nsuksjzt6qr.html",embed:true,hero:true},
-  {id:993,title:"L'Etrange Noel De Monsieur Jack",genre:"Disney",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/fdd8a3d4-11d8-4cc8-b4dd-db28fd7b9ef4/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/e0j67i.m3u",embed:true,hero:true},
-  {id:984,title:"Aline",genre:"Biopic",type:"film",thumb:"https://image.tmdb.org/t/p/original/2v21n2RwbcMagYjcWDYT6rrFdMJ.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/bg6b4y.m3u",embed:true,hero:true},
-  {id:980,title:"Le Parrain",genre:"Thriller",type:"film",thumb:"https://wwwimage-intl.pplusstatic.com/thumbnails/photos/w400-q80/movie_asset/26/32/51/movie_asset_10f3834c-757a-4945-a3a5-7328d706c7eb.jpg?format=webp",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/677zge.m3u",embed:true,hero:true},
-  {id:981,title:"La Fievre Du Samedi Soir",genre:"Musique",type:"film",thumb:"https://wwwimage-intl.pplusstatic.com/thumbnails/photos/w400-q80/movie_asset/94/36/73/movie_asset_f5febfea-272d-4faa-af33-ded5b8ca61eb.jpg?format=webp",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/i70o6p.m3u",embed:true,hero:true},
+  {id:993,title:"L'Etrange Noel De Monsieur Jack",genre:"Disney",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/fdd8a3d4-11d8-4cc8-b4dd-db28fd7b9ef4/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/l60fve.m3u",embed:true,hero:true},
+  {id:984,title:"Aline",genre:"Biopic",type:"film",thumb:"https://image.tmdb.org/t/p/original/2v21n2RwbcMagYjcWDYT6rrFdMJ.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/5la25a.m3u",embed:true,hero:true},
+  {id:980,title:"Le Parrain",genre:"Thriller",type:"film",thumb:"https://wwwimage-intl.pplusstatic.com/thumbnails/photos/w400-q80/movie_asset/26/32/51/movie_asset_10f3834c-757a-4945-a3a5-7328d706c7eb.jpg?format=webp",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/xxs49k.m3u",embed:true,hero:true},
+  {id:981,title:"La Fievre Du Samedi Soir",genre:"Musique",type:"film",thumb:"https://wwwimage-intl.pplusstatic.com/thumbnails/photos/w400-q80/movie_asset/94/36/73/movie_asset_f5febfea-272d-4faa-af33-ded5b8ca61eb.jpg?format=webp",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/a8zuh0.m3u",embed:true,hero:true},
   {id:982,title:"Footloose",genre:"Musique",type:"film",thumb:"https://wwwimage-intl.pplusstatic.com/thumbnails/photos/w400-q80/movie_asset/08/90/39/movie_asset_e55b1bf4-0ae7-4e07-baca-d938ca09466e.jpg?format=webp",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-x96jo7sdql0z.html",embed:true,hero:true},
   {id:983,title:"Premier Contact",genre:"Sci-Fi",type:"film",thumb:"https://image.tmdb.org/t/p/original/mSgYBWMybY9Ug4ZnCGsttPIjUx7.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-sy0x5jka5bo6.html",embed:true,hero:true},
   {id:974,title:"Cleopatre",genre:"Histoire",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/019aa856-f86b-736e-9fcb-3c04b8d7427b/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-uu40bcjvwnko.html",embed:true,hero:true},
@@ -11000,7 +11004,7 @@ function load(url){
   token++;
   teardown(); buffering(true);
   entries = []; entryIdx = 0; reloadRetry = 0; triedListFallback = false;
-  updateNav();
+  updateNav(); updateTracksBtn();
   playStream(url, false);
 }
 async function tryListFallback(url){
@@ -11059,6 +11063,10 @@ function playStream(url, viaProxy){
       reloadRetry = 0;
     });
     hls.on(Hls.Events.FRAG_LOADED, () => { softNet = 0; softMedia = 0; });
+    hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, onTracksChanged);
+    hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, onTracksChanged);
+    hls.on(Hls.Events.AUDIO_TRACK_SWITCHED, refreshTracksUI);
+    hls.on(Hls.Events.SUBTITLE_TRACK_SWITCH, refreshTracksUI);
     hls.on(Hls.Events.ERROR, (ev, d) => onHlsError(d, url));
     hls.loadSource(url); hls.attachMedia(V);
   } else if(V.canPlayType('application/vnd.apple.mpegurl')){
@@ -11242,7 +11250,7 @@ $('fmpNext').onclick = () => { const n = nextTarget(); if(n) n(); };
 
 /* ═════════ Volet latéral (épisodes / versions) ═════════ */
 function openSheet(title){ $('fmpPt').textContent = title; sheetOpen = true; $('fmpPanel').classList.add('open'); $('fmpScrim').classList.add('open'); showUI(true); }
-function closeSheet(){ sheetOpen = false; $('fmpPanel').classList.remove('open'); $('fmpScrim').classList.remove('open'); if(isOpen) showUI(); }
+function closeSheet(){ sheetOpen = false; tracksSheet = false; $('fmpPanel').classList.remove('open'); $('fmpScrim').classList.remove('open'); if(isOpen) showUI(); }
 $('fmpPc').onclick = closeSheet; $('fmpScrim').onclick = closeSheet;
 const row = (label, on, id) => `<button class="fmp-row${on?' on':''}" data-id="${id}"><span>${esc(label)}</span><svg class="fmp-ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></button>`;
 let sheetHandler = null;
@@ -11261,6 +11269,128 @@ $('fmpList').onclick = () => {
     sheetHandler = id => { closeSheet(); playEntry(+id); };
   }
 };
+
+/* ═════════ Audio (FR / EN) et sous-titres ═════════ */
+// Fonctionne avec les pistes déclarées dans le flux m3u8 (EXT-X-MEDIA TYPE=AUDIO / SUBTITLES),
+// via hls.js, ou nativement (Safari/iOS) via audioTracks / textTracks.
+const FR_RE = /^(fr|fra|fre)([-_]|$)/, EN_RE = /^(en|eng)([-_]|$)/;
+function trackCode(lang, name){
+  const l = String(lang||'').toLowerCase();
+  if(FR_RE.test(l)) return 'fr';
+  if(EN_RE.test(l)) return 'en';
+  const n = String(name||'').toLowerCase();
+  if(/fran[cç]|french|\bvff?\b|\bvfi\b/.test(n)) return 'fr';
+  if(/english|anglais|\bvo\b|\bvost\b|\bvoa\b/.test(n)) return 'en';
+  return l || n || '';
+}
+function trackLabel(code, lang, name, i){
+  if(code === 'fr') return 'Français';
+  if(code === 'en') return 'English';
+  return name || (lang ? String(lang).toUpperCase() : 'Piste ' + (i+1));
+}
+function getAudioTracks(){
+  let list = [], cur = -1;
+  if(hls && hls.audioTracks && hls.audioTracks.length){
+    list = hls.audioTracks.map((t,i) => ({ i, lang:t.lang, name:t.name })); cur = hls.audioTrack;
+  } else if(V.audioTracks && V.audioTracks.length){
+    for(let i=0;i<V.audioTracks.length;i++){ const t = V.audioTracks[i]; list.push({ i, lang:t.language, name:t.label }); if(t.enabled) cur = i; }
+  }
+  return { list: list.map(t => { const code = trackCode(t.lang, t.name); return { i:t.i, code, label:trackLabel(code, t.lang, t.name, t.i) }; }), cur };
+}
+function nativeSubs(){ return Array.from(V.textTracks || []).filter(t => t.kind === 'subtitles' || t.kind === 'captions'); }
+function getSubTracks(){
+  let list = [], cur = -1;
+  if(hls && hls.subtitleTracks && hls.subtitleTracks.length){
+    list = hls.subtitleTracks.map((t,i) => ({ i, lang:t.lang, name:t.name })); cur = hls.subtitleDisplay ? hls.subtitleTrack : -1;
+  } else {
+    nativeSubs().forEach((t,i) => { list.push({ i, lang:t.language, name:t.label }); if(t.mode === 'showing') cur = i; });
+  }
+  return { list: list.map(t => { const code = trackCode(t.lang, t.name); return { i:t.i, code, label:trackLabel(code, t.lang, t.name, t.i) }; }), cur };
+}
+function setAudio(i){
+  if(hls && hls.audioTracks && hls.audioTracks.length){ hls.audioTrack = i; }
+  else if(V.audioTracks){ for(let k=0;k<V.audioTracks.length;k++) V.audioTracks[k].enabled = (k === i); }
+}
+function setSub(i){            // i = -1 → désactivés
+  if(hls && hls.subtitleTracks && hls.subtitleTracks.length){
+    if(i < 0){ hls.subtitleTrack = -1; }
+    else { hls.subtitleDisplay = true; hls.subtitleTrack = i; }
+  } else {
+    nativeSubs().forEach((t,k) => { t.mode = (k === i) ? 'showing' : 'disabled'; });
+  }
+}
+function pickAudio(i){
+  const a = getAudioTracks(); const t = a.list.find(x => x.i === i); if(!t) return;
+  setAudio(i); store.set('fmp:audio', t.code);
+  toast('Audio : ' + t.label);
+}
+function pickSub(i){
+  if(i < 0){ setSub(-1); store.set('fmp:subs', 'off'); toast('Sous-titres désactivés'); return; }
+  const t = getSubTracks().list.find(x => x.i === i); if(!t) return;
+  setSub(i); store.set('fmp:subs', t.code);
+  toast('Sous-titres : ' + t.label);
+}
+function toggleSubs(){
+  if(!isOpen) return;
+  const s = getSubTracks();
+  if(!s.list.length){ toast('Aucun sous-titre disponible'); return; }
+  if(s.cur >= 0){ pickSub(-1); }
+  else {
+    const want = store.get('fmp:subs', 'off');
+    const t = s.list.find(x => x.code === want) || s.list.find(x => x.code === 'fr') || s.list[0];
+    pickSub(t.i);
+  }
+  refreshTracksUI();
+}
+// Applique la préférence mémorisée (langue audio, sous-titres) dès que les pistes sont connues.
+function applyTrackPrefs(){
+  const a = getAudioTracks(), wantA = store.get('fmp:audio', null);
+  if(wantA && a.list.length > 1){
+    const t = a.list.find(x => x.code === wantA);
+    if(t && t.i !== a.cur) setAudio(t.i);
+  }
+  const s = getSubTracks(), wantS = store.get('fmp:subs', 'off');
+  if(s.list.length){
+    if(wantS === 'off') setSub(-1);
+    else { const t = s.list.find(x => x.code === wantS); if(t) setSub(t.i); else setSub(-1); }
+  }
+}
+function updateTracksBtn(){
+  const a = getAudioTracks(), s = getSubTracks();
+  $('fmpTracks').style.display = (a.list.length > 1 || s.list.length) ? '' : 'none';
+}
+function onTracksChanged(){ applyTrackPrefs(); updateTracksBtn(); refreshTracksUI(); }
+let tracksSheet = false;
+function refreshTracksUI(){
+  updateTracksBtn();
+  if(!tracksSheet || !sheetOpen) return;
+  const a = getAudioTracks(), s = getSubTracks();
+  let h = '';
+  if(a.list.length){
+    h += '<div class="fmp-sec">AUDIO</div>' + a.list.map(t => row(t.label, t.i === a.cur, 'a:' + t.i)).join('');
+  }
+  h += '<div class="fmp-sec">SOUS-TITRES</div>';
+  if(s.list.length){
+    h += row('Désactivés', s.cur < 0, 's:-1') + s.list.map(t => row(t.label, t.i === s.cur, 's:' + t.i)).join('');
+  } else {
+    h += '<div class="fmp-row" style="cursor:default;opacity:.6"><span>Aucun sous-titre disponible</span></div>';
+  }
+  $('fmpPb').innerHTML = h;
+}
+$('fmpTracks').onclick = () => {
+  openSheet('Audio & sous-titres'); tracksSheet = true; refreshTracksUI();
+  sheetHandler = id => {
+    const [k, v] = id.split(':'), i = +v;
+    if(k === 'a') pickAudio(i); else pickSub(i);
+    refreshTracksUI();
+  };
+};
+// Écoute des pistes natives (Safari / iOS, ou fichiers directs)
+['addtrack','removetrack'].forEach(ev => {
+  if(V.audioTracks && V.audioTracks.addEventListener) V.audioTracks.addEventListener(ev, onTracksChanged);
+  if(V.textTracks && V.textTracks.addEventListener) V.textTracks.addEventListener(ev, onTracksChanged);
+});
+V.addEventListener('loadedmetadata', () => { if(!hls) onTracksChanged(); });
 
 /* ═════════ Plein écran, son, fermeture ═════════ */
 function toggleFs(){
@@ -11315,6 +11445,7 @@ document.addEventListener('keydown', e => {
   else if(k === 'arrowdown'){ e.preventDefault(); V.volume = clamp(V.volume-0.1,0,1); toast('Volume ' + Math.round(V.volume*100) + ' %'); }
   else if(k === 'f') toggleFs();
   else if(k === 'm') V.muted = !V.muted;
+  else if(k === 'c') toggleSubs();
   else if(k === 'n'){ const n = nextTarget(); if(n) n(); }
   else if(k === 'escape'){ if(sheetOpen) closeSheet(); else if(!document.fullscreenElement) closeAll(); }
 }, true);
