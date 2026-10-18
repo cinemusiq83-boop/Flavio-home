@@ -11005,6 +11005,7 @@ function load(url){
   token++;
   teardown(); buffering(true);
   entries = []; entryIdx = 0; reloadRetry = 0; triedListFallback = false;
+  resetSeekState();
   updateNav(); updateTracksBtn();
   playStream(url, false);
 }
@@ -11098,7 +11099,8 @@ function isDirectFile(u){ return /\.(mp4|webm|mkv|mov|m4v|ogv)(\?|#|$)/i.test(u 
 function scheduleReload(){
   if(!isOpen || sheetOpen) return;
   clearTimeout(reloadT);
-  if(V.currentTime > 3) resumeAt = V.currentTime; else if(resumeAt <= 1) resumeAt = 0;
+  const keepT = (wantT != null) ? wantT : V.currentTime;
+  if(keepT > 3) resumeAt = keepT; else if(resumeAt <= 1) resumeAt = 0;
   reloadRetry++;
   buffering(true);
   const delay = Math.min(1000 * reloadRetry, 6000);
@@ -11134,7 +11136,7 @@ V.addEventListener('error', () => {
    hls.js, qui ne se déclenche pas toujours dans ce cas précis. */
 let watchLastT = -1, watchStuck = 0;
 setInterval(() => {
-  if(!isOpen || sheetOpen || V.paused || V.seeking || dragging) { watchStuck = 0; watchLastT = V.currentTime; return; }
+  if(!isOpen || sheetOpen || V.paused || V.seeking || dragging || wantT != null) { watchStuck = 0; watchLastT = V.currentTime; return; }
   if(Math.abs(V.currentTime - watchLastT) < 0.15){
     watchStuck++;
     if(watchStuck >= 3) { watchStuck = 0; scheduleReload(); }
@@ -11167,7 +11169,7 @@ setInterval(savePos, 5000);
 // Ferme uniquement notre lecteur (le lecteur historique du site reste tel quel).
 function hide(){
   if(!isOpen) return;
-  savePos(); token++; teardown(); entries = [];
+  savePos(); token++; resetSeekState(); teardown(); entries = [];
   isOpen = false; closeSheet(); unfreezeFrame();
   P.classList.remove('open','playing','buffering','fmp-nocursor');
   if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
@@ -11197,6 +11199,54 @@ V.addEventListener('ended', () => {
 });
 ['timeupdate','progress','durationchange'].forEach(ev => V.addEventListener(ev, updateProgress));
 V.addEventListener('volumechange', () => $('fmpMute').classList.toggle('muted', V.muted || V.volume === 0));
+
+/* ═════════ Déplacement dans la vidéo (seek) robuste ═════════
+   Problème corrigé : quand on avance dans un film, si le serveur met trop de temps à répondre
+   (ou ne gère pas bien les sauts), le lecteur revenait au début et il fallait tout regarder
+   depuis le départ. Maintenant : on mémorise la position VOULUE ; si le saut n'aboutit pas, on
+   relance la connexion directement À CETTE POSITION (jamais à 0), jusqu'à 3 tentatives. */
+let wantT = null, seekGuardT = null, seekTries = 0;
+const SEEK_GUARD_MS = 12000;
+function armSeekGuard(){
+  clearTimeout(seekGuardT);
+  if(wantT == null) return;
+  seekGuardT = setTimeout(() => {
+    if(!isOpen || wantT == null) return;
+    if(sheetOpen || dragging){ armSeekGuard(); return; }
+    if(seekTries++ >= 3){
+      wantT = null; buffering(false);
+      toast('Ce serveur ne permet pas de se déplacer ici, réessayez un peu plus tard');
+      return;
+    }
+    toast('Reconnexion à ' + fmt(wantT) + '…');
+    scheduleReload();     // relance le flux en reprenant à wantT
+    armSeekGuard();       // et vérifie à nouveau que la position est atteinte
+  }, SEEK_GUARD_MS);
+}
+function seekTo(t){
+  if(!isFinite(t)) return;
+  t = Math.max(0, t);
+  wantT = t; seekTries = 0;
+  try{ V.currentTime = t; }catch(e){}
+  buffering(true);
+  armSeekGuard();
+}
+V.addEventListener('seeked', () => {
+  if(wantT == null){ return; }
+  const missed = Math.abs(V.currentTime - wantT) > 20;          // revenu au début / très loin de la cible
+  if(missed && seekTries < 3){
+    // Le navigateur a "atterri" ailleurs (souvent à 0) : on retente tout de suite à la bonne position.
+    seekTries++;
+    try{ V.currentTime = wantT; }catch(e){}
+    armSeekGuard();
+    return;
+  }
+  clearTimeout(seekGuardT); wantT = null;
+  if(V.readyState >= 3) buffering(false);
+});
+V.addEventListener('seeking', () => { if(wantT != null) buffering(true); });
+// Nouveau film / fermeture : on oublie tout saut en cours.
+function resetSeekState(){ clearTimeout(seekGuardT); wantT = null; seekTries = 0; }
 
 /* ═════════ Barre de progression ═════════ */
 const seekEl = $('fmpSeek'), trackEl = $('fmpTrack');
@@ -11229,7 +11279,7 @@ seekEl.addEventListener('pointermove', e => { if(dragging) moveSeek(e); });
 const endSeek = e => {
   if(!dragging) return;
   dragging = false; seekEl.classList.remove('drag');
-  if(e.type !== 'pointercancel') V.currentTime = pendingT;
+  if(e.type !== 'pointercancel') seekTo(pendingT);
   updateProgress(); showUI();
 };
 seekEl.addEventListener('pointerup', endSeek);
@@ -11240,7 +11290,8 @@ seekEl.addEventListener('keydown', e => {
 });
 function skip(d){
   const [a,b] = range();
-  V.currentTime = b > a ? clamp(V.currentTime + d, a, b) : Math.max(0, V.currentTime + d);
+  const base = (wantT != null) ? wantT : V.currentTime;   // enchaîne bien +10 +10 +10 même si le précédent n'est pas fini
+  seekTo(b > a ? clamp(base + d, a, b) : Math.max(0, base + d));
   showUI();
 }
 function togglePlay(){ if(V.paused){ const p = V.play(); if(p && p.catch) p.catch(()=>{}); } else V.pause(); }
