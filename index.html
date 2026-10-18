@@ -2254,7 +2254,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       <button class="btn-version vf liquid-glass liquid-glass-red" id="btnVF" onclick="playVersion('vf')">🇫🇷 Version Française (VF)</button>
       <button class="btn-version vo liquid-glass" id="btnVO" onclick="playVersion('vo')">🌍 Version Originale (VO)</button>
     </div>
-    <button class="btn-version-cancel" onclick="closeVersionModal()">Annuler</button>
+    <button class="btn-version-cancel" onclick="cancelVersionModal()">Annuler</button>
   </div>
 </div>
 
@@ -6279,21 +6279,21 @@ function showFilmModal(m) {
   const hasVO = meta.srcVO && meta.srcVO !== m.src;
   let actionsHTML = '';
   if (m.type === 'serie') {
-    actionsHTML = `<button class="btn-lecture liquid-glass liquid-glass-red" onclick="closeFilmModal();openPlayer(allContent.find(x=>x.id===${m.id}))"><span class="play-icon">▶</span> Regarder</button>`;
+    actionsHTML = `<button class="btn-lecture liquid-glass liquid-glass-red" onclick="closeFilmModalForPlay();openPlayer(allContent.find(x=>x.id===${m.id}))"><span class="play-icon">▶</span> Regarder</button>`;
   } else if (hasVO) {
     actionsHTML = `
       <button class="btn-lecture liquid-glass liquid-glass-red" onclick="handleLectureClick(${m.id})"><span class="play-icon">▶</span> Lecture</button>
       <button class="btn-vof liquid-glass" onclick="handleLectureClick(${m.id})">🌍 VF / VO</button>
     `;
   } else {
-    actionsHTML = `<button class="btn-lecture liquid-glass liquid-glass-red" onclick="closeFilmModal();openPlayer(allContent.find(x=>x.id===${m.id}))"><span class="play-icon">▶</span> Lecture</button>`;
+    actionsHTML = `<button class="btn-lecture liquid-glass liquid-glass-red" onclick="closeFilmModalForPlay();openPlayer(allContent.find(x=>x.id===${m.id}))"><span class="play-icon">▶</span> Lecture</button>`;
   }
   const inList = isInListe(m.id);
   actionsHTML += `<button class="btn-vof wishlist-modal-btn liquid-glass" style="border-color:${inList?'var(--gold)':'rgba(255,255,255,0.2)'};color:${inList?'var(--gold)':'white'}" onclick="toggleListeModal(${m.id},this)">${inList?'♥ Ma Liste':'♡ Ma Liste'}</button>`;
   // Bouton bande-annonce uniquement si trailer disponible
   const trailerYtId = getTrailerYtId(m.id);
   if (trailerYtId) {
-    actionsHTML += `<button class="btn-trailer liquid-glass liquid-glass-gold" onclick="closeFilmModal();openTrailer(allContent.find(x=>x.id===${m.id}),'${trailerYtId}')">🎬 Bande-annonce</button>`;
+    actionsHTML += `<button class="btn-trailer liquid-glass liquid-glass-gold" onclick="closeFilmModalForPlay();openTrailer(allContent.find(x=>x.id===${m.id}),'${trailerYtId}')">🎬 Bande-annonce</button>`;
   }
   document.getElementById('filmModalActions').innerHTML = actionsHTML;
   document.getElementById('filmModalActionsMobile').innerHTML = actionsHTML;
@@ -6390,6 +6390,13 @@ function showFilmModal(m) {
 
   // ── VIDÉO DE FOND : se lance après quelques secondes sur la fiche ──
   scheduleFilmBgVideo(m);
+}
+
+// Fiche à rouvrir quand on ferme le lecteur (film / série / bande-annonce lancé depuis la fiche)
+let _returnToModalMovie = null;
+function closeFilmModalForPlay() {
+  _returnToModalMovie = currentModalMovie;
+  closeFilmModal();
 }
 
 function closeFilmModal() {
@@ -6560,7 +6567,7 @@ function playerPickEpisode(id, sIdx, eIdx){
 
 function playEpisodeFromModal(id, sIdx, eIdx){
   const item = allContent.find(x => x.id === id);
-  closeFilmModal();
+  closeFilmModalForPlay();
   if(item) openPlayer(item, sIdx, eIdx);
 }
 
@@ -6829,10 +6836,10 @@ function handleLectureClick(filmId) {
   const hasVO = meta.srcVO && meta.srcVO !== m.src;
   if (hasVO) {
     currentFilmForVersion = m;
-    closeFilmModal();
+    closeFilmModalForPlay();
     document.getElementById('versionModal').classList.add('open');
   } else {
-    closeFilmModal();
+    closeFilmModalForPlay();
     openPlayer(m);
   }
 }
@@ -6850,6 +6857,11 @@ function playVersion(version) {
 }
 function closeVersionModal() {
   document.getElementById('versionModal').classList.remove('open');
+}
+function cancelVersionModal() {
+  closeVersionModal();
+  currentFilmForVersion = null;
+  if (_returnToModalMovie) { const m = _returnToModalMovie; _returnToModalMovie = null; showFilmModal(m); }
 }
 function openPlayerDirect(m, titleOverride) {
   window.fmpCurEp=null;
@@ -9892,6 +9904,11 @@ function closePlayer(){
     navigator.mediaSession.metadata = null;
   }
   if(currentTab==='accueil') renderCatalog('accueil');
+  // Retour sur la fiche de présentation du film / de la série
+  if(_returnToModalMovie){
+    const _m=_returnToModalMovie; _returnToModalMovie=null;
+    showFilmModal(_m);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -10181,10 +10198,16 @@ window.onload=()=>{
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
-    closePlayer();
-    closeEditor();
-    closeFilmModal();
-    closeVersionModal();
+    const _po=document.getElementById('playerOverlay');
+    if(_po && _po.classList.contains('open')){
+      closePlayer();            // revient sur la fiche
+    } else if(document.getElementById('versionModal').classList.contains('open')){
+      cancelVersionModal();     // revient sur la fiche
+    } else {
+      _returnToModalMovie=null;
+      closeEditor();
+      closeFilmModal();
+    }
   }
   // Flèches haut/bas : changer de chaîne quand le lecteur de chaînes TV est ouvert.
   const tvChPlayerEl = document.getElementById('tvChPlayer');
