@@ -10907,6 +10907,11 @@ function fmt(s){
   return (h ? h+':'+String(m).padStart(2,'0') : m) + ':' + String(x).padStart(2,'0');
 }
 const needsProxy = u => !!PROXY && /^http:/i.test(u) && location.protocol === 'https:';
+// Mémorise, pour chaque serveur, le chemin qui a réellement fonctionné (direct ou via le relais)
+// afin de repartir directement dessus la fois suivante, sans perdre de temps sur un chemin qui échoue.
+const hostOf = u => { try{ return new URL(u).host; }catch(e){ return ''; } };
+const routeKey = u => 'fmp:route:' + hostOf(u);
+const preferProxy = u => !!PROXY && (needsProxy(u) || store.get(routeKey(u), '') === 'proxy');
 
 /* ═════════ Détection des liens m3u ═════════ */
 // Accepte : https://…/film.m3u  |  https://…/film.m3u8  |  https://hlsplayer.net/embed?type=m3u8&src=https://…/film.m3u
@@ -10921,7 +10926,7 @@ window.fmpExtract = function(src){
 /* ═════════ État ═════════ */
 let hls = null, token = 0, isOpen = false;
 let baseUrl = '', origSrc = '', baseTitle = '', streamUrl = '', usedProxy = false, reloadRetry = 0, reloadT = null;
-let entries = [], entryIdx = 0;
+let entries = [], entryIdx = 0, gotData = false, routeSaved = '';
 let dragging = false, pendingT = 0, hideT, toastT, resumeAt = 0, sheetOpen = false;
 
 function toast(t){ const el = $('fmpToast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove('show'), 2400); }
@@ -11007,7 +11012,7 @@ function load(url){
   entries = []; entryIdx = 0; reloadRetry = 0; triedListFallback = false;
   resetSeekState();
   updateNav(); updateTracksBtn();
-  playStream(url, false);
+  playStream(url, preferProxy(url));
 }
 async function tryListFallback(url){
   triedListFallback = true;
@@ -11021,8 +11026,8 @@ async function tryListFallback(url){
 function playEntry(i){
   entryIdx = i; reloadRetry = 0; buffering(true); resumeAt = 0;
   const e = entries[i]; updateNav(); setMediaSession();
-  if(/\.(mp4|webm|mkv|mov|m4v|ogv)(\?|#|$)/i.test(e.url)) playDirect(e.url, false);
-  else playStream(e.url, false);
+  if(/\.(mp4|webm|mkv|mov|m4v|ogv)(\?|#|$)/i.test(e.url)) playDirect(e.url, preferProxy(e.url));
+  else playStream(e.url, preferProxy(e.url));
 }
 function teardown(){
   clearTimeout(reloadT);
@@ -11056,7 +11061,12 @@ function playStream(url, viaProxy){
   const useProxy = !!PROXY && (viaProxy || needsProxy(url));
   usedProxy = useProxy; streamUrl = url;
   if(window.Hls && Hls.isSupported()){
-    const cfg = { enableWorker:true, maxBufferLength:40, maxMaxBufferLength:120, liveDurationInfinity:true };
+    gotData = false;
+    const quick = { default:{ maxTimeToFirstByteMs:8000, maxLoadTimeMs:15000,
+      timeoutRetry:{ maxNumRetry:0, retryDelayMs:0, maxRetryDelayMs:0 },
+      errorRetry:{ maxNumRetry:0, retryDelayMs:0, maxRetryDelayMs:0 } } };
+    const cfg = { enableWorker:true, maxBufferLength:40, maxMaxBufferLength:120, liveDurationInfinity:true,
+                  manifestLoadPolicy:quick, playlistLoadPolicy:quick };
     if(useProxy) cfg.loader = makeLoader();
     hls = new Hls(cfg);
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -11064,7 +11074,7 @@ function playStream(url, viaProxy){
       const p = V.play(); if(p && p.catch) p.catch(()=>{});
       reloadRetry = 0;
     });
-    hls.on(Hls.Events.FRAG_LOADED, () => { softNet = 0; softMedia = 0; });
+    hls.on(Hls.Events.FRAG_LOADED, () => { softNet = 0; softMedia = 0; gotData = true; });
     hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, onTracksChanged);
     hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, onTracksChanged);
     hls.on(Hls.Events.AUDIO_TRACK_SWITCHED, refreshTracksUI);
@@ -11080,6 +11090,7 @@ function playStream(url, viaProxy){
   }
 }
 function playDirect(url, viaProxy){
+  gotData = false;
   freezeFrame();
   if(hls){ try{ hls.destroy(); }catch(e){} hls = null; }
   const useProxy = !!PROXY && (viaProxy || needsProxy(url));
@@ -11103,13 +11114,15 @@ function scheduleReload(){
   if(keepT > 3) resumeAt = keepT; else if(resumeAt <= 1) resumeAt = 0;
   reloadRetry++;
   buffering(true);
-  const delay = Math.min(1000 * reloadRetry, 6000);
+  const delay = reloadRetry === 1 ? 250 : Math.min(1000 * reloadRetry, 6000);
   const tk = token;
   reloadT = setTimeout(() => {
     if(tk !== token || !isOpen) return;
     const url = currentEntryUrl();
-    // Alterne direct / proxy à chaque nouvelle tentative pour contourner un éventuel blocage ponctuel.
-    const viaProxy = !!PROXY && (reloadRetry % 2 === 0);
+    // Change de chemin (direct <-> relais) dès la 1re tentative qui échoue, au lieu de réessayer
+    // plusieurs fois le même chemin : c'est ce qui faisait attendre ~30 s avant le début du film.
+    const viaProxy = !!PROXY && (needsProxy(url) || !usedProxy);
+    if(PROXY && reloadRetry >= 1) toast(viaProxy ? 'Nouvelle tentative via le relais…' : 'Nouvelle tentative en direct…');
     if(isDirectFile(url)) playDirect(url, viaProxy); else playStream(url, viaProxy);
   }, delay);
 }
@@ -11122,7 +11135,7 @@ const SOFT_MAX = 6;
 function onHlsError(d, url){
   if(!d || !d.fatal) return;
   if(d.details === 'manifestParsingError' && !triedListFallback){ tryListFallback(url); return; }
-  if(d.type === Hls.ErrorTypes.NETWORK_ERROR && softNet++ < SOFT_MAX && hls){ hls.startLoad(); return; }
+  if(d.type === Hls.ErrorTypes.NETWORK_ERROR && gotData && softNet++ < SOFT_MAX && hls){ hls.startLoad(); return; }
   if(d.type === Hls.ErrorTypes.MEDIA_ERROR && softMedia++ < SOFT_MAX && hls){ hls.recoverMediaError(); return; }
   scheduleReload();
 }
@@ -11185,7 +11198,13 @@ V.addEventListener('play',  () => { P.classList.add('playing'); showUI(); });
 V.addEventListener('pause', () => { P.classList.remove('playing'); showUI(true); });
 V.addEventListener('waiting', () => buffering(true));
 V.addEventListener('stalled', () => buffering(true));
-V.addEventListener('playing', () => { buffering(false); unfreezeFrame(); });
+V.addEventListener('playing', () => {
+  buffering(false); unfreezeFrame(); reloadRetry = 0;
+  if(streamUrl){
+    const mark = streamUrl + '|' + (usedProxy ? 'p' : 'd');
+    if(routeSaved !== mark){ routeSaved = mark; if(PROXY) store.set(routeKey(streamUrl), usedProxy ? 'proxy' : 'direct'); }
+  }
+});
 V.addEventListener('canplay', () => buffering(false));
 V.addEventListener('loadedmetadata', () => {
   if(resumeAt > 10 && isFinite(V.duration) && resumeAt < V.duration - 30){
