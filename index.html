@@ -987,6 +987,14 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .ep-card.skeleton .ep-card-thumb{animation:epPulse 1.2s ease-in-out infinite;}
 @keyframes epPulse{0%,100%{opacity:.55}50%{opacity:1}}
 
+.ep-card.active .ep-card-thumb{box-shadow:0 0 0 3px var(--gold);}
+/* Liste d'épisodes sous le lecteur */
+.player-eps{display:none;width:100%;max-width:960px;margin-top:24px;padding-bottom:50px;flex-shrink:0;}
+.player-overlay.has-eps{justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.player-overlay.has-eps .player-header,.player-overlay.has-eps .player-frame{flex-shrink:0;}
+@media (min-width:901px){.player-eps .eps-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media (max-width:768px){.player-eps{max-width:100%;margin-top:18px;}}
+
 /* ── ONGLETS : SUGGESTIONS / DÉTAILS ── */
 .film-modal-tabs {
   display:flex; align-items:center; gap:44px;
@@ -1526,10 +1534,16 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   .tv-channel img { width:100%; height:100%; object-fit:cover; }
   .tv-channel { padding:10px 8px; }
   .tv-channel-num { font-size:.6rem; }
-  .player-overlay { padding:10px; justify-content:flex-start; padding-top:12px; }
-  .player-header { max-width:100%; padding:0 0 10px; }
+  /* Lecteur plein écran sur mobile (comme la version ordinateur) : l'embed prend tout l'écran,
+     le bouton fermer reste par-dessus en haut */
+  .player-overlay { padding:0; justify-content:flex-start; align-items:stretch; background:#000; }
+  .player-header { position:absolute; top:0; left:0; right:0; z-index:5; max-width:100%; width:auto;
+    padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 18px; pointer-events:none;
+    background:linear-gradient(rgba(0,0,0,.65),transparent); }
+  .player-header > * { pointer-events:auto; }
+  .player-header .close-btn { background:rgba(0,0,0,.55); border-radius:50%; }
   .player-title { font-size:.82rem; }
-  .player-frame { max-width:100%; }
+  .player-frame { max-width:100%; width:100%; height:100vh; height:100dvh; aspect-ratio:auto; border:none; border-radius:0; }
   #profilesScreen h1 { font-size:1.4rem; margin-bottom:30px; }
   .profiles-grid { gap:20px; }
   .profiles-actions { flex-direction:column; align-items:center; gap:10px; margin-top:32px; }
@@ -2251,6 +2265,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     <button class="close-btn" onclick="closePlayer()">✕</button>
   </div>
   <div class="player-frame" id="playerFrame"></div>
+  <div class="player-eps" id="playerEps"></div>
   <div class="episodes-panel" id="episodesPanel" style="display:none">
     <div class="seasons-tabs" id="seasonsTabs"></div>
     <div class="episode-list" id="episodeList"></div>
@@ -5298,9 +5313,9 @@ const allContent = [
   {
     id:989, title:"Lol Qui Rit Sort", genre:"Comedie", type:"serie",thumb:"https://image.tmdb.org/t/p/original/ha9Nii4BB05xLLSQEAwZsdKIhZX.jpg",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-4a3narkv0jxk.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-2m2p7jjlo9k5.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-dnbqbaapblnu.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-xha429ek6ncp.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-2q13qddnvcyw.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-q6bnv67szosz.html",embed:true}]},{label:"Saison 2",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-ox2iqcbfc0oz.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-f2ft8awp1ox7.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-vr41mutba0qp.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-xngrrbsitaeg.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-mz1nd98egooa.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-s5t367ryze8u.html",embed:true}]},{label:"Saison 3",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-ivyye0uai8p2.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-uq80nl6d7lj1.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-8yhy69wdojr1.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-59ah9hzw3p68.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-5j2d8jffcik5.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-x6n76uy9tn9r.html",embed:true},{label:"Épisode 7",src:"https://vidzy.org/embed-fkhrxbjhwz9z.html",embed:true}]},{label:"Saison 4",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-77qvgb4is5id.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-vbyn3thg3kgx.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-47h1suw79a7u.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-edrmrpvujopi.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-9wmpsmuhil2p.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-n356upxmd2gf.html",embed:true},{label:"Épisode 7",src:"https://vidzy.org/embed-w13rf1f0r4uv.html",embed:true}]},{label:"Saison 5",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-ivwy90a5lkfs.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-yfemxno4lcxx.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-nefjj2mjfn3y.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-z2z1c2e325z8.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-pm6yqt8ch1t0.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-ydoe8d48nq1e.html",embed:true},{label:"Épisode 7",src:"https://vidzy.org/embed-0uxm2b12wrjs.html",embed:true}]},{label:"Saison 6",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-no0k55d73l9w.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-1a3lsn4e9wih.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-cw30xqft9dz7.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-hyw7lg6sfs9r.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-jastdza1sn3y.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-27lqod30492k.html",embed:true}]}]},
   {id:988,title:"Berlin Et La Dame A L'Hermine",genre:"Action",type:"serie",thumb:"https://image.tmdb.org/t/p/original/yWdVvPeIKM08eYGGAU7G2FHlEL5.jpg",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-rpgllf235ktg.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-4b4il5net4o6.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-nqqdl6hcyuwt.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-8ntvazuv3g00.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-hfnmww1d29uz.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-s0tdau594hjp.html",embed:true},{label:"Épisode 7",src:"https://vidzy.org/embed-b16377lbyhne.html",embed:true},{label:"Épisode 8",src:"https://vidzy.org/embed-mignet8csml9.html",embed:true}]}]},
-  {id:987,title:"Monstres — L'histoire de Lizzie Borden",genre:"Thriller",type:"serie",thumb:"https://image.tmdb.org/t/p/original/ruw68QldiWzOjUdKX9hUFT1pjv.jpg",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-7i0kll5v4d7e.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-uxjb3iws7x33.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-k5d8v3l0ezqt.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-ki08hn10lhev.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-kmpm1k97dedi.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-5ac26wnwpdey.html",embed:true},{label:"Épisode 7",src:"https://vidzy.org/embed-wbi0568h8ky5.html",embed:true},{label:"Épisode 8",src:"https://vidzy.org/embed-ma1nk7mct308.html",embed:true}]}]},
+  {id:987,title:"Monstre — L'histoire de Lizzie Borden",genre:"Thriller",type:"serie",thumb:"https://image.tmdb.org/t/p/original/ruw68QldiWzOjUdKX9hUFT1pjv.jpg",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-7i0kll5v4d7e.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-uxjb3iws7x33.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-k5d8v3l0ezqt.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-ki08hn10lhev.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-kmpm1k97dedi.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-5ac26wnwpdey.html",embed:true},{label:"Épisode 7",src:"https://vidzy.org/embed-wbi0568h8ky5.html",embed:true},{label:"Épisode 8",src:"https://vidzy.org/embed-ma1nk7mct308.html",embed:true}]}]},
   {id:986,title:"Monstres — L'histoire de Lyle Et Erik Menendez",genre:"Thriller",type:"serie",thumb:"https://image.tmdb.org/t/p/original/fGl9kgT7G7RRZFIorYeoTE5jCgH.jpg",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-ee2p5sekkf5k.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-7n3ggt9oy0eh.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-tttqd2b6ejd1.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-cg37xizd2ug4.html",embed:true},{label:"Épisode 5",src:"https://uqload.vc/embed-7npwwn3axxoa.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-h9hv2oiyjjxj.html",embed:true},{label:"Épisode 7",src:"https://vidzy.org/embed-6afb6sc7l9l7.html",embed:true},{label:"Épisode 8",src:"https://vidzy.org/embed-kqemm8fwqj8c.html",embed:true},{label:"Épisode 9",src:"https://vidzy.org/embed-aqxwtksg5zqh.html",embed:true}]}]},
-  {id:985,title:"Monstres — L'histoire de Jeffrey Dahmer",genre:"Thriller",type:"serie",thumb:"https://image.tmdb.org/t/p/original/7UVDGhtxM7RjP7DLMC7nxusd12f.jpg",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-uliu08mz56g6.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-77qdwhuanca2.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-v9rsg4q8ff9v.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-5bniwhep91f9.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-1hfwd8jtp4sc.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-wn3kbo0356zn.html",embed:true},{label:"Épisode 7",src:"https://vidzy.org/embed-f9llsk0r4jf2.html",embed:true},{label:"Épisode 8",src:"https://vidzy.org/embed-3am4iknu50tg.html",embed:true},{label:"Épisode 9",src:"https://vidzy.org/embed-r4sl3vvi8hor.html",embed:true},{label:"Épisode 10",src:"https://vidzy.org/embed-57xy3lrrvnj3.html",embed:true}]}]},
+  {id:985,title:"Monstre — L'histoire de Jeffrey Dahmer",genre:"Thriller",type:"serie",thumb:"https://image.tmdb.org/t/p/original/7UVDGhtxM7RjP7DLMC7nxusd12f.jpg",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-uliu08mz56g6.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-77qdwhuanca2.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-v9rsg4q8ff9v.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-5bniwhep91f9.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-1hfwd8jtp4sc.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-wn3kbo0356zn.html",embed:true},{label:"Épisode 7",src:"https://vidzy.org/embed-f9llsk0r4jf2.html",embed:true},{label:"Épisode 8",src:"https://vidzy.org/embed-3am4iknu50tg.html",embed:true},{label:"Épisode 9",src:"https://vidzy.org/embed-r4sl3vvi8hor.html",embed:true},{label:"Épisode 10",src:"https://vidzy.org/embed-57xy3lrrvnj3.html",embed:true}]}]},
   {
     id:101, title:"Looney Tunes Show", genre:"Animation", type:"serie",
     thumb:"https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=600,height=800/image/537077836/8322896c-669a-4d8a-8966-3698ef02d552.jpg",
@@ -5462,8 +5477,8 @@ seasons:[
   }
 ]
 }
-  ,{id:707,title:"Zorro",genre:"Action",type:"serie",thumb:"https://wwwimage-intl.pplusstatic.com/thumbnails/photos/w400-q80/show_asset/50/19/32/show_asset_e2de1593-89b1-474c-9eb4-ae42ca503c70.jpg?format=webp",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-hw3xrbq1orhi.html",embed:true},{label:"Épisode 2",src:"https://uqload.vc/embed-m8zx1akdb8fj.html",embed:true},{label:"Épisode 3",src:"https://uqload.vc/embed-ycvew4s55wdc.html",embed:true},{label:"Épisode 4",src:"https://uqload.vc/embed-8mvic4m0ib0a.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-i3rh5um0t0uc.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-xfrlscs6hh21.html",embed:true},{label:"Épisode 7",src:"https://vidzy.org/embed-xzmtcxoydryh.html",embed:true},{label:"Épisode 8",src:"https://vidzy.org/embed-tiddf6czd3n5.html",embed:true}]}]}
-  ,{id:708,title:"Monstres — L'histoire d'Ed Gein",genre:"Thriller",type:"serie",thumb:"https://images.justwatch.com/poster/337863055/s718/saison-1.jpg",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://uqload.vc/embed-ccnkjihqqrti.html",embed:true},{label:"Épisode 2",src:"https://uqload.vc/embed-2y83kv20p6l3.html",embed:true},{label:"Épisode 3",src:"https://uqload.vc/embed-x11zsrihae71.html",embed:true},{label:"Épisode 4",src:"https://uqload.vc/embed-uzqvfma0gk46.html",embed:true},{label:"Épisode 5",src:"https://uqload.vc/embed-fxcz6we9vh1g.html",embed:true},{label:"Épisode 6",src:"https://uqload.vc/embed-nqb3538oetyl.html",embed:true},{label:"Épisode 7",src:"https://uqload.vc/embed-lf01koppwgqs.html",embed:true},{label:"Épisode 8",src:"https://uqload.vc/embed-yx3locsxervg.html",embed:true}]}]}
+  ,{id:707,title:"Zorro",genre:"Action",type:"serie",thumb:"https://wwwimage-intl.pplusstatic.com/thumbnails/photos/w400-q80/show_asset/50/19/32/show_asset_e2de1593-89b1-474c-9eb4-ae42ca503c70.jpg?format=webp",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",img:"https://media.themoviedb.org/t/p/w454_and_h254_face/rdj3ocwTN166zAi3fN9MdvuHx1t.jpg",desc:"1821. Don Diego succède à son père à la tête de Los Angeles, 1200 âmes. Il a pour projet d'y amener l'eau, mais se heurte à la réalité d'une ville surendettée auprès de Don Emmanuel. La situation est désespérée, et Diego doit trouver une solution…",src:"https://vidzy.org/embed-hw3xrbq1orhi.html",embed:true},{label:"Épisode 2",img:"https://media.themoviedb.org/t/p/w454_and_h254_face/pnGh0wUJlx31itWSjI4ja9Ncsh0.jpg",desc:"Après le baiser échangé entre Gabriella et Zorro, Diego décide de se débarrasser du costume de son double. C'est à visage découvert et avec l'appui de la loi qu'il est bien décidé à mettre un terme aux pratiques esclavagistes de Don Emmanuel !",src:"https://uqload.vc/embed-m8zx1akdb8fj.html",embed:true},{label:"Épisode 3",img:"https://media.themoviedb.org/t/p/w454_and_h254_face/p8cElpxrVvuZXfh8LgraTNDUOB5.jpg",desc:"Après l'ouverture du casino, les jetons sont devenus l'unique monnaie en ville. Pire, alors que le peuple refuse de payer l'impôt pour reconstruire le château d'eau, il n'hésite pas à donner son argent pour ériger une statue en or de Zorro !",src:"https://uqload.vc/embed-ycvew4s55wdc.html",embed:true},{label:"Épisode 4",img:"https://media.themoviedb.org/t/p/w454_and_h254_face/fi2iWjZdoaTuPzfg26gHCyGKoDS.jpg",desc:"Zorro est ivre de joie suite à la nuit passée avec Gabriella... et Diego ivre de douleur. Si seulement ils n'étaient pas un seul et même homme ! Étourdi par sa jalousie, Zorro demande à Gabriella l'impossible : choisir entre Diego et lui.",src:"https://uqload.vc/embed-8mvic4m0ib0a.html",embed:true},{label:"Épisode 5",img:"https://media.themoviedb.org/t/p/w454_and_h254_face/qSRxfyh4lob5F8qvvPhElxNUhK2.jpg",desc:"Diego ayant abandonné son foyer, Zorro s'installe à l'hacienda de la Vega. Mais le héros de la nuit n'est pas habitué aux exigences du jour...",src:"https://vidzy.org/embed-i3rh5um0t0uc.html",embed:true},{label:"Épisode 6",img:"https://media.themoviedb.org/t/p/w454_and_h254_face/eM8t8gs2Dil8wkDC3ENv8OcxbXi.jpg",desc:"Zorro disparu, Diego espère reconquérir le cœur de Gabriella, mais elle refuse de croire à la mort du héros. Diego insiste, il a été retrouvé, une procession se prépare ! Sous le regard de reproche de Bernardo, Diego va devoir assumer son mensonge.",src:"https://vidzy.org/embed-xfrlscs6hh21.html",embed:true},{label:"Épisode 7",img:"https://media.themoviedb.org/t/p/w454_and_h254_face/j3mX9WFKBGkdaXUPtLg956hIbmr.jpg",desc:"Diego, plus confiant que jamais, engage la construction d'un palais royal pour amplifier le rayonnement de Los Angeles. Il est loin de se douter que Gabriella est furieuse, blessée par la révélation de la manipulation de son mari...",src:"https://vidzy.org/embed-xzmtcxoydryh.html",embed:true},{label:"Épisode 8",img:"https://media.themoviedb.org/t/p/w454_and_h254_face/wtm7JU9voGWUhO7jvds1kNYoOU.jpg",desc:"Diego doit absolument procéder à l'arrestation de cet imposteur en costume de Zorro qui défie son autorité. Il édicte des lois arbitraires afin d'emprisonner toute personne ressemblant, de près ou de loin, au justicier.",src:"https://vidzy.org/embed-tiddf6czd3n5.html",embed:true}]}]}
+  ,{id:708,title:"Monstre — L'histoire d'Ed Gein",genre:"Thriller",type:"serie",thumb:"https://images.justwatch.com/poster/337863055/s718/saison-1.jpg",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://uqload.vc/embed-ccnkjihqqrti.html",embed:true},{label:"Épisode 2",src:"https://uqload.vc/embed-2y83kv20p6l3.html",embed:true},{label:"Épisode 3",src:"https://uqload.vc/embed-x11zsrihae71.html",embed:true},{label:"Épisode 4",src:"https://uqload.vc/embed-uzqvfma0gk46.html",embed:true},{label:"Épisode 5",src:"https://uqload.vc/embed-fxcz6we9vh1g.html",embed:true},{label:"Épisode 6",src:"https://uqload.vc/embed-nqb3538oetyl.html",embed:true},{label:"Épisode 7",src:"https://uqload.vc/embed-lf01koppwgqs.html",embed:true},{label:"Épisode 8",src:"https://uqload.vc/embed-yx3locsxervg.html",embed:true}]}]}
   ,
   {
     id:878, title:"La Casa De Papel : Berlin", genre:"Action", type:"serie",
@@ -6464,8 +6479,9 @@ function buildEpisodesPanel(m){
   renderEpisodesSeason(m, 0, token);
 }
 
-async function renderEpisodesSeason(m, sIdx, token){
-  const grid = document.getElementById('fmEpsGrid');
+async function renderEpisodesSeason(m, sIdx, token, ctx){
+  ctx = ctx || {grid:'fmEpsGrid', pick:'playEpisodeFromModal', stale:()=>token!==epsRenderToken, active:()=>false};
+  const grid = document.getElementById(ctx.grid);
   if(!grid) return;
   const season = m.seasons[sIdx];
   const meta = filmMeta[m.id] || {};
@@ -6473,14 +6489,14 @@ async function renderEpisodesSeason(m, sIdx, token){
   const fallbackDur = meta.duration ? String(meta.duration).replace(/\/ép.*/,'').replace(/\s*min.*/,'') : '';
 
   const draw = (tmdbEps) => {
-    if(token !== epsRenderToken) return;
+    if(ctx.stale()) return;
     grid.innerHTML = season.episodes.map((ep,i)=>{
       const t = tmdbEps && tmdbEps[i];
-      const title = t && t.name ? `${i+1}. ${t.name}` : ep.label;
-      const desc  = t && t.overview ? t.overview : '';
-      const dur   = t && t.runtime ? t.runtime : fallbackDur;
-      const img   = t && t.still_path ? 'https://image.tmdb.org/t/p/w500' + t.still_path : fallbackImg;
-      return `<div class="ep-card${tmdbEps===undefined?' skeleton':''}" onclick="playEpisodeFromModal(${m.id},${sIdx},${i})">
+      const title = ep.title ? `${i+1}. ${ep.title}` : (t && t.name ? `${i+1}. ${t.name}` : ep.label);
+      const desc  = ep.desc || (t && t.overview ? t.overview : '');
+      const dur   = ep.dur || (t && t.runtime ? t.runtime : fallbackDur);
+      const img   = ep.img || (t && t.still_path ? 'https://image.tmdb.org/t/p/w500' + t.still_path : fallbackImg);
+      return `<div class="ep-card${tmdbEps===undefined?' skeleton':''}${ctx.active(sIdx,i)?' active':''}" data-s="${sIdx}" data-e="${i}" onclick="${ctx.pick}(${m.id},${sIdx},${i})">
         <div class="ep-card-thumb"><img src="${epsEsc(img)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${epsEsc(fallbackImg)}'"><span class="ep-card-play"><i></i></span></div>
         <div class="ep-card-title">${epsEsc(title)}</div>
         ${desc ? `<div class="ep-card-desc">${epsEsc(desc)}</div>` : ''}
@@ -6493,10 +6509,53 @@ async function renderEpisodesSeason(m, sIdx, token){
   draw(TMDB_API_KEY ? undefined : null);
   if(!TMDB_API_KEY) return;
   const tvId = await tmdbFindTvId(m);
-  if(token !== epsRenderToken) return;
+  if(ctx.stale()) return;
   if(!tvId){ draw(null); return; }
   const eps = await tmdbSeasonData(tvId, epsSeasonNumber(season, sIdx));
   draw(eps || null);
+}
+
+let playerEpsToken = 0, playerEpsCur = {s:0,e:0};
+function buildPlayerEps(m, sIdx, eIdx){
+  const box = document.getElementById('playerEps');
+  if(!box) return;
+  const token = ++playerEpsToken;
+  playerEpsCur = {s:sIdx, e:eIdx};
+  const options = m.seasons.map((se,i)=>`<option value="${i}"${i===sIdx?' selected':''}>${epsEsc(se.label)}</option>`).join('');
+  box.innerHTML = `
+    <div class="eps-season-pill">
+      <select id="playerEpsSeasonSelect" aria-label="Saison">${options}</select>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5l6 6 6-6"/></svg>
+    </div>
+    <div class="eps-grid" id="playerEpsGrid"></div>`;
+  box.style.display = 'block';
+  const ctx = {grid:'playerEpsGrid', pick:'playerPickEpisode', stale:()=>token!==playerEpsToken, active:(s,i)=>s===playerEpsCur.s && i===playerEpsCur.e};
+  const sel = document.getElementById('playerEpsSeasonSelect');
+  sel.onchange = () => renderEpisodesSeason(m, parseInt(sel.value,10), token, ctx);
+  renderEpisodesSeason(m, sIdx, token, ctx);
+}
+function playerEpsMark(){
+  const m = (typeof currentSerieData !== 'undefined') ? currentSerieData : null;
+  const ep = window.fmpCurEp;
+  if(!m || !m.seasons || !ep) return;
+  for(let a=0;a<m.seasons.length;a++){
+    const b = m.seasons[a].episodes.indexOf(ep);
+    if(b >= 0){ playerEpsCur = {s:a, e:b}; break; }
+  }
+  document.querySelectorAll('#playerEpsGrid .ep-card').forEach(c=>{
+    c.classList.toggle('active', +c.dataset.s===playerEpsCur.s && +c.dataset.e===playerEpsCur.e);
+  });
+}
+function playerPickEpisode(id, sIdx, eIdx){
+  const m = currentSerieData;
+  if(!m || m.id !== id) return;
+  const season = m.seasons[sIdx];
+  const ep = season && season.episodes[eIdx];
+  if(!ep) return;
+  loadEpisode(ep);
+  trackContinueWatching(m, season.label, eIdx, ep.label);
+  const ov = document.getElementById('playerOverlay');
+  if(ov) ov.scrollTo({top:0, behavior:'smooth'});
 }
 
 function playEpisodeFromModal(id, sIdx, eIdx){
@@ -8740,6 +8799,8 @@ function openPlayer(m,startSeason,startEp){
   epPanel.style.display='none';
   mobileUi.style.display='none';
   frame.innerHTML='';
+  overlay.classList.remove('has-eps'); overlay.scrollTop=0;
+  const _pe=document.getElementById('playerEps'); if(_pe){_pe.style.display='none';_pe.innerHTML='';}
   const tvMode=isTVMode();
   if(m.type==='serie'&&m.seasons){
     currentSerieData=m;
@@ -8751,13 +8812,8 @@ function openPlayer(m,startSeason,startEp){
       buildTvPanel(m,sIdx,eIdx);
       showTvBtns(true,true);
       loadEpisode(season.episodes[eIdx]);
-    } else if(window.innerWidth<=768){
-      buildMobileEpUi(m,sIdx,eIdx);
-      mobileUi.style.display='block';
-      loadEpisode(season.episodes[eIdx]);
     } else {
-      epPanel.style.display='block';
-      buildSeasonTabs(m,sIdx,eIdx);
+      // Lecteur seul : uniquement l'embed, sans liste d'épisodes (le choix se fait dans la fiche)
       loadEpisode(season.episodes[eIdx]);
     }
     trackContinueWatching(m, season.label, eIdx, season.episodes[eIdx].label);
@@ -8862,7 +8918,7 @@ function showTvBtns(close,ep){
   if(cb)cb.style.display=close?'flex':'none';
   if(eb)eb.style.display=ep?'flex':'none';
 }
-function loadEpisode(ep){window.fmpCurEp=ep;loadMedia(document.getElementById('playerFrame'),ep.src,ep.embed);}
+function loadEpisode(ep){window.fmpCurEp=ep;loadMedia(document.getElementById('playerFrame'),ep.src,ep.embed);if(typeof playerEpsMark==='function')playerEpsMark();}
 function loadMedia(frame,src,isEmbed){
   // Liens .m3u / .m3u8 (directs ou via hlsplayer.net) → lecteur intégré (comme les chaînes TV)
   const _fmpUrl = (typeof fmpExtract==='function') ? fmpExtract(src) : null;
@@ -9824,8 +9880,9 @@ function openTrailer(m, ytId) {
 }
 function closePlayer(){
   if(typeof fmpHide==='function') fmpHide();
-  document.getElementById('playerOverlay').classList.remove('open');
+  document.getElementById('playerOverlay').classList.remove('open','has-eps');
   document.getElementById('playerFrame').innerHTML='';
+  { const _pe=document.getElementById('playerEps'); if(_pe){_pe.style.display='none';_pe.innerHTML='';} }
   document.body.style.overflow='';
   document.body.classList.remove('tv-mode');
   document.getElementById('tvEpPanel').classList.remove('open');
