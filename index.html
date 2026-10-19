@@ -4926,6 +4926,16 @@ const filmMeta = {
   logo:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/019a7cce-43dc-74e5-aa60-fcd6eeca9bbd/trim?format=webp&max=800%7C300",
   backdrop:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/019a7cce-1842-7be8-b88f-27218d9515ae/compose?format=webp&width=2880"
 },
+1024:{
+  desc:"Un Texan découvre une mallette remplie d'argent sur les lieux d'un crime. Après avoir échappé à des hommes armés, il est poursuivi par un tueur à gages.",
+  director:"Joel Coen, Ethan Coen",
+  cast:"Tommy Lee Jones, Javier Bardem, Josh Brolin",
+  year:"2007",
+  duration:"2h02",
+  country:"États-Unis",
+  logo:"",
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/92127723"
+},
 };
 
 // ══════════════════════════════════════════
@@ -4964,6 +4974,7 @@ const allContent = [
   {id:947,title:"The Mandalorian And Grogu",genre:"Star Wars",type:"film",thumb:"https://files.catbox.moe/oloxah.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/c2wk0s.m3u",embed:true,hero:true},
   {id:931,title:"Le Diable S'Habille En Prada 2",genre:"Comedie",type:"film",thumb:"https://files.catbox.moe/n5n0wa.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-0fgno6f0z2bf.html",embed:true,hero:true},
   {id:896,title:"Michael",genre:"Biopic",type:"film",thumb:"https://images.justwatch.com/poster/343089542/s718/michael-2025-0.jpg",backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/STD169/MICHAEL_myCANAL_16x9_MEA_1920x1080_jpg80_-vk1p",src:"https://files.catbox.moe/3y7uot.m3u",embed:true,hero:true},
+  {id:1024,title:"No Country For Old Men",genre:"Action",type:"film",thumb:"https://image.tmdb.org/t/p/original/TIIk6p8BziUM5dh8DD048PmcHX.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/lmvddl.m3u",embed:true,hero:true},
   {id:1023,title:"Le Monde Merveilleux De Mickey Mouse Steamboat Silly",genre:"Disney",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/7b715e44-2ea4-4cf6-96a5-9c6f268dea2e/compose?format=webp&label=standard_art_vertical_disney-original_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-e07o55855in2.html",embed:true,hero:true},
   {id:1022,title:"Cruella",genre:"Disney",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/3fe5f05d-dd38-4917-8b7b-4e285e68e12c/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/y3qk4z.m3u",embed:true,hero:true},
   {id:1020,title:"Le Village",genre:"Horreur",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/c3f70c54-71e5-4807-b71b-500bb62686a1/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-t2qp9gth80vw.html",embed:true,hero:true},
@@ -9321,7 +9332,8 @@ const trailerMap = {
   1015: 'kYCCa3XUjhk', // Mystere A Venise
   1017: 'g9mz41vzhwI', // L'Hiver Merveilleux De Mickey
   1022: 'VKbJsznd7pg', // Cruella
-    };
+  1024: 'HUWbmT6m7-g', // No Country For Old Men
+  };
 
 function getTrailerYtId(filmId) {
   return trailerMap[filmId] || null;
@@ -9335,6 +9347,7 @@ function getTrailerYtId(filmId) {
 //  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+1024: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_8966_BA/145019/canalplay.com_8966_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // No Country For Old Men
 1022: 'https://youtu.be/0Y-HPkBmxrM', // Cruella
 1010: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91590_BA/150677/canalplay.com_91590_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Certains L'Aiment Chaud
 1011: 'https://youtu.be/qTMKHft6w5o', // Avengers Infinity War
@@ -9586,6 +9599,7 @@ const filmBgVideoMap = {
 // Les flux TVOD sont souvent vidéo seule : l'audio est un second fichier, lu en parallèle et resynchronisé sur la vidéo.
 // Ajoutez ici : id du film → url du fichier audio (.mp4 / .m4a).
 const filmBgAudioMap = {
+  1024: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_8966_BA/145019/canalplay.com_8966_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // No Country For Old Men
   896: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_155495_BA/01KZBNEJNQHTP293J6FQKK72JN/w1_a_aac_0_fra_0_1_128.mp4', // Michael
   1010: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_91590_BA/150677/canalplay.com_91590_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Certains L'Aiment Chaud
   994: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_3347_BA/145864/canalplay.com_3347_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Spider Man
