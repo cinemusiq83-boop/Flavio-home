@@ -2307,6 +2307,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     <div class="radio-full-artist" id="radioFullArtist">—</div>
   </div>
   <div class="radio-full-live-badge" id="radioFullLiveBadge">🔴 En direct</div>
+  <div id="radioDebugInfo" style="max-width:420px;width:100%;margin:-24px 0 18px;font-size:10px;line-height:1.35;color:var(--muted);opacity:.7;text-align:center;word-break:break-all;user-select:text;-webkit-user-select:text;"></div>
   <div class="radio-full-controls">
     <button class="radio-full-ctrl-btn" onclick="prevRadio()">⏮</button>
     <button class="radio-full-ctrl-btn radio-full-play" id="radioFullPlayBtn" onclick="toggleRadioPlay()">⏸</button>
@@ -8807,14 +8808,151 @@ function nrjParseNowPlaying(data){
   if(!data || !Array.isArray(data.itms)) return null;
   // On tolère la casse du champ "type" (SINGLE / single / Single...) et on accepte
   // un morceau même si un seul des deux champs (art/tit) est présent.
-  const isSong = it => it && typeof it.type === 'string' && it.type.toUpperCase() === 'SINGLE' && (it.art || it.tit);
+  const isSong = it => it && typeof it.type === 'string' && ['SINGLE','SONG'].includes(it.type.toUpperCase()) && (it.art || it.tit);
   let song = data.itms.find(isSong);
   // Repli : si aucun item explicitement typé SINGLE n'a de titre/artiste exploitable,
   // on prend le premier item du flux qui possède au moins un titre, quel que soit son type
   // (certaines webradios thématiques ne renvoient pas de type "SINGLE" strict).
   if(!song) song = data.itms.find(it => it && it.tit && String(it.tit).trim());
-  if(song && (song.art || song.tit)) return { artist: song.art || null, title: song.tit || null };
+  if(song && (song.art || song.tit)){
+    const cover = nrjExtractCover(song);
+    if(!cover) console.info('[EPG Radio] aucune image dans l\'item NRJ, champs disponibles :', Object.keys(song).join(', '));
+    return { artist: song.art || null, title: song.tit || null, cover: cover, _raw: song };
+  }
   return null;
+}
+
+// ── Pochette officielle NRJ ──
+// Dans le JSON "onair", chaque radio a : playlist[0].song.img_url
+//   ex : https://players.nrjaudio.fm/live-metadata/player/img/600x/v4_3804-277768.JPG
+// 1) On cherche d'abord une URL d'image directement dans l'item renvoyé par get_plist.
+const NRJ_IMG_BASE = 'https://players.nrjaudio.fm/live-metadata/player/img/600x/';
+// Transforme une valeur trouvée dans la réponse NRJ en URL d'image complète (ou null si ce n'est pas une image de morceau).
+function nrjNormalizeImg(v){
+  if(typeof v!=='string') return null;
+  v = v.trim();
+  if(!/\.(jpe?g|png|webp)(\?.*)?$/i.test(v)) return null;          // doit finir par une extension d'image
+  if(/\/logos\/|player-files|\/logo[_\-.]/i.test(v)) return null;   // pas les logos de radio
+  let u;
+  if(/^(https?:)?\/\//i.test(v))      u = v.startsWith('//') ? 'https:'+v : v.replace(/^http:\/\//i,'https://');
+  else if(v.startsWith('/'))          u = 'https://players.nrjaudio.fm'+v;
+  else if(v.includes('/'))            u = 'https://players.nrjaudio.fm/live-metadata/player/'+v.replace(/^(\.\/)?/, '');
+  else                                u = NRJ_IMG_BASE + v;           // simple nom de fichier : v4_3804-277768.JPG
+  return u.replace(/\/img\/\d+x\//, '/img/600x/');                    // on veut la grande taille
+}
+// Cherche l'image dans l'item (clés connues d'abord, puis toutes les valeurs, y compris objets imbriqués).
+function nrjExtractCover(item){
+  if(!item || typeof item!=='object') return null;
+  const pref = ['cov','img_url','imgurl','img','image','cover','cover_url','pochette','pic','picture','visuel','visual','artwork','thumb','thumbnail','url_img','imageurl'];
+  const all = [];
+  (function walk(o, depth){
+    if(!o || typeof o!=='object' || depth>3) return;
+    for(const k of Object.keys(o)){
+      const v = o[k];
+      if(typeof v==='string') all.push({ k:k.toLowerCase(), v });
+      else if(v && typeof v==='object') walk(v, depth+1);
+    }
+  })(item, 0);
+  for(const e of all){ if(pref.includes(e.k)){ const u = nrjNormalizeImg(e.v); if(u) return u; } }
+  for(const e of all){ const u = nrjNormalizeImg(e.v); if(u) return u; }
+  return null;
+}
+// Vérifie que l'image se charge vraiment (sinon on bascule sur iTunes plutôt que d'afficher une image cassée).
+function nrjImageLoads(url){
+  return new Promise(res=>{
+    let done=false; const end=ok=>{ if(!done){ done=true; res(ok); } };
+    const im = new Image();
+    im.onload = ()=>end(true);
+    im.onerror = ()=>end(false);
+    setTimeout(()=>end(false), 6000);
+    im.src = url;
+  });
+}
+
+// 2) JSON "onair" des radios Nostalgie (id du JSON = id_wr de la radio) ; laisse vide pour désactiver.
+//    Pour les radios présentes dans ce JSON, c'est LA source : artiste + titre + pochette officielle.
+const RADIO_NRJ_ONAIR_URL = '';   // nostalgie.fr bloque les proxys (HTTP 403) : désactivé. L'image est lue via get_plist.
+// Diagnostic : affiche UNE fois un message à l'écran si l'onair est injoignable (mettre false pour couper).
+const RADIO_DEBUG = false;
+let radioDebugShown = {};
+function radioDebug(key, msg){
+  console.warn('[EPG Radio][onair]', msg);
+  if(RADIO_DEBUG && !radioDebugShown[key]){
+    radioDebugShown[key] = true;
+    try{ showToast('Onair : ' + msg); }catch(e){}
+  }
+}
+let nrjOnairCache = { ts:0, data:null };
+let nrjOnairPending = null;
+let nrjOnairFailUntil = 0;
+// Le JSON peut être un tableau de radios, ou un objet qui contient ce tableau.
+function nrjFindRadioList(data){
+  if(Array.isArray(data)) return data;
+  if(data && typeof data==='object'){
+    for(const v of Object.values(data)){
+      if(Array.isArray(v) && v.some(r => r && typeof r==='object' && 'playlist' in r)) return v;
+    }
+  }
+  return null;
+}
+async function nrjFetchOnairJson(){
+  if(!RADIO_NRJ_ONAIR_URL) return null;
+  if(nrjOnairCache.data && (Date.now()-nrjOnairCache.ts) < 15000) return nrjOnairCache.data;
+  if(Date.now() < nrjOnairFailUntil) return null;
+  if(nrjOnairPending) return nrjOnairPending;   // évite 40 requêtes en parallèle (une par carte)
+  nrjOnairPending = (async()=>{
+    const target = RADIO_NRJ_ONAIR_URL + (RADIO_NRJ_ONAIR_URL.includes('?')?'&':'?') + '_cb=' + Date.now();
+    const enc = encodeURIComponent(target);
+    // Mêmes proxys que ceux déjà utilisés pour get_plist
+    const tries = [
+      { u:'https://api.allorigins.win/get?url='+enc, wrap:true },
+      { u:'https://api.allorigins.win/raw?url='+enc },
+      { u:'https://corsproxy.io/?url='+enc },
+      { u:'https://api.codetabs.com/v1/proxy?quest='+enc },
+      { u:'https://thingproxy.freeboard.io/fetch/'+target },
+      { u:target }
+    ];
+    const errors = [];
+    for(const t of tries){
+      const host = t.u.replace(/^https?:\/\//,'').split('/')[0];
+      try{
+        const controller = new AbortController();
+        const timer = setTimeout(()=>controller.abort(), 8000);
+        const r = await fetch(t.u, {signal:controller.signal, cache:'no-store'});
+        clearTimeout(timer);
+        if(!r.ok){ errors.push(host+' HTTP '+r.status); continue; }
+        let text = await r.text();
+        if(t.wrap){ try{ text = JSON.parse(text).contents; }catch(e){ errors.push(host+' enveloppe invalide'); continue; } }
+        let data;
+        try{ data = JSON.parse(radioCleanJsonText(text)); }
+        catch(e){ errors.push(host+' réponse non-JSON ('+String(text).slice(0,40).replace(/\s+/g,' ')+')'); continue; }
+        const list = nrjFindRadioList(data);
+        if(!list){ errors.push(host+' format JSON inattendu'); continue; }
+        nrjOnairCache = { ts:Date.now(), data:list };
+        return list;
+      }catch(e){ errors.push(host+' '+(e.name==='AbortError'?'timeout':e.message)); }
+    }
+    radioDebug('fetch', 'injoignable ('+errors.join(' | ')+')');
+    nrjOnairFailUntil = Date.now() + 5*60*1000;   // on ne réessaie pas avant 5 min
+    return null;
+  })();
+  try{ return await nrjOnairPending; } finally { nrjOnairPending = null; }
+}
+// Renvoie {artist,title,cover} du morceau en cours d'après l'onair, ou null (radio absente, jingle, émission...)
+async function nrjGetOnairSong(idWr){
+  const list = await nrjFetchOnairJson();
+  if(!list) return null;
+  const radio = list.find(r => String(r.id) === String(idWr));
+  if(!radio) return null;                                   // radio absente du JSON (ex: NRJ) -> méthode habituelle
+  const song = radio.playlist && radio.playlist[0] && radio.playlist[0].song;
+  if(!song || !song.img_url){ radioDebug('noimg'+idWr, 'pas d\'img_url pour la radio '+idWr); return null; }
+  // Image par défaut de la radio (jingle / émission) : ce n'est pas une pochette, on laisse la méthode habituelle
+  if(/-default\.(jpe?g|png)$/i.test(song.img_url)) return null;
+  return {
+    artist: song.artist || null,
+    title:  song.title  || null,
+    cover:  song.img_url.replace(/^http:\/\//i,'https://')
+  };
 }
 
 // ── Pochette d'album (via iTunes Search API, public et sans clé) ──
@@ -8853,6 +8991,14 @@ async function radioFetchNowPlaying(chId){
   if(!src) return null;
   const cached = radioNpCache[chId];
   if(cached && (Date.now()-cached.ts) < 20000) return cached.data;
+  // Radios Nostalgie : on lit d'abord le JSON onair (artiste + titre + pochette officielle)
+  if(src.type === 'nrj'){
+    const mId = /[?&]id_wr=(\d+)/.exec(src.url);
+    if(mId){
+      const onair = await nrjGetOnairSong(mId[1]);
+      if(onair){ radioNpCache[chId] = { ts:Date.now(), data:onair }; return onair; }
+    }
+  }
   // sg_memory sans valeur fait planter certains proxies CORS
   let targetUrl = src.url.replace(/&sg_memory(?!=)/, '&sg_memory=1');
   // Cache-buster : certains proxies CORS (allorigins, corsproxy.io, codetabs...) mettent en cache
@@ -8900,7 +9046,16 @@ async function radioFetchNowPlaying(chId){
       }
 
       if(result){
-        result.cover = await radioFetchCover(result.artist, result.title);
+        // Pochette : image de get_plist si fournie ET qui se charge, sinon recherche iTunes (comme avant)
+        result.coverSource = null;
+        if(result.cover){
+          if(await nrjImageLoads(result.cover)) result.coverSource = 'NRJ get_plist';
+          else { console.warn('[EPG Radio] image NRJ non chargeable :', result.cover); result.coverSource = 'iTunes (image NRJ illisible: '+result.cover+')'; result.cover = null; }
+        }
+        if(!result.cover){
+          result.cover = await radioFetchCover(result.artist, result.title);
+          if(!result.coverSource) result.coverSource = result.cover ? 'iTunes (aucune image dans get_plist)' : 'aucune';
+        }
         radioNpCache[chId]={ts:Date.now(),data:result};
         return result;
       } else {
@@ -9035,6 +9190,10 @@ function renderRadioPlayerMeta(ch, np){
   if(fullStation)fullStation.textContent = stationName;
   if(fullTitle)  fullTitle.textContent = title;
   if(fullArtist) fullArtist.textContent = artist;
+  const dbg = document.getElementById('radioDebugInfo');
+  if(dbg) dbg.textContent = (RADIO_DEBUG && np && np.coverSource)
+      ? ('pochette : ' + np.coverSource + (np._raw ? ' | réponse NRJ : ' + JSON.stringify(np._raw).slice(0,450) : ''))
+      : '';
 }
 
 // Interroge la même source "now playing" que les cartes de la grille (EPG radio)
