@@ -1141,6 +1141,27 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .player-frame { position:relative; width:100%; max-width:960px; aspect-ratio:16/9; border-radius:4px; overflow:hidden; border:1px solid var(--glass-border); background:#000; }
 .player-frame iframe,.player-frame video { width:100%; height:100%; border:none; }
 
+/* ── Cartes RADIO : vignette CARRÉE (format pochette / disque) au lieu du 16:9 ── */
+.tv-channel[data-radio-id] .tv-channel-logo-wrap {
+  width:72px; height:72px;            /* = hauteur de la carte sur ordinateur */
+  aspect-ratio:1 / 1;
+  border-right:none;
+  background:#0d0d14;
+}
+.tv-channel[data-radio-id] .tv-channel-logo-wrap img,
+.tv-channel[data-radio-id] .tv-channel-logo-wrap.has-cover img {
+  position:absolute; top:0; left:0; transform:none;
+  width:100%; height:100%; max-width:none; max-height:none;
+  object-fit:cover;                   /* la pochette (carrée) remplit toute la vignette */
+}
+@media(max-width:768px){
+  .tv-channel[data-radio-id] .tv-channel-logo-wrap {
+    width:76px; height:76px;          /* carré sur mobile */
+    border-radius:8px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.45);
+  }
+}
+
 /* ══════════════════════════════════════════
    RADIO PLAYER — mini barre + plein écran
    ══════════════════════════════════════════ */
@@ -6934,27 +6955,27 @@ const tvChannels = [
     ,{id:"300",name:"Ligue 1+ 8",cat:"Sport",logo:"https://img2.oqee.net/pictures/4570025/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205678.m3u8"}
     ,{id:"301",name:"Ligue 1+ 9",cat:"Sport",logo:"https://img1.oqee.net/pictures/4570026/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205677.m3u8"}
     ,{id:"302",name:"Ligue 1+ 10",cat:"Sport",logo:"https://img2.oqee.net/pictures/4527025/huge/h300",src:"http://awmdqyit.sqhsm.com/live/48TNQ17G/US2F8MTN/1205676.m3u8"}
-    ,{id:"600",name:"France Culture",cat:"Radio",logo:"https://files.catbox.moe/ee2ps4.jpg",src:"http://icecast.radiofrance.fr/franceculture-hifi.aac"}
-    ,{id:"601",name:"France Musique",cat:"Radio",logo:"https://files.catbox.moe/f88cj9.jpg",src:"http://icecast.radiofrance.fr/francemusique-hifi.aac"}
-    ,{id:"602",name:"FIP",cat:"Radio",logo:"https://files.catbox.moe/ziirtv.jpg",src:"http://icecast.radiofrance.fr/fip-hifi.aac"}
-    ,{id:"603",name:"France Info",cat:"Radio",logo:"https://files.catbox.moe/g3v9fo.jpg",src:"http://icecast.radiofrance.fr/franceinfo-hifi.aac"}
-    ,{id:"604",name:"France Inter",cat:"Radio",logo:"https://files.catbox.moe/432mgg.jpg",src:"http://icecast.radiofrance.fr/franceinter-hifi.aac"}
-    ,{id:"605",name:"Ici",cat:"Radio",logo:"https://files.catbox.moe/ytd0ko.jpg",src:"http://direct.francebleu.fr/live/fbprovence-midfi.mp3"}
-    ,{id:"606",name:"Mouv",cat:"Radio",logo:"https://files.catbox.moe/j5cckm.jpg",src:"http://icecast.radiofrance.fr/mouv-hifi.aac"}
-    ,{id:"610",name:"Europe 1",cat:"Radio",logo:"https://files.catbox.moe/6mim5y.jpg",src:"http://europe1.lmn.fm/europe1.mp3"}
-    ,{id:"611",name:"Europe 2",cat:"Radio",logo:"https://files.catbox.moe/6e70mm.jpg",src:"http://europe2.lmn.fm/europe2.mp3"}
-    ,{id:"612",name:"RFM",cat:"Radio",logo:"https://files.catbox.moe/ql93kr.jpg",src:"http://rfm.lmn.fm/rfm.mp3"}
-    ,{id:"616",name:"NRJ",cat:"Radio",logo:"https://files.catbox.moe/wtndx3.jpg",src:"https://streaming.nrjaudio.fm/oumvmk8fnozc?origine=fluxradios"}
-    ,{id:"617",name:"Chérie FM",cat:"Radio",logo:"https://files.catbox.moe/izsv9e.jpg",src:"https://streaming.nrjaudio.fm/ouuku85n3nje?origine=fluxradios"}
-    ,{id:"618",name:"Rire & Chansons",cat:"Radio",logo:"https://files.catbox.moe/c7xdra.jpg",src:"https://streaming.nrjaudio.fm/ou8o8xgk7oiu?origine=fluxradios"}
-    ,{id:"619",name:"Nostalgie",cat:"Radio",logo:"https://files.catbox.moe/80m6rx.jpg",src:"https://streaming.nrjaudio.fm/oug7girb92oc?origine=fluxradios"}
-    ,{id:"622",name:"Sud Radio",cat:"Radio",logo:"https://files.catbox.moe/0itm2p.jpg",src:"http://ice.creacast.com/sudradio"}
-    ,{id:"623",name:"TSF Jazz",cat:"Radio",logo:"https://files.catbox.moe/okb2cg.jpg",src:"http://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3"}
-    ,{id:"624",name:"Radio Nova",cat:"Radio",logo:"https://files.catbox.moe/w9hnvj.jpg",src:"http://radionova.ice.infomaniak.ch/radionova-256.aac"}
-    ,{id:"628",name:"Melody",cat:"Radio",logo:"https://files.catbox.moe/sgbie3.jpg",src:"http://stream.rcs.revma.com/5a05fstup42vv"}
-    ,{id:"629",name:"Jazz Radio",cat:"Radio",logo:"https://files.catbox.moe/1p80we.jpg",src:"http://jazzradio.ice.infomaniak.ch/jazzradio-high.mp3"}
-    ,{id:"630",name:"Skyrock",cat:"Radio",logo:"https://files.catbox.moe/gr2e44.jpg",src:"http://icecast.skyrock.net/s/natio_aac_128k"}
-    ,{id:"631",name:"Radio Classique",cat:"Radio",logo:"https://files.catbox.moe/4q2yfd.jpg",src:"http://radioclassique.ice.infomaniak.ch/radioclassique-high.mp3"}
+    ,{id:"600",name:"France Culture",cat:"Radio",logo:"https://upload.wikimedia.org/wikipedia/commons/d/d6/France_Culture_logo_2021.svg?utm_source=fr.wikipedia.org&utm_campaign=index&utm_content=original",src:"http://icecast.radiofrance.fr/franceculture-hifi.aac"}
+    ,{id:"601",name:"France Musique",cat:"Radio",logo:"https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6c/France_Musique_logo_2021.svg/3840px-France_Musique_logo_2021.svg.png?utm_source=fr.wikipedia.org&utm_campaign=index&utm_content=thumbnail",src:"http://icecast.radiofrance.fr/francemusique-hifi.aac"}
+    ,{id:"602",name:"FIP",cat:"Radio",logo:"https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/FIP_logo_2021.svg/1280px-FIP_logo_2021.svg.png?utm_source=fr.wikipedia.org&utm_campaign=index&utm_content=thumbnail",src:"http://icecast.radiofrance.fr/fip-hifi.aac"}
+    ,{id:"603",name:"France Info",cat:"Radio",logo:"https://www.radiofrance.fr/_app/immutable/assets/franceinfo.C39oIN7G.svg",src:"http://icecast.radiofrance.fr/franceinfo-hifi.aac"}
+    ,{id:"604",name:"France Inter",cat:"Radio",logo:"https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a0/France_Inter_logo_2021.svg/3840px-France_Inter_logo_2021.svg.png?utm_source=fr.wikipedia.org&utm_campaign=index&utm_content=thumbnail",src:"http://icecast.radiofrance.fr/franceinter-hifi.aac"}
+    ,{id:"605",name:"Ici",cat:"Radio",logo:"https://www.radiofrance.fr/_app/immutable/assets/ici.DjenmCKk.svg",src:"http://direct.francebleu.fr/live/fbprovence-midfi.mp3"}
+    ,{id:"606",name:"Mouv",cat:"Radio",logo:"https://www.radiofrance.fr/_app/immutable/assets/mouv.Du7BocGC.svg",src:"http://icecast.radiofrance.fr/mouv-hifi.aac"}
+    ,{id:"610",name:"Europe 1",cat:"Radio",logo:"https://cdn-profiles.tunein.com/s6566/images/logog.png?t=2",src:"http://europe1.lmn.fm/europe1.mp3"}
+    ,{id:"611",name:"Europe 2",cat:"Radio",logo:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOpuskTZFh9XO_Zriz4M4MHXDEju30kPhODrecpCeRdVG8FYZunJwnJ-PY&s=10",src:"http://europe2.lmn.fm/europe2.mp3"}
+    ,{id:"612",name:"RFM",cat:"Radio",logo:"https://play-lh.googleusercontent.com/_GBZES_M6wSxKxylBC9ARds_uySeDz8fVtfKj8tJ0IOaZ1_J8FJB4R5CK7220dvEJh55ZZPwkoKj-Pv3VXcQ",src:"http://rfm.lmn.fm/rfm.mp3"}
+    ,{id:"616",name:"NRJ",cat:"Radio",logo:"https://play-lh.googleusercontent.com/96K9e5T7npPTkyJvQbEhDHiVGCqd3X2uAoMIfME0XeYNunWNJlnW4vEbxPQI6RKnhxcso7A-nNA8pzzSK7u3",src:"https://streaming.nrjaudio.fm/oumvmk8fnozc?origine=fluxradios"}
+    ,{id:"617",name:"Chérie FM",cat:"Radio",logo:"https://play-lh.googleusercontent.com/wOlVyOS4W3W7QjtWnusEM-MMsX2XXs8t_uw106-1YjqIOJKQLKQgWQZWV3pgUgFrGlCEHTzzXMbzEFrrVZOYbw",src:"https://streaming.nrjaudio.fm/ouuku85n3nje?origine=fluxradios"}
+    ,{id:"618",name:"Rire & Chansons",cat:"Radio",logo:"https://play-lh.googleusercontent.com/ZE-FDyEHyXJpvMgTcrbcYBKoMlf8VJ4L7usconvmdW_Cf9sB71RM6gy6P4apOF8FxoHLdKljOY30eN4HqGu-bIo",src:"https://streaming.nrjaudio.fm/ou8o8xgk7oiu?origine=fluxradios"}
+    ,{id:"619",name:"Nostalgie",cat:"Radio",logo:"https://play-lh.googleusercontent.com/3jaZeX4gtj00ah5XbyCTi7Qctot9UQIJ-2xb3AsGwQf6ZAc9XBgaI4s2xcpO8spJTzzkL6no7VVfRD52GLg3",src:"https://streaming.nrjaudio.fm/oug7girb92oc?origine=fluxradios"}
+    ,{id:"622",name:"Sud Radio",cat:"Radio",logo:"https://play-lh.googleusercontent.com/gaP2lzvY5fu5OrI2qHXAqUct3PWJwae3XiP2RSXr1RI3CuKzHM-SrNPURheIZJVWXyXD-VJ2b_WjOZWcHKKr1w",src:"http://ice.creacast.com/sudradio"}
+    ,{id:"623",name:"TSF Jazz",cat:"Radio",logo:"https://play-lh.googleusercontent.com/6U8HUeEfEYTOgpYnG7K5OSIYB9yDSo8zigObwcK6Vf9VjDff6ePUDOUDIvBAmL35aNqWg_d4VyPHywzMgHWD=w240-h480-rw",src:"http://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3"}
+    ,{id:"624",name:"Radio Nova",cat:"Radio",logo:"https://play-lh.googleusercontent.com/YacD-rc3iSJSYRtkTqk2R_vdH7tueJ4IvXwoTIiRXIfwJtxCio6t7HMwRGk9ILD3B-E",src:"http://radionova.ice.infomaniak.ch/radionova-256.aac"}
+    ,{id:"628",name:"Melody",cat:"Radio",logo:"https://static2.mytuner.mobi/media/tvos_radios/177/melody-vintage-radio.af6df81b.jpg",src:"http://stream.rcs.revma.com/5a05fstup42vv"}
+    ,{id:"629",name:"Jazz Radio",cat:"Radio",logo:"https://play-lh.googleusercontent.com/4fBZB_3iWbSHJAJhhRnXGc4y9n-mQSmsGmINN3QXh46mL_2oDAw0v9AnWTQCCnu8LYW_g5YdeoCEvOUJcPHx",src:"http://jazzradio.ice.infomaniak.ch/jazzradio-high.mp3"}
+    ,{id:"630",name:"Skyrock",cat:"Radio",logo:"https://play-lh.googleusercontent.com/d6yCH2Q35V5l3vv40Gwzqvbt91HbdE7QYTTa3Xa3UoztMHBY7r1jGHNkVr5UWG2WAwsFUkzcLH-humPUdS2eCQ=s0-br30",src:"http://icecast.skyrock.net/s/natio_aac_128k"}
+    ,{id:"631",name:"Radio Classique",cat:"Radio",logo:"https://play-lh.googleusercontent.com/RpQIZ89MkXeTA151i9p0ly5Tuk3EiTkMxcoBLlEu90bY-P98n9VBNAALUQ9nUqJxybAfnjw2Tg001gn1U1_SPJ4=s0-br30",src:"http://radioclassique.ice.infomaniak.ch/radioclassique-high.mp3"}
     ,{id:"632",name:"Nostalgie Michael Jackson",cat:"Radio",logo:"https://img.nrj.fr/ifaSdTPTnzZdNSOABkdu83hFVgc=/235x235/smart/https%3A%2F%2Fplayers.nrjaudio.fm%2Flive-metadata%2Fplayer%2Fimg%2Fplayer-files%2Fnosta%2Flogos%2F640x640%2Fmj2.jpeg",src:"https://streaming.nrjaudio.fm/ou87iagk7oiu"}
     ,{id:"633",name:"NRJ Disney Hits",cat:"Radio",logo:"https://img.nrj.fr/ZiW57Mvk2DSr5uJhFYTUKMAp6I0=/235x235/smart/https%3A%2F%2Fplayers.nrjaudio.fm%2Flive-metadata%2Fplayer%2Fimg%2Fplayer-files%2Fnrj%2Flogos%2F640x640%2FNRJ-WR-DISNEY-HITS.jpg",src:"https://streaming.nrjaudio.fm/oudbxj2h9r57"}
     ,{id:"634",name:"Nostalgie 80",cat:"Radio",logo:"https://img.nrj.fr/h1XxhpezrH1R7DIMqNS8IoJ30C0=/235x235/smart/https%3A%2F%2Fplayers.nrjaudio.fm%2Flive-metadata%2Fplayer%2Fimg%2Fplayer-files%2Fnosta%2Flogos%2F640x640%2FNOSTA-WR--80.jpg",src:"https://streaming.nrjaudio.fm/ou8ovpgk7oiu"}
@@ -6976,14 +6997,14 @@ const tvChannels = [
     ,{id:"650",name:"NRJ Hits 80",cat:"Radio",logo:"https://img.nrj.fr/RBcc9KdWRwIy68TKzhWJV11d-Ws=/235x235/smart/https%3A%2F%2Fplayers.nrjaudio.fm%2Flive-metadata%2Fplayer%2Fimg%2Fplayer-files%2Fnrj%2Flogos%2F640x640%2FNRJ-WR-HITS-80.jpg",src:"https://streaming.nrjaudio.fm/oujybtnxeb5p"}
     ,{id:"651",name:"NRJ Michael Jackson",cat:"Radio",logo:"https://img.nrj.fr/fdRCtOx5VF4cmWK9L2ldRdPmq0I=/235x235/smart/https%3A%2F%2Fplayers.nrjaudio.fm%2Flive-metadata%2Fplayer%2Fimg%2Fplayer-files%2Fnrj%2Flogos%2F640x640%2Fnrj-michael-jackson-1400x1400.jpg",src:"https://streaming.nrjaudio.fm/ouju7wnxeb5p"}
     ,{id:"652",name:"NRJ Bruno Mars",cat:"Radio",logo:"https://img.nrj.fr/mZ1WkvkqTPk31V2YgQq8ynTsK10=/235x235/smart/https%3A%2F%2Fplayers.nrjaudio.fm%2Flive-metadata%2Fplayer%2Fimg%2Fplayer-files%2Fnrj%2Flogos%2F640x640%2FNRJ--WR--BRUNO-MARS.jpg",src:"https://streaming.nrjaudio.fm/ouwrd4sk6j4d"}
-    ,{id:"653",name:"RFM 80's",cat:"Radio",logo:"https://files.catbox.moe/irk0jw.jpg",src:"http://rfm.lmn.fm/rfm-wr4.mp3"}
-    ,{id:"654",name:"Le Top 50 RFM",cat:"Radio",logo:"https://files.catbox.moe/rzz9e1.jpg",src:"http://rfm.lmn.fm/rfm-wr7.mp3"}
-    ,{id:"655",name:"RFM Party 80,90",cat:"Radio",logo:"https://files.catbox.moe/iinuqj.jpg",src:"http://rfm.lmn.fm/rfm-wr14.mp3"}
-    ,{id:"656",name:"RFM Night Fever",cat:"Radio",logo:"https://files.catbox.moe/vokmin.jpg",src:"http://rfm.lmn.fm/rfm-wr2.mp3"}
-    ,{id:"657",name:"RFM Disco",cat:"Radio",logo:"https://files.catbox.moe/plftgy.jpg",src:"http://rfm.lmn.fm/rfm-wr29.mp3"}
-    ,{id:"658",name:"RFM Funk",cat:"Radio",logo:"https://files.catbox.moe/vwx51e.jpg",src:"http://rfm.lmn.fm/rfm-wr27.mp3"}
-    ,{id:"659",name:"RFM Cinéma",cat:"Radio",logo:"https://files.catbox.moe/oxbppa.jpg",src:"http://rfm.lmn.fm/rfm-wr19.mp3"}
-    ,{id:"660",name:"RFM 70's",cat:"Radio",logo:"https://files.catbox.moe/f0562l.jpg",src:"http://rfm.lmn.fm/rfm-wr16.mp3"}
+    ,{id:"653",name:"RFM 80's",cat:"Radio",logo:"https://cdn.rfm.fr/upload/players/6ab569fc2bce53.73611659.png",src:"http://rfm.lmn.fm/rfm-wr4.mp3"}
+    ,{id:"654",name:"Le Top 50 RFM",cat:"Radio",logo:"https://cdn.rfm.fr/upload/players/6ab56193294a86.60968578.png",src:"http://rfm.lmn.fm/rfm-wr7.mp3"}
+    ,{id:"655",name:"RFM Party 80,90",cat:"Radio",logo:"https://cdn.rfm.fr/upload/players/6ab5627c5b89c8.16480229.png",src:"http://rfm.lmn.fm/rfm-wr14.mp3"}
+    ,{id:"656",name:"RFM Night Fever",cat:"Radio",logo:"https://cdn.rfm.fr/upload/players/6ab56be0e9d115.16116477.png",src:"http://rfm.lmn.fm/rfm-wr2.mp3"}
+    ,{id:"657",name:"RFM Disco",cat:"Radio",logo:"https://cdn.rfm.fr/upload/players/6ab561d6b0f7b7.88070844.png",src:"http://rfm.lmn.fm/rfm-wr29.mp3"}
+    ,{id:"658",name:"RFM Funk",cat:"Radio",logo:"https://cdn.rfm.fr/upload/players/6ab561c2768ee9.63545666.png",src:"http://rfm.lmn.fm/rfm-wr27.mp3"}
+    ,{id:"659",name:"RFM Cinéma",cat:"Radio",logo:"https://cdn.rfm.fr/upload/players/6ab56241cea219.67643168.png",src:"http://rfm.lmn.fm/rfm-wr19.mp3"}
+    ,{id:"660",name:"RFM 70's",cat:"Radio",logo:"https://cdn.rfm.fr/upload/players/6ab56835b527c3.41857813.png",src:"http://rfm.lmn.fm/rfm-wr16.mp3"}
     ,{id:"661",name:"Nostalgie Johnny Hallyday",cat:"Radio",logo:"https://img.nrj.fr/OVdkQ9XLwYHBtXQtkVwFXR_1DsI=/235x235/smart/https%3A%2F%2Fplayers.nrjaudio.fm%2Flive-metadata%2Fplayer%2Fimg%2Fplayer-files%2Fnosta%2Flogos%2F640x640%2FNOSTA-WR--JOHNNY-HALLYDAY.jpg",src:"https://streaming.nrjaudio.fm/oupn8tbgddr9"}
     ,{id:"662",name:"Nostalgie French Party 80",cat:"Radio",logo:"https://img.nrj.fr/ODCE9G4fCNWocUQvuxuSyHYhh8g=/235x235/smart/https%3A%2F%2Fplayers.nrjaudio.fm%2Flive-metadata%2Fplayer%2Fimg%2Fplayer-files%2Fnosta%2Flogos%2F640x640%2FNOSTA-WR_FRENCH-PARTY-80.jpg",src:"https://streaming.nrjaudio.fm/ouamxmw2dqao"}
     ,{id:"663",name:"Nostalgie Slows 80",cat:"Radio",logo:"https://img.nrj.fr/KRGUvXzrZ9VEp6gbx9Z-gIg_uSk=/235x235/smart/https%3A%2F%2Fplayers.nrjaudio.fm%2Flive-metadata%2Fplayer%2Fimg%2Fplayer-files%2Fnosta%2Flogos%2F640x640%2FNOSTA-WR-SLOWS-80.jpg",src:"https://streaming.nrjaudio.fm/oufdxmtx4thg"}
