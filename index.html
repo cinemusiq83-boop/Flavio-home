@@ -9233,10 +9233,25 @@ async function radioPlayerRefreshNowPlaying(){
   radioUpdateMediaSessionMetadata(ch, np);
 }
 
+// Place le mini lecteur radio juste AU-DESSUS de la bottom nav (mobile)
+function updateRadioMiniOffset(){
+  const nav = document.getElementById('bottomNavMobile');
+  const root = document.documentElement;
+  if(nav && nav.offsetHeight > 0 && document.body.classList.contains('has-bottom-nav')){
+    const top = nav.getBoundingClientRect().top;
+    root.style.setProperty('--radio-mini-bottom', Math.max(0, window.innerHeight - top + 8) + 'px');
+  } else {
+    root.style.removeProperty('--radio-mini-bottom');
+  }
+}
+window.addEventListener('resize', updateRadioMiniOffset);
+window.addEventListener('orientationchange', updateRadioMiniOffset);
+
 function renderRadioPlayerUI(){
   const mini = document.getElementById('radioMiniPlayer');
   const full = document.getElementById('radioFullPlayer');
   if(!mini || !full) return;
+  updateRadioMiniOffset();
   mini.classList.toggle('open', radioPlayerActive && !radioPlayerExpanded);
   full.classList.toggle('open', radioPlayerActive && radioPlayerExpanded);
   document.body.style.overflow = (radioPlayerActive && radioPlayerExpanded) ? 'hidden' : '';
@@ -13235,5 +13250,26 @@ function setMediaSession(){
 </script>
 
 
+
+<style>
+/* Mini lecteur radio : au-dessus de la bottom nav sur mobile */
+@media(max-width:768px){
+  body.has-bottom-nav .radio-mini-player{
+    left:8px; right:8px;
+    bottom:var(--radio-mini-bottom, calc(96px + env(safe-area-inset-bottom)));
+    height:60px;
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    background:rgba(20,20,26,0.88);
+    backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);
+    z-index:899; /* juste sous la nav (900), jamais par-dessus */
+    transform:translateY(calc(100% + 140px));
+    opacity:0; pointer-events:none;
+    transition:transform .35s cubic-bezier(.4,0,.2,1), opacity .25s;
+  }
+  body.has-bottom-nav .radio-mini-player.open{ transform:translateY(0); opacity:1; pointer-events:auto; }
+}
+</style>
 </body>
 </html>
