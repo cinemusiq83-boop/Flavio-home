@@ -13674,5 +13674,26 @@ function setMediaSession(){
   .bn-lens-inner .bn-item { color:#ff4d6a !important; pointer-events:none; }
 }
 </style>
+
+<style id="bnHideOnModalStyle">
+@media(max-width:768px){
+  /* Fiche film / série ouverte : la barre du bas (et la loupe) glissent hors de l'écran */
+  body.film-modal-open .bottom-nav-mobile,
+  body.film-modal-open .bn-search-btn {
+    opacity:0 !important; transform:translateY(130%) !important; pointer-events:none !important;
+    visibility:hidden !important;
+    transition:opacity .25s ease, transform .35s ease, visibility 0s linear .35s !important;
+  }
+}
+</style>
+<script>
+(function(){
+  const modal = document.getElementById('filmModal');
+  if(!modal) return;
+  const sync = ()=>document.body.classList.toggle('film-modal-open', modal.classList.contains('open'));
+  new MutationObserver(sync).observe(modal, {attributes:true, attributeFilter:['class']});
+  sync();
+})();
+</script>
 </body>
 </html>
