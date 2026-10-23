@@ -1954,12 +1954,17 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       <span class="mss-back" onclick="closeMobileSearch()">←</span>
       <div class="mss-title">Rechercher</div>
     </div>
-    <div class="mss-searchbar liquid-glass">
-      <span class="mss-search-icon">🔍</span>
-      <input type="text" id="mobileSearchInput" placeholder="Rechercher des séries, films, jeux…" oninput="handleMobileSearch(this.value)">
-    </div>
     <div class="mss-section-title" id="mssSectionTitle">Séries et films suggérés</div>
     <div class="mss-list" id="mssList"></div>
+    <div class="mss-bottombar">
+      <button class="mss-home-btn liquid-glass" onclick="mssGoHome()" aria-label="Accueil">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5"/><path d="M5.5 9.5V19a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5"/></svg>
+      </button>
+      <div class="mss-searchbar liquid-glass">
+        <svg class="mss-search-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
+        <input type="text" id="mobileSearchInput" placeholder="Que voulez-vous regarder ?" oninput="handleMobileSearch(this.value)" enterkeyhint="search">
+      </div>
+    </div>
   </div>
 
   <!-- HERO -->
@@ -11723,17 +11728,33 @@ function openMobileSearch(){
   input.value = '';
   document.getElementById('mssSectionTitle').textContent = 'Séries et films suggérés';
   renderMssList(getMobileSearchSuggestions(), 'Aucune suggestion pour le moment.');
+  clearTimeout(_mssCloseTimer);
+  screen.classList.remove('closing');
   screen.classList.add('open');
+  document.body.classList.add('mss-open');
   document.body.style.overflow = 'hidden';
   if(typeof bnSetActive==='function') bnSetActive('search');
   setTimeout(() => input.focus(), 300);
 }
 
+function mssGoHome(){ if(typeof bnGoAccueil==='function') bnGoAccueil(); else closeMobileSearch(); }
+
+let _mssCloseTimer=null;
 function closeMobileSearch(){
-  document.getElementById('mobileSearchScreen').classList.remove('open');
-  document.body.style.overflow = '';
-  document.getElementById('searchInput').value = '';
+  const screen = document.getElementById('mobileSearchScreen');
+  if(!screen.classList.contains('open') || screen.classList.contains('closing')) return;
+  const input = document.getElementById('mobileSearchInput');
+  if(input) input.blur();
+  // animation de sortie : la barre du bas revient (body.mss-open retiré tout de suite), l'écran se ferme ensuite
+  screen.classList.add('closing');
+  document.body.classList.remove('mss-open');
   if(typeof bnSetActive==='function') bnSetActive('accueil');
+  clearTimeout(_mssCloseTimer);
+  _mssCloseTimer = setTimeout(()=>{
+    screen.classList.remove('open','closing');
+    document.body.style.overflow = '';
+    document.getElementById('searchInput').value = '';
+  }, 340);
 }
 
 // ══════════════════════════════════════════
@@ -12524,10 +12545,6 @@ function closePlatformPage() {
     <svg class="bn-icon-active" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.5V20a1 1 0 0 0 1 1h5.5v-6.5h5V21H19a1 1 0 0 0 1-1v-9.5L12 3.2Z"/></svg>
     <span>Accueil</span>
   </button>
-  <button class="bn-item" data-bn="search" onclick="bnOpenSearch()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
-    <span>Rechercher</span>
-  </button>
   <button class="bn-item" data-bn="halloween" onclick="bnGoHalloween()">
     <div style="font-size:21px;line-height:23px;height:23px;">🎃</div>
     <span>Halloween</span>
@@ -12547,6 +12564,9 @@ function closePlatformPage() {
     <span>Mon Profil</span>
   </button>
 </nav>
+<button class="bn-search-btn" id="bnSearchBtn" data-bn="search" onclick="bnOpenSearch()" aria-label="Rechercher">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
+</button>
 
 <style>
 @media(max-width:768px){
@@ -12744,15 +12764,45 @@ function bnMoveLiquidBlob(el){
   const blob = document.getElementById('bnLiquidBlob');
   const nav = document.getElementById('bottomNavMobile');
   if(!blob || !nav || !el || window.innerWidth > 768) return;
-  const navRect = nav.getBoundingClientRect();
-  const elRect = el.getBoundingClientRect();
+  // offsetLeft/offsetWidth ignorent les transformations CSS : la mesure reste juste
+  // même quand la barre est encore en train de se ré-agrandir (retour depuis la recherche)
+  if(!nav.offsetWidth || !el.offsetWidth) return;
   const pad = 6;
-  blob.style.left = Math.max(pad, (elRect.left - navRect.left) + pad) + 'px';
-  blob.style.width = (elRect.width - pad * 2) + 'px';
-  // petit effet d'étirement "liquide" au moment du changement d'onglet
-  blob.classList.add('morphing');
+  const newLeft = Math.max(pad, el.offsetLeft + pad);
+  const newWidth = el.offsetWidth - pad * 2;
+
+  // Loupe de verre : un calque qui copie les onglets, agrandi et teinté (aberration chromatique), clippé dans la bulle
+  let inner = blob.querySelector('.bn-lens-inner');
+  if(!inner){ inner = document.createElement('div'); inner.className = 'bn-lens-inner'; inner.setAttribute('aria-hidden','true'); blob.appendChild(inner); }
+  inner.innerHTML = '';
+  nav.querySelectorAll('.bn-item').forEach(it=>{
+    const c = it.cloneNode(true);
+    c.removeAttribute('onclick'); c.removeAttribute('data-bn'); c.tabIndex = -1;
+    c.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
+    inner.appendChild(c);
+  });
+  inner.style.width = nav.clientWidth + 'px';
+  inner.style.height = nav.clientHeight + 'px';
+  inner.style.top = (-blob.offsetTop) + 'px';
+  const apply = (l, w)=>{
+    blob.style.left = l + 'px';
+    blob.style.width = w + 'px';
+    inner.style.left = (-l) + 'px';                       // reste aligné avec les vrais onglets
+    inner.style.transformOrigin = (l + w/2) + 'px 50%';   // agrandit autour du centre de la bulle
+  };
+
+  const prevL = parseFloat(blob.style.left), prevW = parseFloat(blob.style.width);
   clearTimeout(blob._morphTimeout);
-  blob._morphTimeout = setTimeout(()=>blob.classList.remove('morphing'), 220);
+  if(isNaN(prevL) || Math.abs(prevL - newLeft) < 1){ apply(newLeft, newWidth); return; }
+  blob.classList.add('lens-moving');
+  clearTimeout(blob._lensTimeout);
+  blob._lensTimeout = setTimeout(()=>blob.classList.remove('lens-moving'), 480);
+  // phase 1 : la bulle s'étire comme du liquide entre l'ancien et le nouvel onglet…
+  const l1 = Math.min(prevL, newLeft);
+  const r1 = Math.max(prevL + prevW, newLeft + newWidth);
+  apply(l1, r1 - l1);
+  // phase 2 : …puis se resserre sur le nouvel onglet avec un petit rebond
+  blob._morphTimeout = setTimeout(()=>apply(newLeft, newWidth), 170);
 }
 function bnRepositionLiquidBlob(){
   const active = document.querySelector('.bn-item.active');
@@ -13453,6 +13503,175 @@ function setMediaSession(){
     transition:transform .35s cubic-bezier(.4,0,.2,1), opacity .25s;
   }
   body.has-bottom-nav .radio-mini-player.open{ transform:translateY(0); opacity:1; pointer-events:auto; }
+}
+</style>
+
+<style id="bnSplitNavStyle">
+/* ── Barre du bas : pilule (Accueil · Halloween · TV · Chaînes · Mon Profil) + bouton Rechercher à l'écart ── */
+.bn-search-btn, .mss-bottombar { display:none; }
+@media(max-width:768px){
+  .bottom-nav-mobile { left:12px !important; right:84px !important; }
+  .bn-item span { font-size:.6rem !important; }
+  body.has-bottom-nav .bn-search-btn {
+    display:flex; align-items:center; justify-content:center;
+    position:fixed; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:900;
+    width:64px; height:64px; padding:0; border-radius:50%;
+    color:rgba(232,228,216,0.85); cursor:pointer;
+    background:rgba(28,28,32,0.72);
+    -webkit-backdrop-filter:blur(22px); backdrop-filter:blur(22px);
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .bn-search-btn svg { width:26px; height:26px; }
+  .bn-search-btn:active { transform:scale(.92); }
+
+  /* Mode recherche : la barre disparaît, bouton accueil rond + champ en bas */
+  body.mss-open .bottom-nav-mobile, body.mss-open .bn-search-btn { display:none !important; }
+  .mss-back { display:none; }
+  .mss-list { padding-bottom:calc(110px + env(safe-area-inset-bottom)); }
+  .mss-bottombar {
+    display:flex; align-items:center; gap:10px;
+    position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:950;
+  }
+  .mss-home-btn {
+    width:64px; height:64px; flex-shrink:0; border-radius:50% !important; padding:0;
+    display:flex; align-items:center; justify-content:center; color:var(--text); cursor:pointer;
+  }
+  .mss-home-btn svg { width:26px; height:26px; position:relative; z-index:1; }
+  .mss-bottombar .mss-searchbar {
+    flex:1; min-width:0; margin:0; height:64px; padding:0 20px; border-radius:32px; gap:12px;
+  }
+  .mss-bottombar .mss-searchbar .mss-search-icon { color:rgba(232,228,216,0.75); flex-shrink:0; position:relative; z-index:1; }
+  .mss-bottombar .mss-searchbar input { position:relative; z-index:1; font-size:1.05rem; }
+}
+</style>
+
+<style id="bnIosGlassStyle">
+/* ── Liquid Glass façon iOS 26 (identique à la capture Canal+) : verre translucide, fond visible à travers, reflet fin sur le bord ── */
+@media(max-width:768px){
+  .bottom-nav-mobile,
+  .body-x,
+  body.has-bottom-nav .bn-search-btn,
+  .mss-bottombar .mss-home-btn,
+  .mss-bottombar .mss-searchbar {
+    background:linear-gradient(180deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 100%) !important;
+    -webkit-backdrop-filter:blur(12px) saturate(170%) brightness(1.08) !important;
+    backdrop-filter:blur(12px) saturate(170%) brightness(1.08) !important;
+    border:1px solid rgba(255,255,255,0.16) !important;
+    box-shadow:
+      inset 0 1px 0.5px rgba(255,255,255,0.35),
+      inset 0 -1px 0.5px rgba(255,255,255,0.08),
+      inset 0 0 18px rgba(255,255,255,0.04),
+      0 8px 28px rgba(0,0,0,0.38) !important;
+  }
+  /* supprime les reflets lourds de l'ancien .liquid-glass sur ces éléments */
+  .mss-bottombar .liquid-glass::before,
+  .mss-bottombar .liquid-glass::after { content:none !important; display:none !important; }
+
+  /* capsule de l'onglet actif : plus sombre que la barre, bord clair très fin */
+  .bn-liquid-blob {
+    background:linear-gradient(180deg, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.18) 100%) !important;
+    -webkit-backdrop-filter:blur(6px) saturate(140%) !important;
+    backdrop-filter:blur(6px) saturate(140%) !important;
+    border:1px solid rgba(255,255,255,0.14) !important;
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.22),
+      inset 0 -1px 1px rgba(255,255,255,0.06),
+      0 2px 8px rgba(0,0,0,0.25) !important;
+  }
+  .bn-liquid-blob::before { display:none !important; }
+
+  /* couleurs : inactif blanc cassé, actif rouge-rosé Canal+ */
+  .bn-item { color:rgba(255,255,255,0.88) !important; }
+  .bn-item.active { color:#ff4d6a !important; }
+  .bn-item.active span { font-weight:600; }
+  .bn-item.active .bn-avatar { border-color:#ff4d6a !important; }
+  .bn-search-btn, .mss-home-btn { color:rgba(255,255,255,0.92) !important; }
+  .mss-bottombar .mss-searchbar input { color:#fff; }
+  .mss-bottombar .mss-searchbar input::placeholder { color:rgba(255,255,255,0.6); }
+  .mss-bottombar .mss-searchbar .mss-search-icon { color:rgba(255,255,255,0.85) !important; }
+}
+</style>
+
+<style id="mssAnimStyle">
+@media(max-width:768px){
+  /* ── La barre du bas se replie vers le bouton Accueil / la loupe s'étire en champ de recherche ── */
+  .bottom-nav-mobile {
+    transform-origin:left bottom;
+    transition:opacity .3s ease, transform .45s cubic-bezier(.34,1.4,.64,1) !important;
+  }
+  body.has-bottom-nav .bn-search-btn {
+    transform-origin:right center;
+    transition:opacity .25s ease, transform .45s cubic-bezier(.34,1.4,.64,1) !important;
+  }
+  body.has-bottom-nav.mss-open .bottom-nav-mobile {
+    display:flex !important; opacity:0; transform:scale(.35,.8) translateY(8px); pointer-events:none;
+  }
+  body.has-bottom-nav.mss-open .bn-search-btn {
+    display:flex !important; opacity:0; transform:scale(1.5); pointer-events:none;
+  }
+
+  /* ── Écran de recherche : entrée / sortie ── */
+  .mobile-search-screen.open { animation:mssFadeIn .32s ease both; }
+  .mobile-search-screen.open.closing { animation:mssFadeOut .3s ease .05s both; }
+
+  .mobile-search-screen.open .mss-home-btn { animation:mssHomeIn .5s cubic-bezier(.34,1.56,.64,1) both; }
+  .mobile-search-screen.open .mss-bottombar .mss-searchbar { animation:mssBarIn .5s cubic-bezier(.22,1,.36,1) .05s both; }
+  .mobile-search-screen.open .mss-header,
+  .mobile-search-screen.open .mss-section-title,
+  .mobile-search-screen.open .mss-list { animation:mssContentIn .45s cubic-bezier(.22,1,.36,1) .08s both; }
+
+  .mobile-search-screen.open.closing .mss-home-btn { animation:mssHomeOut .3s ease both; }
+  .mobile-search-screen.open.closing .mss-bottombar .mss-searchbar { animation:mssBarOut .3s ease both; }
+  .mobile-search-screen.open.closing .mss-header,
+  .mobile-search-screen.open.closing .mss-section-title,
+  .mobile-search-screen.open.closing .mss-list { animation:mssContentOut .25s ease both; }
+}
+@keyframes mssFadeIn  { from{opacity:0} to{opacity:1} }
+@keyframes mssFadeOut { from{opacity:1} to{opacity:0} }
+@keyframes mssHomeIn  { from{opacity:0; transform:translateX(-14px) scale(.4)} to{opacity:1; transform:none} }
+@keyframes mssHomeOut { from{opacity:1; transform:none} to{opacity:0; transform:translateX(-14px) scale(.4)} }
+@keyframes mssBarIn   { from{opacity:0; clip-path:inset(0 0 0 80% round 32px); transform:scaleX(.85); transform-origin:right center}
+                        to  {opacity:1; clip-path:inset(0 0 0 0 round 32px); transform:none} }
+@keyframes mssBarOut  { from{opacity:1; clip-path:inset(0 0 0 0 round 32px)}
+                        to  {opacity:0; clip-path:inset(0 0 0 80% round 32px); transform:scaleX(.85); transform-origin:right center} }
+@keyframes mssContentIn  { from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none} }
+@keyframes mssContentOut { from{opacity:1; transform:none} to{opacity:0; transform:translateY(10px)} }
+</style>
+
+<style id="bnLensStyle">
+@media(max-width:768px){
+  .bn-liquid-blob {
+    overflow:hidden !important; z-index:2 !important;
+    background:rgba(30,30,34,0.95) !important;
+    -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
+    border:1px solid rgba(255,255,255,0.22) !important;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,0,0,0.55),
+      inset 3px 0 4px -1px rgba(255,70,90,0.55),
+      inset -3px 0 4px -1px rgba(70,200,255,0.5),
+      inset 0 1px 1px rgba(255,255,255,0.3),
+      0 4px 12px rgba(0,0,0,0.35) !important;
+    transition:
+      left .45s cubic-bezier(.34,1.3,.64,1),
+      width .45s cubic-bezier(.34,1.3,.64,1) !important;
+  }
+  .bn-lens-inner {
+    position:absolute; display:flex; align-items:center; box-sizing:border-box;
+    padding:10px 2px; pointer-events:none;
+    transform:none; filter:none;
+    transition:
+      left .45s cubic-bezier(.34,1.3,.64,1),
+      transform-origin .45s cubic-bezier(.34,1.3,.64,1),
+      transform .3s ease, filter .3s ease;
+  }
+  .bn-liquid-blob.lens-moving .bn-lens-inner {
+    transform:scale(1.12);
+    filter:drop-shadow(1.3px 0 0 rgba(255,60,90,0.6)) drop-shadow(-1.3px 0 0 rgba(60,200,255,0.5));
+  }
+  .bn-lens-inner .bn-item { color:#ff4d6a !important; pointer-events:none; }
 }
 </style>
 </body>
