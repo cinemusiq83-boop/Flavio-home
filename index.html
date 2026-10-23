@@ -12587,8 +12587,8 @@ function closePlatformPage() {
 
 <script>
 function bnSetActive(name){
-  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
-  const el = document.querySelector('.bn-item[data-bn="'+name+'"]');
+  document.querySelectorAll('#bottomNavMobile > .bn-item').forEach(b=>b.classList.remove('active'));
+  const el = document.querySelector('#bottomNavMobile > .bn-item[data-bn="'+name+'"]');
   if(el) el.classList.add('active');
   bnMoveLiquidBlob(el); // fonction définie tout en bas du fichier (bloc Liquid Glass)
 }
@@ -12764,63 +12764,74 @@ function bnMoveLiquidBlob(el, snap){
   const blob = document.getElementById('bnLiquidBlob');
   const nav = document.getElementById('bottomNavMobile');
   if(!blob || !nav || !el || window.innerWidth > 768) return;
-  // offsetLeft/offsetWidth ignorent les transformations CSS : la mesure reste juste
-  // même quand la barre est encore en train de se ré-agrandir (retour depuis la recherche)
+  // offsetLeft/offsetWidth ignorent les transformations CSS : mesure juste même pendant une animation de la barre
   if(!nav.offsetWidth || !el.offsetWidth) return;
   const pad = 6;
-  const newLeft = Math.max(pad, el.offsetLeft + pad);
-  const newWidth = el.offsetWidth - pad * 2;
+  const x = Math.max(pad, el.offsetLeft + pad);
+  const w = el.offsetWidth - pad * 2;
 
-  // Loupe de verre : un calque qui copie les onglets, agrandi et teinté (aberration chromatique), clippé dans la bulle
-  let inner = blob.querySelector('.bn-lens-inner');
-  if(!inner){ inner = document.createElement('div'); inner.className = 'bn-lens-inner'; inner.setAttribute('aria-hidden','true'); blob.appendChild(inner); }
-  inner.innerHTML = '';
-  nav.querySelectorAll('.bn-item').forEach(it=>{
-    const c = it.cloneNode(true);
-    c.removeAttribute('onclick'); c.removeAttribute('data-bn'); c.tabIndex = -1;
-    c.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
-    inner.appendChild(c);
+  // Calque "loupe" : copie des onglets (créée une seule fois, ensuite on ne fait que synchroniser l'état)
+  let scaler = blob.querySelector('.bn-lens-scaler');
+  if(!scaler){
+    scaler = document.createElement('div'); scaler.className = 'bn-lens-scaler';
+    const inn = document.createElement('div'); inn.className = 'bn-lens-inner'; inn.setAttribute('aria-hidden','true');
+    scaler.appendChild(inn); blob.appendChild(scaler);
+  }
+  const inner = scaler.firstChild;
+  const items = Array.from(nav.querySelectorAll(':scope > .bn-item'));   // seulement les vrais onglets, pas les copies de la loupe
+  if(inner.children.length !== items.length){
+    inner.innerHTML = '';
+    items.forEach(it=>{
+      const c = it.cloneNode(true);
+      c.removeAttribute('onclick'); c.removeAttribute('data-bn'); c.tabIndex = -1;
+      c.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
+      inner.appendChild(c);
+    });
+  }
+  items.forEach((it,i)=>{
+    const c = inner.children[i];
+    c.classList.toggle('active', it.classList.contains('active'));
+    const im = it.querySelector('img'), cim = c.querySelector('img');
+    if(im && cim && cim.getAttribute('src') !== im.getAttribute('src')) cim.src = im.getAttribute('src');
   });
-  inner.style.width = nav.clientWidth + 'px';
-  inner.style.height = nav.clientHeight + 'px';
-  inner.style.top = (-blob.offsetTop) + 'px';
-  const apply = (l, w)=>{
-    blob.style.left = l + 'px';
-    blob.style.width = w + 'px';
-    inner.style.left = (-l) + 'px';                       // reste aligné avec les vrais onglets
-    inner.style.transformOrigin = (l + w/2) + 'px 50%';   // agrandit autour du centre de la bulle
+
+  // Géométrie (hors animation) : seulement si elle a changé
+  const nw = nav.clientWidth, nh = nav.clientHeight;
+  let resized = false;
+  if(Math.abs((parseFloat(blob.style.width)||0) - w) > .5){ blob.style.width = w + 'px'; resized = true; }
+  if(inner._w !== nw || inner._h !== nh){ inner.style.width = nw + 'px'; inner.style.height = nh + 'px'; inner._w = nw; inner._h = nh; }
+  inner.style.top = (-(blob.offsetTop + blob.clientTop)) + 'px';
+
+  const bl = blob.clientLeft;
+  const apply = (px)=>{
+    blob.style.transform = 'translate3d(' + px + 'px,0,0)';
+    inner.style.transform = 'translate3d(' + (-(px + bl)) + 'px,0,0)';   // reste aligné avec les vrais onglets
   };
 
-  if(snap){ // repositionnement instantané (rotation, sortie de plein écran…) : pas d'animation, mesures fraîches
-    clearTimeout(blob._morphTimeout); clearTimeout(blob._lensTimeout);
+  clearTimeout(blob._lensTimeout);
+  if(snap || resized || !blob._bnPlaced){   // placement instantané
     blob.classList.remove('lens-moving');
     blob.classList.add('bn-no-anim');
-    apply(newLeft, newWidth);
+    apply(x);
     void blob.offsetWidth;
     blob.classList.remove('bn-no-anim');
+    blob._bnPlaced = true;
     return;
   }
-  const prevL = parseFloat(blob.style.left), prevW = parseFloat(blob.style.width);
-  clearTimeout(blob._morphTimeout);
-  if(isNaN(prevL) || Math.abs(prevL - newLeft) < 1){ apply(newLeft, newWidth); return; }
   blob.classList.add('lens-moving');
-  clearTimeout(blob._lensTimeout);
+  apply(x);
   blob._lensTimeout = setTimeout(()=>blob.classList.remove('lens-moving'), 300);
-  // phase 1 : la bulle s'étire comme du liquide entre l'ancien et le nouvel onglet…
-  const l1 = Math.min(prevL, newLeft);
-  const r1 = Math.max(prevL + prevW, newLeft + newWidth);
-  apply(l1, r1 - l1);
-  // phase 2 : …puis se resserre sur le nouvel onglet avec un petit rebond
-  blob._morphTimeout = setTimeout(()=>apply(newLeft, newWidth), 80);
 }
 function bnRepositionLiquidBlob(){
-  const active = document.querySelector('.bn-item.active');
+  const active = document.querySelector('#bottomNavMobile > .bn-item.active');
   if(active) bnMoveLiquidBlob(active, true);
 }
 // Après rotation / sortie de plein écran, la mise en page met un instant à se stabiliser : on recale plusieurs fois
+let _bnRepoTimers=[];
 function bnRepositionSoon(){
+  _bnRepoTimers.forEach(clearTimeout); _bnRepoTimers=[];
   bnRepositionLiquidBlob();
-  [80, 250, 600, 1200].forEach(d=>setTimeout(bnRepositionLiquidBlob, d));
+  [120, 400, 900].forEach(d=>_bnRepoTimers.push(setTimeout(bnRepositionLiquidBlob, d)));
 }
 window.addEventListener('resize', bnRepositionSoon);
 window.addEventListener('orientationchange', bnRepositionSoon);
@@ -12834,7 +12845,11 @@ window.addEventListener('DOMContentLoaded', ()=>{
   const nav = document.getElementById('bottomNavMobile');
   if(nav && window.ResizeObserver) new ResizeObserver(bnRepositionLiquidBlob).observe(nav);
   // la barre réapparaît (has-bottom-nav) après le lecteur plein écran → recaler
-  new MutationObserver(bnRepositionSoon).observe(document.body, {attributes:true, attributeFilter:['class']});
+  let _hadNav = document.body.classList.contains('has-bottom-nav');
+  new MutationObserver(()=>{
+    const now = document.body.classList.contains('has-bottom-nav');
+    if(now !== _hadNav){ _hadNav = now; bnRepositionSoon(); }   // ne coupe pas les animations en cours
+  }).observe(document.body, {attributes:true, attributeFilter:['class']});
 });
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   setTimeout(bnRepositionLiquidBlob, 50);
@@ -13732,6 +13747,38 @@ function setMediaSession(){
   .mss-home-btn, .mss-bottombar .mss-searchbar { will-change:transform; backface-visibility:hidden; -webkit-backface-visibility:hidden; }
   .bn-liquid-blob { will-change:left,width; }
 }
+</style>
+
+<style id="bnSmoothStyle">
+@media(max-width:768px){
+  .bn-liquid-blob {
+    left:0 !important;
+    transform:translate3d(6px,0,0);
+    transition:transform .26s cubic-bezier(.3,1,.4,1.06) !important;
+    will-change:transform !important;
+  }
+  .bn-liquid-blob.bn-no-anim, .bn-liquid-blob.bn-no-anim .bn-lens-inner, .bn-liquid-blob.bn-no-anim .bn-lens-scaler { transition:none !important; }
+  .bn-lens-scaler {
+    position:absolute; inset:0; transform:translateZ(0);
+    transition:transform .18s ease-out; will-change:transform;
+  }
+  .bn-liquid-blob.lens-moving .bn-lens-scaler { transform:scale(1.12); }
+  .bn-lens-inner {
+    left:0 !important; transform:translate3d(-7px,0,0);
+    transition:transform .26s cubic-bezier(.3,1,.4,1.06) !important;
+    filter:none !important; will-change:transform;
+  }
+  .bn-liquid-blob.lens-moving .bn-lens-inner { filter:none !important; }
+  /* franges colorées : appliquées seulement aux petits éléments (icônes / texte), pas à tout le calque */
+  .bn-liquid-blob.lens-moving .bn-lens-inner svg,
+  .bn-liquid-blob.lens-moving .bn-lens-inner img { filter:drop-shadow(1.3px 0 0 rgba(255,60,90,0.6)) drop-shadow(-1.3px 0 0 rgba(60,200,255,0.5)); }
+  .bn-liquid-blob.lens-moving .bn-lens-inner span { text-shadow:1px 0 rgba(255,60,90,0.55), -1px 0 rgba(60,200,255,0.5); }
+
+  /* champ de recherche : uniquement opacité + déplacement (plus de clip-path, qui force un repaint à chaque image) */
+  .mobile-search-screen .mss-bottombar .mss-searchbar { transform-origin:right center; }
+}
+@keyframes mssBarIn  { from{opacity:0; transform:translate3d(28px,0,0) scale(.92)} to{opacity:1; transform:none} }
+@keyframes mssBarOut { from{opacity:1; transform:none} to{opacity:0; transform:translate3d(28px,0,0) scale(.92)} }
 </style>
 </body>
 </html>
