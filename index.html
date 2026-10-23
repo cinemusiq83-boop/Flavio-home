@@ -11754,7 +11754,7 @@ function closeMobileSearch(){
     screen.classList.remove('open','closing');
     document.body.style.overflow = '';
     document.getElementById('searchInput').value = '';
-  }, 340);
+  }, 200);
 }
 
 // ══════════════════════════════════════════
@@ -12760,7 +12760,7 @@ function hcbGoExternal(url){
 
 <script>
 // ── Bulle "liquid glass" qui glisse d'un onglet à l'autre (Accueil / Rechercher / TV / Chaînes / Mon Profil) ──
-function bnMoveLiquidBlob(el){
+function bnMoveLiquidBlob(el, snap){
   const blob = document.getElementById('bnLiquidBlob');
   const nav = document.getElementById('bottomNavMobile');
   if(!blob || !nav || !el || window.innerWidth > 768) return;
@@ -12791,25 +12791,51 @@ function bnMoveLiquidBlob(el){
     inner.style.transformOrigin = (l + w/2) + 'px 50%';   // agrandit autour du centre de la bulle
   };
 
+  if(snap){ // repositionnement instantané (rotation, sortie de plein écran…) : pas d'animation, mesures fraîches
+    clearTimeout(blob._morphTimeout); clearTimeout(blob._lensTimeout);
+    blob.classList.remove('lens-moving');
+    blob.classList.add('bn-no-anim');
+    apply(newLeft, newWidth);
+    void blob.offsetWidth;
+    blob.classList.remove('bn-no-anim');
+    return;
+  }
   const prevL = parseFloat(blob.style.left), prevW = parseFloat(blob.style.width);
   clearTimeout(blob._morphTimeout);
   if(isNaN(prevL) || Math.abs(prevL - newLeft) < 1){ apply(newLeft, newWidth); return; }
   blob.classList.add('lens-moving');
   clearTimeout(blob._lensTimeout);
-  blob._lensTimeout = setTimeout(()=>blob.classList.remove('lens-moving'), 480);
+  blob._lensTimeout = setTimeout(()=>blob.classList.remove('lens-moving'), 300);
   // phase 1 : la bulle s'étire comme du liquide entre l'ancien et le nouvel onglet…
   const l1 = Math.min(prevL, newLeft);
   const r1 = Math.max(prevL + prevW, newLeft + newWidth);
   apply(l1, r1 - l1);
   // phase 2 : …puis se resserre sur le nouvel onglet avec un petit rebond
-  blob._morphTimeout = setTimeout(()=>apply(newLeft, newWidth), 170);
+  blob._morphTimeout = setTimeout(()=>apply(newLeft, newWidth), 80);
 }
 function bnRepositionLiquidBlob(){
   const active = document.querySelector('.bn-item.active');
-  if(active) bnMoveLiquidBlob(active);
+  if(active) bnMoveLiquidBlob(active, true);
 }
-window.addEventListener('resize', bnRepositionLiquidBlob);
-window.addEventListener('DOMContentLoaded', ()=>setTimeout(bnRepositionLiquidBlob, 50));
+// Après rotation / sortie de plein écran, la mise en page met un instant à se stabiliser : on recale plusieurs fois
+function bnRepositionSoon(){
+  bnRepositionLiquidBlob();
+  [80, 250, 600, 1200].forEach(d=>setTimeout(bnRepositionLiquidBlob, d));
+}
+window.addEventListener('resize', bnRepositionSoon);
+window.addEventListener('orientationchange', bnRepositionSoon);
+window.addEventListener('pageshow', bnRepositionSoon);
+document.addEventListener('fullscreenchange', bnRepositionSoon);
+document.addEventListener('webkitfullscreenchange', bnRepositionSoon);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) bnRepositionSoon(); });
+if(window.visualViewport) window.visualViewport.addEventListener('resize', bnRepositionSoon);
+window.addEventListener('DOMContentLoaded', ()=>{
+  setTimeout(bnRepositionLiquidBlob, 50);
+  const nav = document.getElementById('bottomNavMobile');
+  if(nav && window.ResizeObserver) new ResizeObserver(bnRepositionLiquidBlob).observe(nav);
+  // la barre réapparaît (has-bottom-nav) après le lecteur plein écran → recaler
+  new MutationObserver(bnRepositionSoon).observe(document.body, {attributes:true, attributeFilter:['class']});
+});
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   setTimeout(bnRepositionLiquidBlob, 50);
 }
@@ -13600,11 +13626,11 @@ function setMediaSession(){
   /* ── La barre du bas se replie vers le bouton Accueil / la loupe s'étire en champ de recherche ── */
   .bottom-nav-mobile {
     transform-origin:left bottom;
-    transition:opacity .3s ease, transform .45s cubic-bezier(.34,1.4,.64,1) !important;
+    transition:opacity .18s ease, transform .3s cubic-bezier(.3,1.1,.4,1) !important;
   }
   body.has-bottom-nav .bn-search-btn {
     transform-origin:right center;
-    transition:opacity .25s ease, transform .45s cubic-bezier(.34,1.4,.64,1) !important;
+    transition:opacity .15s ease, transform .3s cubic-bezier(.3,1.1,.4,1) !important;
   }
   body.has-bottom-nav.mss-open .bottom-nav-mobile {
     display:flex !important; opacity:0; transform:scale(.35,.8) translateY(8px); pointer-events:none;
@@ -13614,20 +13640,20 @@ function setMediaSession(){
   }
 
   /* ── Écran de recherche : entrée / sortie ── */
-  .mobile-search-screen.open { animation:mssFadeIn .32s ease both; }
-  .mobile-search-screen.open.closing { animation:mssFadeOut .3s ease .05s both; }
+  .mobile-search-screen.open { animation:mssFadeIn .18s ease-out both; }
+  .mobile-search-screen.open.closing { animation:mssFadeOut .16s ease-in both; }
 
-  .mobile-search-screen.open .mss-home-btn { animation:mssHomeIn .5s cubic-bezier(.34,1.56,.64,1) both; }
-  .mobile-search-screen.open .mss-bottombar .mss-searchbar { animation:mssBarIn .5s cubic-bezier(.22,1,.36,1) .05s both; }
+  .mobile-search-screen.open .mss-home-btn { animation:mssHomeIn .3s cubic-bezier(.3,1.2,.4,1) both; }
+  .mobile-search-screen.open .mss-bottombar .mss-searchbar { animation:mssBarIn .3s cubic-bezier(.22,1,.36,1) both; }
   .mobile-search-screen.open .mss-header,
   .mobile-search-screen.open .mss-section-title,
-  .mobile-search-screen.open .mss-list { animation:mssContentIn .45s cubic-bezier(.22,1,.36,1) .08s both; }
+  .mobile-search-screen.open .mss-list { animation:mssContentIn .26s cubic-bezier(.22,1,.36,1) .02s both; }
 
-  .mobile-search-screen.open.closing .mss-home-btn { animation:mssHomeOut .3s ease both; }
-  .mobile-search-screen.open.closing .mss-bottombar .mss-searchbar { animation:mssBarOut .3s ease both; }
+  .mobile-search-screen.open.closing .mss-home-btn { animation:mssHomeOut .16s ease-in both; }
+  .mobile-search-screen.open.closing .mss-bottombar .mss-searchbar { animation:mssBarOut .16s ease-in both; }
   .mobile-search-screen.open.closing .mss-header,
   .mobile-search-screen.open.closing .mss-section-title,
-  .mobile-search-screen.open.closing .mss-list { animation:mssContentOut .25s ease both; }
+  .mobile-search-screen.open.closing .mss-list { animation:mssContentOut .14s ease-in both; }
 }
 @keyframes mssFadeIn  { from{opacity:0} to{opacity:1} }
 @keyframes mssFadeOut { from{opacity:1} to{opacity:0} }
@@ -13655,17 +13681,17 @@ function setMediaSession(){
       inset 0 1px 1px rgba(255,255,255,0.3),
       0 4px 12px rgba(0,0,0,0.35) !important;
     transition:
-      left .45s cubic-bezier(.34,1.3,.64,1),
-      width .45s cubic-bezier(.34,1.3,.64,1) !important;
+      left .26s cubic-bezier(.3,1,.4,1.08),
+      width .26s cubic-bezier(.3,1,.4,1.08) !important;
   }
   .bn-lens-inner {
     position:absolute; display:flex; align-items:center; box-sizing:border-box;
     padding:10px 2px; pointer-events:none;
     transform:none; filter:none;
     transition:
-      left .45s cubic-bezier(.34,1.3,.64,1),
-      transform-origin .45s cubic-bezier(.34,1.3,.64,1),
-      transform .3s ease, filter .3s ease;
+      left .26s cubic-bezier(.3,1,.4,1.08),
+      transform-origin .26s cubic-bezier(.3,1,.4,1.08),
+      transform .18s ease-out;
   }
   .bn-liquid-blob.lens-moving .bn-lens-inner {
     transform:scale(1.12);
@@ -13682,7 +13708,7 @@ function setMediaSession(){
   body.film-modal-open .bn-search-btn {
     opacity:0 !important; transform:translateY(130%) !important; pointer-events:none !important;
     visibility:hidden !important;
-    transition:opacity .25s ease, transform .35s ease, visibility 0s linear .35s !important;
+    transition:opacity .15s ease, transform .22s ease, visibility 0s linear .22s !important;
   }
 }
 </style>
@@ -13695,5 +13721,17 @@ function setMediaSession(){
   sync();
 })();
 </script>
+
+<style id="bnNoAnimStyle">
+.bn-liquid-blob.bn-no-anim, .bn-liquid-blob.bn-no-anim .bn-lens-inner { transition:none !important; }
+</style>
+
+<style id="bnPerfStyle">
+@media(max-width:768px){
+  .bn-liquid-blob, .bn-lens-inner, .bottom-nav-mobile, .bn-search-btn,
+  .mss-home-btn, .mss-bottombar .mss-searchbar { will-change:transform; backface-visibility:hidden; -webkit-backface-visibility:hidden; }
+  .bn-liquid-blob { will-change:left,width; }
+}
+</style>
 </body>
 </html>
