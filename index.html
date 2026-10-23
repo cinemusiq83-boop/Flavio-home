@@ -5368,6 +5368,26 @@ const filmMeta = {
   logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/3251015/canal-ouah/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x10808",
   backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/3251015/canal-ouah/STD169/myCANAL_16x9_MEA_1920x10808"
 },
+1067:{
+  desc:"Quand des enfants de la ville de Derry commencent à disparaître, un groupe de jeunes doit surmonter ses plus grandes peurs alors qu’il affronte un méchant clown nommé Pennywise, dont l’histoire de meurtres et de violence remonte à plusieurs siècles.",
+  director:"Andy Muschietti",
+  cast:"Bill Skarsgård, Jaeden Martell, Finn Wolfhard",
+  year:"2017",
+  duration:"2h09",
+  country:"États-Unis",
+  logo:"https://images.cdn.prd.api.discomax.com/ieKYO/ac8kfjhao8k8VmnlA.png?w=1000&f=webp",
+  backdrop:"https://images.cdn.prd.api.discomax.com/xOySp/yPQcfmdf20hbvBgcA.jpeg?w=1800&f=webp"
+},
+1068:{
+  desc:"Six amis d'enfance se retrouvent dans leur petite ville du Maine pour affronter une fois de plus une entité maléfique qu'ils croyaient avoir éliminée 30 ans auparavant.",
+  director:"Andy Muschietti",
+  cast:"James McAvoy, Jessica Chastain, Bill Hader",
+  year:"2019",
+  duration:"2h42",
+  country:"États-Unis",
+  logo:"https://images.cdn.prd.api.discomax.com/DEsk9/IveyDw5hqBOLojR7w.png?w=600&f=webp",
+  backdrop:"https://images.cdn.prd.api.discomax.com/rI57y/cZC_kFjkbqU6bdhFA.jpeg?w=1800&f=webp"
+},
 };
 
 // ══════════════════════════════════════════
@@ -5406,6 +5426,8 @@ const allContent = [
   {id:947,title:"The Mandalorian And Grogu",genre:"Star Wars",type:"film",thumb:"https://files.catbox.moe/oloxah.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/c2wk0s.m3u",embed:true,hero:true},
   {id:931,title:"Le Diable S'Habille En Prada 2",genre:"Comedie",type:"film",thumb:"https://files.catbox.moe/n5n0wa.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-0fgno6f0z2bf.html",embed:true,hero:true},
   {id:896,title:"Michael",genre:"Biopic",type:"film",thumb:"https://images.justwatch.com/poster/343089542/s718/michael-2025-0.jpg",backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/STD169/MICHAEL_myCANAL_16x9_MEA_1920x1080_jpg80_-vk1p",src:"https://files.catbox.moe/3y7uot.m3u",embed:true,hero:true},
+  {id:1067,title:"Ça",genre:"Horreur",type:"film",thumb:"https://images.cdn.prd.api.discomax.com/bDcCu/iGBSd0IN4Aruy1vyA.jpeg?w=450&f=webp",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/ow77ye.m3u",embed:true,hero:true},
+  {id:1068,title:"Ça Chapitre 2",genre:"Horreur",type:"film",thumb:"https://images.cdn.prd.api.discomax.com/nDhgb/w8TcZhjFcHRqwP3lQ.jpeg?w=400&f=webp",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/1j6q80.m3u",embed:true,hero:true},
   {id:1059,title:"Into The Wild",genre:"Drame",type:"film",thumb:"https://image.tmdb.org/t/p/original/1rhgbRN1ecG7Y96yNrWA9D5Xu2v.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/est53d.m3u",embed:true,hero:true},
   {id:1060,title:"Le Loup,Garou De Londres",genre:"Horreur",type:"film",thumb:"https://image.tmdb.org/t/p/original/eIsZwhFNKLuZvriaIhQrGEnAguM.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-ytp5lqt4u5jt.html",embed:true,hero:true},
   {id:1061,title:"Dracula",genre:"Horreur",type:"film",thumb:"https://image.tmdb.org/t/p/original/hCKkybW6EfSZoOW3xia9ZsQwaUd.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/2eigjg.m3u",embed:true,hero:true},
@@ -10612,7 +10634,9 @@ const trailerMap = {
   1064: 'vSi5jdziv3I', // Leon
   1065: 'WVlFeuCfxrY', // Jeanne D'Arc
   1066: 'xSV9hN_GIxc', // Malavita
-  };
+  1067: '0zkm6IPr3Jw', // Ça
+  1068: 'G8fR1vvrLmI', // Ça Chapitre 2
+    };
 
 function getTrailerYtId(filmId) {
   return trailerMap[filmId] || null;
@@ -10626,6 +10650,8 @@ function getTrailerYtId(filmId) {
 //  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+1067: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_77241_BA/143608/canalplay.com_77241_BA_ATM_OTT_HD_2_AACLC_20_VF_video_3400_avc.mp4', // Ça
+1068: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_95039_BA/01JNG8HH10NT54V419YSEAZB4G/w1_v_avc_10_720_1280_0_3400.mp4', // Ça Chapitre 2
 1050: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_156425_BA/01KZZSR6HDZCZY0AT06PT7XR41/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Pour Le Plaisir
 1051: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/pds/alula/pds_A0046201001TRL1_PFMCSPGLW/01HKTKKDMVQMDBVZF66EBD2WV7/w1_v_avc_20_1080_1920_0_4500.mp4', // Tetris
 1052: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_135551_BA/01HZS5MNE4RSX3JDYKHTP86XZ9/w1_v_avc_10_720_1280_0_3400.mp4', // Une Vie
@@ -10893,6 +10919,8 @@ const filmBgVideoMap = {
 // Les flux TVOD sont souvent vidéo seule : l'audio est un second fichier, lu en parallèle et resynchronisé sur la vidéo.
 // Ajoutez ici : id du film → url du fichier audio (.mp4 / .m4a).
 const filmBgAudioMap = {
+  1067: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_77241_BA/143608/canalplay.com_77241_BA_ATM_OTT_HD_2_AACLC_20_VF_audio_128_aaclc_fra.mp4', // Ça
+  1068: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_95039_BA/01JNG8HH10NT54V419YSEAZB4G/w1_a_aac_0_fra_0_0_128.mp4', // Ça Chapitre 2
   1050: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_156425_BA/01KZZSR6HDZCZY0AT06PT7XR41/w1_a_aac_0_fra_0_1_128.mp4', // Pour Le Plaisir
   1051: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/pds/alula/pds_A0046201001TRL1_PFMCSPGLW/01HKTKKDMVQMDBVZF66EBD2WV7/w1_a_aac_0_eng_0_1_128.mp4', // Tetris
   1052: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_135551_BA/01HZS5MNE4RSX3JDYKHTP86XZ9/w1_a_aac_0_fra_0_0_128.mp4', // Une Vie
