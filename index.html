@@ -12650,10 +12650,19 @@ function closePlatformPage() {
 </style>
 
 <script>
+// La bulle liquid glass est invisible au repos : elle n'apparaît que le temps d'un choix d'onglet
+function bnShowBlob(ms){
+  const b = document.getElementById('bnLiquidBlob'); if(!b) return;
+  clearTimeout(b._hideT);
+  b.classList.add('bn-liquid-on');
+  b._hideT = setTimeout(()=>b.classList.remove('bn-liquid-on'), ms||650);
+}
 function bnSetActive(name){
+  const prev = document.querySelector('#bottomNavMobile > .bn-item.active');
   document.querySelectorAll('#bottomNavMobile > .bn-item').forEach(b=>b.classList.remove('active'));
   const el = document.querySelector('#bottomNavMobile > .bn-item[data-bn="'+name+'"]');
   if(el) el.classList.add('active');
+  if(el && el !== prev) bnShowBlob(650);   // nouvel onglet choisi → la bulle apparaît, glisse, puis disparaît
   bnMoveLiquidBlob(el); // fonction définie tout en bas du fichier (bloc Liquid Glass)
 }
 function bnGoAccueil(){
@@ -13844,5 +13853,286 @@ function setMediaSession(){
 @keyframes mssBarIn  { from{opacity:0; transform:translate3d(28px,0,0) scale(.92)} to{opacity:1; transform:none} }
 @keyframes mssBarOut { from{opacity:1; transform:none} to{opacity:0; transform:translate3d(28px,0,0) scale(.92)} }
 </style>
+<style id="bnTouchHeroStyle">
+/* ── Page actuelle : capsule noire + écriture rouge TOUJOURS visibles.
+      L'effet liquid glass (loupe qui grossit, franges de couleur, reflet) n'apparaît que pendant un choix / un glissement ── */
+@media(max-width:768px){
+  .bn-liquid-blob{
+    opacity:1;
+    transition:transform .26s cubic-bezier(.3,1,.4,1.06) !important;
+  }
+  .bn-liquid-blob.lens-moving,
+  .bn-liquid-blob.bn-dragging{
+    border-color:rgba(255,255,255,0.45) !important;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,0,0,0.45),
+      inset 3px 0 5px -1px rgba(255,70,90,0.7),
+      inset -3px 0 5px -1px rgba(70,200,255,0.65),
+      inset 0 1.5px 1.5px rgba(255,255,255,0.55),
+      0 0 16px rgba(255,255,255,0.18),
+      0 6px 16px rgba(0,0,0,0.4) !important;
+  }
+  .bn-liquid-blob.bn-dragging{ transition:none !important; }
+  .bn-liquid-blob.bn-dragging .bn-lens-inner{ transition:none !important; }
+
+  /* appui long + glisser sur la barre : le navigateur ne doit ni défiler, ni sélectionner, ni ouvrir un menu */
+  .bottom-nav-mobile{
+    touch-action:none;
+    -webkit-user-select:none; user-select:none;
+    -webkit-touch-callout:none;
+  }
+  .bottom-nav-mobile img{ -webkit-user-drag:none; }
+}
+
+/* ── Hero (Accueil / Films / Séries) : swipe entre les 3 nouveautés ── */
+#heroSection{ touch-action:pan-y pinch-zoom; }
+.hero-content{ transition:opacity .4s ease, transform .35s cubic-bezier(.22,1,.36,1); }
+.hero-bg{ transition:background-image 0s, transform .35s cubic-bezier(.22,1,.36,1); }
+.hero-bg.fade-out, .hero-bg.fade-in{ transition:opacity .5s ease, transform .35s cubic-bezier(.22,1,.36,1); }
+.hero.hero-dragging{ -webkit-user-select:none; user-select:none; cursor:grabbing; }
+.hero.hero-dragging .hero-content,
+.hero.hero-dragging .hero-bg{ transition:none !important; }
+/* Carrousel du hero : 3 panneaux (précédent / actuel / suivant) qui glissent avec le doigt */
+.hs-track{ position:absolute; inset:0; z-index:0; will-change:transform; transform:translate3d(0,0,0); }
+.hs-panel{ position:absolute; top:0; bottom:0; left:0; width:100%; display:flex; align-items:flex-end;
+           padding:inherit; box-sizing:border-box; backface-visibility:hidden; -webkit-backface-visibility:hidden; pointer-events:none; }
+.hs-panel .hero-bg{ left:0; right:0; transition:none; }
+.hero.hs-active #heroBg, .hero.hs-active #heroContent{ visibility:hidden; }
+</style>
+
+<script>
+/* ═══ BARRE DU BAS : appui long sur l'onglet actif, puis glisser vers un autre onglet ═══ */
+(function(){
+  const nav  = document.getElementById('bottomNavMobile');
+  const blob = document.getElementById('bnLiquidBlob');
+  if(!nav || !blob) return;
+  const HOLD_MS = 190, MOVE_PX = 8, PAD = 6;
+  let st = null;
+  const tabs = ()=>Array.from(nav.querySelectorAll(':scope > .bn-item'));
+  const buzz = ms=>{ try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(_){} };
+
+  function follow(clientX){
+    const r = nav.getBoundingClientRect();
+    const fx = clientX - r.left - nav.clientLeft;
+    const w  = st.w || blob.offsetWidth;
+    const px = Math.max(PAD, Math.min(nav.clientWidth - PAD - w, fx - w/2));
+    blob.style.transform = 'translate3d('+px+'px,0,0)';
+    const inner = blob.querySelector('.bn-lens-inner');
+    if(inner) inner.style.transform = 'translate3d('+(-(px + blob.clientLeft))+'px,0,0)';
+    // onglet situé sous la bulle
+    const cx = px + w/2; let hover = 0, best = Infinity;
+    tabs().forEach((it,i)=>{ const d = Math.abs(it.offsetLeft + it.offsetWidth/2 - cx); if(d < best){ best = d; hover = i; } });
+    if(hover !== st.hover){
+      st.hover = hover; buzz(6);
+      if(inner) Array.from(inner.children).forEach((c,i)=>c.classList.toggle('active', i === hover));  // aperçu dans la loupe
+    }
+  }
+
+  function startDrag(){
+    if(!st || st.active) return;
+    clearTimeout(st.timer);
+    const act = nav.querySelector(':scope > .bn-item.active');
+    if(!act){ st = null; return; }
+    st.active = true;
+    bnMoveLiquidBlob(act, true);               // place la bulle sur l'onglet actuel (et construit la loupe)
+    st.w = blob.offsetWidth;
+    st.hover = tabs().indexOf(act);
+    clearTimeout(blob._hideT);
+    blob.classList.add('bn-dragging','lens-moving','bn-liquid-on');
+    try{ nav.setPointerCapture(st.id); }catch(_){}
+    buzz(12);
+    follow(st.lastX);
+  }
+
+  function endDrag(commit){
+    clearTimeout(blob._lensTimeout);
+    blob.classList.remove('bn-dragging');
+    const list = tabs();
+    const target = list[st.hover];
+    const cur = nav.querySelector(':scope > .bn-item.active');
+    if(commit && target && target !== cur){
+      target.click();                          // → bnSetActive : la bulle glisse jusqu'à l'onglet puis disparaît
+    } else if(cur){
+      bnMoveLiquidBlob(cur);                   // retour sur l'onglet actuel
+      bnShowBlob(450);
+    }
+    nav._suppressUntil = Date.now() + 450;     // évite le "click" fantôme après le relâchement
+  }
+
+  nav.addEventListener('pointerdown', e=>{
+    if(st) return;
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    const it = e.target.closest('.bn-item');
+    if(!it || !it.classList.contains('active')) return;   // on part de la page où l'on se trouve
+    st = { id:e.pointerId, x0:e.clientX, y0:e.clientY, lastX:e.clientX, active:false, hover:-1, w:0 };
+    st.timer = setTimeout(startDrag, HOLD_MS);
+  });
+  nav.addEventListener('pointermove', e=>{
+    if(!st || e.pointerId !== st.id) return;
+    st.lastX = e.clientX;
+    if(!st.active){
+      if(Math.abs(e.clientX - st.x0) > MOVE_PX) startDrag();      // glissement immédiat sans attendre
+      else if(Math.abs(e.clientY - st.y0) > 30){ clearTimeout(st.timer); st = null; }
+      return;
+    }
+    follow(e.clientX);
+  });
+  const finish = (e, commit)=>{
+    if(!st || e.pointerId !== st.id) return;
+    clearTimeout(st.timer);
+    const s = st; st = null;
+    if(s.active){ st = s; endDrag(commit); st = null; try{ nav.releasePointerCapture(s.id); }catch(_){} }
+  };
+  nav.addEventListener('pointerup',     e=>finish(e, true));
+  nav.addEventListener('pointercancel', e=>finish(e, false));
+  nav.addEventListener('click', e=>{
+    if(nav._suppressUntil && Date.now() < nav._suppressUntil){ e.preventDefault(); e.stopPropagation(); }
+  }, true);
+  nav.addEventListener('contextmenu', e=>e.preventDefault());
+})();
+
+/* ═══ HERO : vrai carrousel fluide (Accueil, Films, Séries) — les affiches voisines suivent le doigt ═══ */
+(function(){
+  const hero = document.getElementById('heroSection');
+  const realBg = document.getElementById('heroBg');
+  const realContent = document.getElementById('heroContent');
+  if(!hero || !realBg || !realContent) return;
+  let g = null, track = null, busy = false, suppressUntil = 0;
+
+  /* — préchargement des 3 affiches pour qu'elles soient prêtes au moment du glissement — */
+  function preload(){
+    if(typeof heroSlides === 'undefined') return;
+    heroSlides.forEach(f=>{
+      try{
+        const meta = filmMeta[f.id] || {};
+        [getBackdropFor(f, meta), meta.logo || f.logo].forEach(u=>{
+          if(!u) return; const im = new Image(); im.decoding = 'async'; im.src = u; if(im.decode) im.decode().catch(()=>{});
+        });
+      }catch(_){}
+    });
+  }
+  if(typeof setHeroSlide === 'function'){
+    const _orig = setHeroSlide;
+    setHeroSlide = function(){ const r = _orig.apply(this, arguments); setTimeout(preload, 50); return r; };
+  }
+  setTimeout(preload, 1200);
+
+  /* — construction d'un panneau (fond + logo/titre + description + boutons) — */
+  function makePanel(film, pos){
+    const meta = (typeof filmMeta !== 'undefined' && filmMeta[film.id]) || {};
+    const bgUrl = getBackdropFor(film, meta);
+    const logoUrl = meta.logo || film.logo || '';
+    const desc = meta.desc ? meta.desc.substring(0,130)+'…' : film.genre + ' · Disponible maintenant sur Flavio Home';
+
+    const panel = document.createElement('div'); panel.className = 'hs-panel';
+    panel.style.transform = 'translate3d(' + (pos*100) + '%,0,0)';
+    const bg = document.createElement('div'); bg.className = 'hero-bg';
+    bg.style.backgroundImage = "url('" + bgUrl + "')"; bg.style.opacity = '1';
+    const c = document.createElement('div'); c.className = 'hero-content';
+    const badge = realContent.querySelector('.hero-badge'); if(badge) c.appendChild(badge.cloneNode(true));
+    const logo = document.createElement('img'); logo.className = 'hero-logo-img';
+    const title = document.createElement('div'); title.className = 'hero-title'; title.textContent = film.title;
+    if(logoUrl){
+      logo.onload = ()=>{ logo.style.display = 'block'; };
+      logo.onerror = ()=>{ title.style.display = 'block'; };
+      logo.src = logoUrl;
+    } else title.style.display = 'block';
+    const d = document.createElement('div'); d.className = 'hero-desc'; d.textContent = desc;
+    c.appendChild(logo); c.appendChild(title); c.appendChild(d);
+    const btns = realContent.querySelector('.hero-btns'); if(btns) c.appendChild(btns.cloneNode(true));
+    panel.appendChild(bg); panel.appendChild(c);
+    return panel;
+  }
+
+  function openTrack(){
+    const n = heroSlides.length, i = heroSlideIndex;
+    track = document.createElement('div'); track.className = 'hs-track';
+    track.appendChild(makePanel(heroSlides[(i - 1 + n) % n], -1));
+    track.appendChild(makePanel(heroSlides[i], 0));
+    track.appendChild(makePanel(heroSlides[(i + 1) % n], 1));
+    hero.insertBefore(track, realContent);          // sous les pastilles et la barre de progression
+    hero.classList.add('hs-active');
+  }
+  function closeTrack(){
+    if(track){ track.remove(); track = null; }
+    hero.classList.remove('hs-active');
+  }
+
+  /* — gestes — */
+  hero.addEventListener('pointerdown', e=>{
+    if(g || busy) return;
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    if(e.target.closest('.hero-category-banners')) return;
+    if(typeof heroSlides === 'undefined' || heroSlides.length < 2) return;
+    g = { id:e.pointerId, x0:e.clientX, y0:e.clientY, dx:0, drag:false, w:hero.clientWidth || window.innerWidth, s:[{x:e.clientX, t:performance.now()}] };
+    preload();
+  });
+
+  hero.addEventListener('pointermove', e=>{
+    if(!g || e.pointerId !== g.id) return;
+    const dx = e.clientX - g.x0;
+    if(!g.drag){
+      if(Math.abs(dx) < 8) return;
+      if(Math.abs(e.clientY - g.y0) > Math.abs(dx)){ g = null; return; }     // geste vertical : la page défile
+      g.drag = true;
+      hero.classList.add('hero-dragging');
+      try{ hero.setPointerCapture(e.pointerId); }catch(_){}
+      if(typeof clearSlideshowTimers === 'function') clearSlideshowTimers();
+      openTrack();
+    }
+    g.dx = dx;
+    const now = performance.now();
+    g.s.push({x:e.clientX, t:now}); while(g.s.length > 2 && now - g.s[0].t > 100) g.s.shift();
+    track.style.transform = 'translate3d(' + dx + 'px,0,0)';
+  });
+
+  function end(e, cancelled){
+    if(!g || e.pointerId !== g.id) return;
+    const st = g; g = null;
+    if(!st.drag) return;
+    hero.classList.remove('hero-dragging');
+    try{ hero.releasePointerCapture(e.pointerId); }catch(_){}
+    suppressUntil = Date.now() + 400;
+
+    const first = st.s[0], last = st.s[st.s.length - 1];
+    const v = (last.x - first.x) / Math.max(1, last.t - first.t);          // px/ms
+    const dx = st.dx, W = st.w, n = heroSlides.length;
+    let dir = 0;                                                          // +1 → suivante, -1 → précédente
+    if(!cancelled){
+      if(Math.abs(dx) > W * 0.25 || (Math.abs(v) > 0.4 && Math.abs(dx) > 20)) dir = dx < 0 ? 1 : -1;
+    }
+    const targetX = dir === 0 ? 0 : -dir * W;
+    const dist = Math.abs(targetX - dx);
+    const dur = Math.max(220, Math.min(460, dist / Math.max(0.9, Math.abs(v)) * 0.9 + 160));   // plus le geste est vif, plus ça finit vite
+
+    busy = true;
+    let done = false;
+    const finish = ()=>{
+      if(done) return; done = true;
+      if(dir !== 0){
+        heroSlideIndex = (heroSlideIndex + dir + n) % n;
+        setHeroSlide(heroSlideIndex, true);          // l'affiche réelle prend la place du panneau central, sans fondu
+      }
+      // laisse au vrai contenu (logo) le temps de se peindre, puis retire le carrousel : aucun clignotement
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        setTimeout(()=>{
+          closeTrack(); busy = false;
+          if(typeof startSlideshowTimer === 'function') startSlideshowTimer();
+        }, dir !== 0 ? 70 : 0);
+      }));
+    };
+    track.style.transition = 'transform ' + dur + 'ms cubic-bezier(.22,1,.36,1)';
+    void track.offsetWidth;
+    track.style.transform = 'translate3d(' + targetX + 'px,0,0)';
+    track.addEventListener('transitionend', finish, { once:true });
+    setTimeout(finish, dur + 80);                    // sécurité
+  }
+  hero.addEventListener('pointerup',     e=>end(e, false));
+  hero.addEventListener('pointercancel', e=>end(e, true));
+  hero.addEventListener('click', e=>{
+    if(Date.now() < suppressUntil){ e.preventDefault(); e.stopPropagation(); }
+  }, true);
+})();
+</script>
 </body>
 </html>
