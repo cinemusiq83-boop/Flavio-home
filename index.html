@@ -198,6 +198,12 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .search-result-img { width:36px; height:52px; object-fit:cover; border-radius:2px; flex-shrink:0; }
 .search-result-info .title { font-size:.82rem; color:var(--text); }
 .search-result-info .genre { font-size:.7rem; color:var(--muted); margin-top:2px; }
+.search-result-img.ch { width:52px; height:36px; object-fit:contain; background:#0d0d14; padding:2px; }
+.search-result-img.ch.radio { width:44px; height:44px; border-radius:4px; }
+.search-sep { padding:8px 14px 4px; font-size:.65rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); }
+.search-sub-title { font-family:'Canal',sans-serif; font-size:.75rem; letter-spacing:.3em; text-transform:uppercase; color:var(--muted); margin:28px 0 14px; }
+.mss-item-thumb.ch { background:#0d0d14; display:flex; align-items:center; justify-content:center; }
+.mss-item-thumb.ch img { max-width:80%; max-height:80%; object-fit:contain; }
 .search-no-result { padding:16px; text-align:center; color:var(--muted); font-size:.8rem; }
 
 /* ── RECHERCHE : page dédiée plein écran (app mobile uniquement) ── */
@@ -1140,6 +1146,11 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .close-btn:hover { border-color:var(--gold); color:var(--gold); }
 .player-frame { position:relative; width:100%; max-width:960px; aspect-ratio:16/9; border-radius:4px; overflow:hidden; border:1px solid var(--glass-border); background:#000; }
 .player-frame iframe,.player-frame video { width:100%; height:100%; border:none; }
+.player-header-right { display:flex; align-items:center; gap:8px; }
+.vz-reload-btn { font-size:1.25rem; }
+.vz-reload-btn.spin { animation:vzspin .6s linear; }
+@keyframes vzspin { to { transform:rotate(360deg); } }
+#tvReloadBtn { top:18px; right:150px; }
 
 /* ── Cartes RADIO : vignette CARRÉE (format pochette / disque) au lieu du 16:9 ── */
 .tv-channel[data-radio-id] .tv-channel-logo-wrap {
@@ -1564,6 +1575,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
     background:linear-gradient(rgba(0,0,0,.65),transparent); }
   .player-header > * { pointer-events:auto; }
   .player-header .close-btn { background:rgba(0,0,0,.55); border-radius:50%; }
+  .player-header-right { pointer-events:auto; }
   .player-title { font-size:.82rem; }
   .player-frame { max-width:100%; width:100%; height:100vh; height:100dvh; aspect-ratio:auto; border:none; border-radius:0; }
   #profilesScreen h1 { font-size:1.4rem; margin-bottom:30px; }
@@ -1940,7 +1952,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     </div>
     <div class="nav-search">
       <span class="nav-search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="Rechercher…" oninput="handleSearch(this.value)" onfocus="onNavSearchFocus()" onblur="setTimeout(closeSearchDropdown,200)">
+      <input type="text" id="searchInput" placeholder="Film, série, chaîne, radio…" oninput="handleSearch(this.value)" onfocus="onNavSearchFocus()" onblur="setTimeout(closeSearchDropdown,200)">
       <div class="search-results" id="searchDropdown"></div>
     </div>
     <div class="nav-right">
@@ -1962,7 +1974,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
       </button>
       <div class="mss-searchbar liquid-glass">
         <svg class="mss-search-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
-        <input type="text" id="mobileSearchInput" placeholder="Que voulez-vous regarder ?" oninput="handleMobileSearch(this.value)" enterkeyhint="search">
+        <input type="text" id="mobileSearchInput" placeholder="Film, série, chaîne TV, radio…" oninput="handleMobileSearch(this.value)" enterkeyhint="search">
       </div>
     </div>
   </div>
@@ -2113,6 +2125,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <div id="searchResultsSection" style="display:none; padding-top:calc(80px + var(--banner-h));">
     <h2 id="searchResultsTitle">Résultats</h2>
     <div class="movies-grid" id="searchResultsGrid"></div>
+    <div id="searchChannelsWrap"></div>
   </div>
 
   <!-- CHAÎNES -->
@@ -2289,7 +2302,10 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
 <div class="player-overlay" id="playerOverlay">
   <div class="player-header">
     <div class="player-title" id="playerTitle">—</div>
-    <button class="close-btn" onclick="closePlayer()">✕</button>
+    <div class="player-header-right">
+      <button class="close-btn vz-reload-btn" id="playerReloadBtn" type="button" style="display:none" title="Lecture indisponible ? Recharger le lecteur" aria-label="Recharger le lecteur" onclick="vzReloadPlayer(this)">↻</button>
+      <button class="close-btn" onclick="closePlayer()">✕</button>
+    </div>
   </div>
   <div class="player-frame" id="playerFrame"></div>
   <div class="player-eps" id="playerEps"></div>
@@ -2500,6 +2516,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
 
 <!-- TV mode panels -->
 <button class="tv-float-btn" id="tvCloseBtn" style="display:none" onclick="closePlayer()">✕ Fermer</button>
+<button class="tv-float-btn" id="tvReloadBtn" style="display:none" onclick="vzReloadPlayer(this)">↻ Recharger</button>
 <button class="tv-float-btn" id="tvEpBtn" style="display:none" onclick="toggleTvEpPanel()">☰ Épisodes</button>
 <div class="tv-ep-panel" id="tvEpPanel">
   <div class="tv-ep-panel-title" id="tvEpPanelTitle">Épisodes</div>
@@ -10625,9 +10642,26 @@ function showTvBtns(close,ep){
   const eb=document.getElementById('tvEpBtn');
   if(cb)cb.style.display=close?'flex':'none';
   if(eb)eb.style.display=ep?'flex':'none';
+  if(typeof vzSyncReloadBtns==='function') vzSyncReloadBtns();
 }
 function loadEpisode(ep){window.fmpCurEp=ep;loadMedia(document.getElementById('playerFrame'),ep.src,ep.embed);if(typeof playerEpsMark==='function')playerEpsMark();}
+// Bouton « Recharger » (à côté de la croix) : visible uniquement pour les lecteurs vidzy
+let vzReloadFn = null;
+function vzSyncReloadBtns(){
+  const on = !!vzReloadFn;
+  const h = document.getElementById('playerReloadBtn');
+  if (h) h.style.display = on ? 'flex' : 'none';
+  const t = document.getElementById('tvReloadBtn');
+  const cb = document.getElementById('tvCloseBtn');
+  if (t) t.style.display = (on && cb && cb.style.display !== 'none') ? 'flex' : 'none';
+}
+function vzReloadPlayer(btn){
+  if (!vzReloadFn) return;
+  if (btn && btn.classList) { btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin'); }
+  vzReloadFn();
+}
 function loadMedia(frame,src,isEmbed){
+  vzReloadFn = null; vzSyncReloadBtns();
   // Liens .m3u / .m3u8 (directs ou via hlsplayer.net) → lecteur intégré (comme les chaînes TV)
   const _fmpUrl = (typeof fmpExtract==='function') ? fmpExtract(src) : null;
   if(_fmpUrl){ frame.innerHTML=''; fmpOpen(_fmpUrl, src); return; }
@@ -10652,7 +10686,33 @@ function loadMedia(frame,src,isEmbed){
     // on n'utilise donc "no-referrer" que pour uqload.
     const isVidzy = /vidzy\.org/i.test(src||'');
     const refPolicy = isVidzy ? 'strict-origin-when-cross-origin' : 'no-referrer';
-    frame.innerHTML=`<iframe src="${src}" allowfullscreen allow="autoplay" sandbox="allow-scripts allow-same-origin allow-forms" referrerpolicy="${refPolicy}"></iframe>`;
+    // ── Fiabilisation : vidzy affiche parfois « Lecture indisponible » au 1er essai ──
+    // Le message vient du lecteur vidzy lui-même (iframe d'un autre domaine : on ne peut pas le lire).
+    // On recrée donc l'iframe à neuf (avec un paramètre anti-cache) :
+    //  • automatiquement si la page ne finit pas de charger (12 s, 2 essais max),
+    //  • à la demande via le bouton « Recharger » en haut à droite du lecteur.
+    // Le sandbox (qui bloque popups / redirections = le bloqueur de pub) reste IDENTIQUE : rien n'est ajouté
+    // côté allow-popups / allow-top-navigation.
+    const baseSrc = src;
+    const tok = (frame._vzTok = (frame._vzTok||0) + 1);
+    let tries = 0, loadTimer = null;
+    const mount = (bust) => {
+      if (frame._vzTok !== tok) return;           // épisode / film changé entre-temps
+      clearTimeout(loadTimer);
+      const old = frame.querySelector('iframe'); if (old) { old.src = 'about:blank'; old.remove(); }
+      const ifr = document.createElement('iframe');
+      ifr.setAttribute('allowfullscreen','');
+      ifr.setAttribute('allow','autoplay; fullscreen; encrypted-media; picture-in-picture');
+      ifr.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-presentation');
+      ifr.setAttribute('referrerpolicy', refPolicy);
+      ifr.addEventListener('load', () => clearTimeout(loadTimer));
+      ifr.src = bust ? baseSrc + (baseSrc.includes('?') ? '&' : '?') + '_r=' + Date.now() : baseSrc;
+      frame.insertBefore(ifr, frame.firstChild);
+      if (isVidzy) loadTimer = setTimeout(() => { if (tries < 2) { tries++; mount(true); } }, 12000);
+    };
+    frame.innerHTML = '';
+    mount(false);
+    if (isVidzy) { vzReloadFn = () => mount(true); vzSyncReloadBtns(); }
     // Lecteur externe : impossible de se placer automatiquement → on indique où l'on en était (estimation)
     if(wpResume>10) showToast('Vous en étiez à ~'+wpFmt(wpResume));
   } else {
@@ -11652,6 +11712,7 @@ function openTrailer(m, ytId) {
   document.body.style.overflow = 'hidden';
 }
 function closePlayer(){
+  vzReloadFn = null; if(typeof vzSyncReloadBtns==='function') vzSyncReloadBtns();
   try{ wpTick(); }catch(e){}   // dernière sauvegarde du temps avant de fermer
   if(typeof fmpHide==='function') fmpHide();
   document.getElementById('playerOverlay').classList.remove('open','has-eps');
@@ -11735,13 +11796,78 @@ function searchContent(query){
   out.sort((x,y)=>x.score-y.score);
   return out.map(r=>r.m);
 }
+// ── Recherche des radios et chaînes TV (par nom, numéro ou catégorie) ──
+function searchChannels(query){
+  const n=searchNorm(query);
+  if(!n || typeof tvChannels==='undefined') return {tv:[],radio:[]};
+  const q={n, c:n.replace(/ /g,''), tokens:n.split(' ')};
+  const tv=[], radio=[], seen=new Set();
+  tvChannels.forEach(ch=>{
+    if(!ch.src) return;
+    const name=searchNorm(ch.name);
+    let score=-1;
+    if(name===q.n) score=0;
+    else if(name.startsWith(q.n)) score=1;
+    else if(searchFieldMatch(name,q)) score=2;
+    else if(String(ch.id)===query.trim()) score=2;
+    else if(searchFieldMatch(searchNorm(ch.cat),q)) score=3;
+    if(score<0) return;
+    const key=ch.cat+'|'+ch.name;
+    if(seen.has(key)) return; seen.add(key);
+    (ch.cat==='Radio'?radio:tv).push({ch,score});
+  });
+  const f=a=>a.sort((x,y)=>x.score-y.score).map(r=>r.ch);
+  return {tv:f(tv), radio:f(radio)};
+}
+function openChannelFromSearch(id){
+  const ch=tvChannels.find(c=>String(c.id)===String(id));
+  if(!ch) return;
+  if(ch.cat==='Radio') openRadioPlayer(ch); else openTvChannelPlayer(ch);
+}
+function channelDropdownItem(ch){
+  const isR=ch.cat==='Radio';
+  return `<div class="search-result-item" onclick="openChannelFromSearch('${ch.id}');closeSearchDropdown()"><img class="search-result-img ch${isR?' radio':''}" src="${ch.logo}" alt="" onerror="this.style.opacity='0'"><div class="search-result-info"><div class="title">${ch.name}</div><div class="genre">${isR?'📻 Radio':'📺 Chaîne TV'}${isR?'':' · '+ch.cat}</div></div></div>`;
+}
+function renderSearchChannelCards(chs){
+  const wrap=document.getElementById('searchChannelsWrap');
+  wrap.innerHTML='';
+  const build=(title,list)=>{
+    if(!list.length) return;
+    const h=document.createElement('div'); h.className='search-sub-title'; h.textContent=`${title} (${list.length})`;
+    const grid=document.createElement('div'); grid.className='tv-channels-grid'; grid.style.padding='0';
+    list.forEach(ch=>{
+      const div=document.createElement('div');
+      div.className='tv-channel';
+      if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
+      div.innerHTML=`
+        <div class="tv-channel-logo-wrap"><img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'"></div>
+        <div class="tv-channel-info">
+          <div class="tv-channel-program loading">Chargement…</div>
+          <div class="tv-channel-time"></div>
+          <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
+        </div>`;
+      div.onclick=()=> ch.cat==='Radio' ? openRadioPlayer(ch) : openTvChannelPlayer(ch);
+      grid.appendChild(div);
+      try{ if(ch.cat==='Radio') radioEpgUpdateCard(div,ch.id); else epgUpdateCard(div,ch.id); }catch(e){}
+    });
+    wrap.appendChild(h); wrap.appendChild(grid);
+  };
+  build('Chaînes TV', chs.tv);
+  build('Radios', chs.radio);
+  if(chs.radio.length && typeof radioStartAutoRefresh==='function') radioStartAutoRefresh();
+}
 function handleSearch(query){
   const q=query.trim();
   const dropdown=document.getElementById('searchDropdown');
   if(!q){dropdown.classList.remove('open');hideSearchResults();return;}
   const results=searchContent(q);
-  if(results.length===0){dropdown.innerHTML='<div class="search-no-result">Aucun résultat</div>';}
-  else{dropdown.innerHTML=results.slice(0,8).map(m=>`<div class="search-result-item" onclick="showFilmModal(allContent.find(x=>x.id===${m.id}));closeSearchDropdown()"><img class="search-result-img" src="${m.thumb}" alt=""><div class="search-result-info"><div class="title">${m.title}</div><div class="genre">${_searchWhy.get(m.id)||m.genre} · ${m.type==='serie'?'Série':'Film'}</div></div></div>`).join('');}
+  const chs=searchChannels(q);
+  const chTotal=chs.tv.length+chs.radio.length;
+  let chHtml='';
+  if(chs.tv.length) chHtml+='<div class="search-sep">Chaînes TV</div>'+chs.tv.slice(0,5).map(channelDropdownItem).join('');
+  if(chs.radio.length) chHtml+='<div class="search-sep">Radios</div>'+chs.radio.slice(0,5).map(channelDropdownItem).join('');
+  if(results.length===0 && chTotal===0){dropdown.innerHTML='<div class="search-no-result">Aucun résultat</div>';}
+  else{dropdown.innerHTML=(results.length&&chTotal?'<div class="search-sep">Films & séries</div>':'')+results.slice(0,8).map(m=>`<div class="search-result-item" onclick="showFilmModal(allContent.find(x=>x.id===${m.id}));closeSearchDropdown()"><img class="search-result-img" src="${m.thumb}" alt=""><div class="search-result-info"><div class="title">${m.title}</div><div class="genre">${_searchWhy.get(m.id)||m.genre} · ${m.type==='serie'?'Série':'Film'}</div></div></div>`).join('')+chHtml;}
   dropdown.classList.add('open');
   showFullSearchResults(results,query.trim());
 }
@@ -11752,14 +11878,18 @@ function showFullSearchResults(results,query){
   document.getElementById('tvSection').style.display='none';
   const sec=document.getElementById('searchResultsSection');
   sec.style.display='block';
-  document.getElementById('searchResultsTitle').textContent=`Résultats pour "${query}" (${results.length})`;
+  const chs=searchChannels(query);
+  const chTotal=chs.tv.length+chs.radio.length;
+  document.getElementById('searchResultsTitle').textContent=`Résultats pour "${query}" (${results.length+chTotal})`;
   const grid=document.getElementById('searchResultsGrid');
   grid.innerHTML='';
-  if(results.length===0){grid.innerHTML='<p style="color:var(--muted);font-size:.85rem;">Aucun résultat trouvé.</p>';}
+  if(results.length===0 && chTotal===0){grid.innerHTML='<p style="color:var(--muted);font-size:.85rem;">Aucun résultat trouvé.</p>';}
   else{results.forEach(m=>grid.appendChild(createCard(m)));}
+  renderSearchChannelCards(chs);
 }
 function hideSearchResults(){
   document.getElementById('searchResultsSection').style.display='none';
+  const _cw=document.getElementById('searchChannelsWrap'); if(_cw) _cw.innerHTML='';
   if(currentTab==='tv'){document.getElementById('tvSection').style.display='block';}
   else if(currentTab==='maliste'){document.getElementById('maListeSection').style.display='block';renderMaListe();}
   else if(currentTab==='monprofil'){document.getElementById('monProfilSection').style.display='block';renderMonProfil();}
@@ -11819,10 +11949,26 @@ function createMssRow(m){
   return row;
 }
 
-function renderMssList(items, emptyMsg){
+function createMssChannelRow(ch){
+  const isR = ch.cat==='Radio';
+  const row = document.createElement('div');
+  row.className = 'mss-item';
+  row.innerHTML = `<div class="mss-item-thumb ch"><img src="${ch.logo}" alt="${ch.name}" loading="lazy" onerror="this.style.opacity='0'"></div><div class="mss-item-info"><div class="mss-item-title">${ch.name}</div><div class="mss-item-sub">${isR?'📻 Radio':'📺 Chaîne TV · '+ch.cat}</div></div><button class="mss-item-play liquid-glass" title="Écouter / Regarder">▶</button>`;
+  const go = () => { closeMobileSearch(); setTimeout(()=> isR ? openRadioPlayer(ch) : openTvChannelPlayer(ch), 220); };
+  row.onclick = go;
+  row.querySelector('.mss-item-play').onclick = (e) => { e.stopPropagation(); go(); };
+  return row;
+}
+function renderMssList(items, emptyMsg, channels){
   const list = document.getElementById('mssList');
   list.innerHTML = '';
-  if (!items.length) { list.innerHTML = `<div class="mss-empty">${emptyMsg}</div>`; return; }
+  const chs = channels ? channels.tv.concat(channels.radio) : [];
+  if (!items.length && !chs.length) { list.innerHTML = `<div class="mss-empty">${emptyMsg}</div>`; return; }
+  if (channels && chs.length) {
+    // Chaînes et radios d'abord si le nom correspond, puis films / séries
+    channels.tv.forEach(ch => list.appendChild(createMssChannelRow(ch)));
+    channels.radio.forEach(ch => list.appendChild(createMssChannelRow(ch)));
+  }
   items.forEach(m => list.appendChild(createMssRow(m)));
 }
 
@@ -11835,8 +11981,9 @@ function handleMobileSearch(query){
     return;
   }
   const results = searchContent(q);
+  const chs = searchChannels(q);
   titleEl.textContent = `Résultats pour "${query.trim()}"`;
-  renderMssList(results, 'Aucun résultat trouvé.');
+  renderMssList(results, 'Aucun résultat trouvé.', chs);
 }
 
 function openMobileSearch(){
