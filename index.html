@@ -1151,6 +1151,11 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .vz-reload-btn.spin { animation:vzspin .6s linear; }
 @keyframes vzspin { to { transform:rotate(360deg); } }
 #tvReloadBtn { top:18px; right:150px; }
+/* Boutons Épisode précédent / suivant (lecteurs embed des séries) */
+.ep-nav-btn svg{width:18px;height:18px;fill:currentColor;display:block;}
+.ep-nav-btn:disabled,.tv-float-btn.ep-nav-tv:disabled{opacity:.3;cursor:default;pointer-events:none;}
+#tvPrevBtn{top:18px;left:50%;transform:translateX(calc(-100% - 6px));}
+#tvNextBtn{top:18px;left:50%;transform:translateX(6px);}
 
 /* ── Cartes RADIO : vignette CARRÉE (format pochette / disque) au lieu du 16:9 ── */
 .tv-channel[data-radio-id] .tv-channel-logo-wrap {
@@ -2303,6 +2308,8 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <div class="player-header">
     <div class="player-title" id="playerTitle">—</div>
     <div class="player-header-right">
+      <button class="close-btn ep-nav-btn" id="playerPrevBtn" type="button" style="display:none" title="Épisode précédent" aria-label="Épisode précédent" onclick="playerEpNav(-1)"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM9.5 12 18 18V6z"/></svg></button>
+      <button class="close-btn ep-nav-btn" id="playerNextBtn" type="button" style="display:none" title="Épisode suivant" aria-label="Épisode suivant" onclick="playerEpNav(1)"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
       <button class="close-btn vz-reload-btn" id="playerReloadBtn" type="button" style="display:none" title="Lecture indisponible ? Recharger le lecteur" aria-label="Recharger le lecteur" onclick="vzReloadPlayer(this)">↻</button>
       <button class="close-btn" onclick="closePlayer()">✕</button>
     </div>
@@ -2517,6 +2524,8 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
 <!-- TV mode panels -->
 <button class="tv-float-btn" id="tvCloseBtn" style="display:none" onclick="closePlayer()">✕ Fermer</button>
 <button class="tv-float-btn" id="tvReloadBtn" style="display:none" onclick="vzReloadPlayer(this)">↻ Recharger</button>
+<button class="tv-float-btn ep-nav-tv" id="tvPrevBtn" style="display:none" onclick="playerEpNav(-1)">⏮ Précédent</button>
+<button class="tv-float-btn ep-nav-tv" id="tvNextBtn" style="display:none" onclick="playerEpNav(1)">Suivant ⏭</button>
 <button class="tv-float-btn" id="tvEpBtn" style="display:none" onclick="toggleTvEpPanel()">☰ Épisodes</button>
 <div class="tv-ep-panel" id="tvEpPanel">
   <div class="tv-ep-panel-title" id="tvEpPanelTitle">Épisodes</div>
@@ -8404,7 +8413,7 @@ function cancelVersionModal() {
   if (_returnToModalMovie) { const m = _returnToModalMovie; _returnToModalMovie = null; showFilmModal(m); }
 }
 function openPlayerDirect(m, titleOverride) {
-  window.fmpCurEp=null;
+  window.fmpCurEp=null; epNavSync(true);
   wpPrepare(m);
   document.getElementById('playerTitle').textContent = titleOverride || m.title;
   document.getElementById('playerFrame').innerHTML = '';
@@ -10511,7 +10520,7 @@ function isTVMode(){
   return window.innerWidth>=1200 && window.matchMedia('(hover:hover)').matches && !('ontouchstart' in window);
 }
 function openPlayer(m,startSeason,startEp){
-  window.fmpCurEp=null;
+  window.fmpCurEp=null; epNavSync(true);
   startSeason = startSeason || 0;
   startEp = startEp || 0;
   const overlay=document.getElementById('playerOverlay');
@@ -10644,7 +10653,47 @@ function showTvBtns(close,ep){
   if(eb)eb.style.display=ep?'flex':'none';
   if(typeof vzSyncReloadBtns==='function') vzSyncReloadBtns();
 }
-function loadEpisode(ep){window.fmpCurEp=ep;loadMedia(document.getElementById('playerFrame'),ep.src,ep.embed);if(typeof playerEpsMark==='function')playerEpsMark();}
+function loadEpisode(ep){window.fmpCurEp=ep;loadMedia(document.getElementById('playerFrame'),ep.src,ep.embed);if(typeof playerEpsMark==='function')playerEpsMark();epNavSync();}
+// ── Boutons « Épisode précédent / suivant » (lecteur embed des séries) ──
+function epNavInfo(){
+  const m=(typeof currentSerieData!=='undefined')?currentSerieData:null, ep=window.fmpCurEp;
+  if(!m||!m.seasons||!ep) return null;
+  for(let a=0;a<m.seasons.length;a++){
+    const b=m.seasons[a].episodes.indexOf(ep);
+    if(b>=0){
+      const at=(sa,sb)=>(m.seasons[sa]&&m.seasons[sa].episodes[sb])?{a:sa,b:sb}:null;
+      const prev = b>0 ? at(a,b-1) : (a>0 ? at(a-1,m.seasons[a-1].episodes.length-1) : null);
+      const next = (b+1<m.seasons[a].episodes.length) ? at(a,b+1) : at(a+1,0);
+      return {m,a,b,prev,next};
+    }
+  }
+  return null;
+}
+function epNavSync(hide){
+  const info = hide ? null : epNavInfo();
+  const show = !!info;
+  const set=(id,on,disabled,title)=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.style.display = on ? 'flex' : 'none';
+    el.disabled = !!disabled;
+    if(title) el.title = title;
+  };
+  const lbl=(t)=>t?t.label:'';
+  set('playerPrevBtn',show,show&&!info.prev, show&&info.prev?'Précédent : '+lbl(info.m.seasons[info.prev.a].episodes[info.prev.b]):'Épisode précédent');
+  set('playerNextBtn',show,show&&!info.next, show&&info.next?'Suivant : '+lbl(info.m.seasons[info.next.a].episodes[info.next.b]):'Épisode suivant');
+  const tv=show&&document.body.classList.contains('tv-mode');
+  set('tvPrevBtn',tv,tv&&!info.prev);
+  set('tvNextBtn',tv,tv&&!info.next);
+}
+function playerEpNav(dir){
+  const info=epNavInfo(); if(!info) return;
+  const t = dir<0 ? info.prev : info.next;
+  if(!t) return;
+  const season=info.m.seasons[t.a], ep=season.episodes[t.b];
+  loadEpisode(ep);
+  try{ trackContinueWatching(info.m, season.label, t.b, ep.label); }catch(e){}
+  if(typeof showToast==='function') showToast(season.label+' · '+ep.label);
+}
 // Bouton « Recharger » (à côté de la croix) : visible uniquement pour les lecteurs vidzy
 let vzReloadFn = null;
 function vzSyncReloadBtns(){
@@ -11700,6 +11749,7 @@ function handleTrailerClick(m) {
 }
 
 function openTrailer(m, ytId) {
+  epNavSync(true);
   const overlay = document.getElementById('playerOverlay');
   const frame = document.getElementById('playerFrame');
   document.getElementById('playerTitle').textContent = (m ? m.title : 'Bande-annonce') + ' — Bande-annonce';
@@ -11712,6 +11762,7 @@ function openTrailer(m, ytId) {
   document.body.style.overflow = 'hidden';
 }
 function closePlayer(){
+  epNavSync(true);
   vzReloadFn = null; if(typeof vzSyncReloadBtns==='function') vzSyncReloadBtns();
   try{ wpTick(); }catch(e){}   // dernière sauvegarde du temps avant de fermer
   if(typeof fmpHide==='function') fmpHide();
