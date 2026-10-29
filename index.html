@@ -1963,6 +1963,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     <div class="nav-right">
       <img class="nav-profile-img" id="navProfileImg" src="" onclick="goToProfiles()">
     </div>
+    <img class="nav-profile-mobile" id="navProfileMobile" src="" alt="Profil" onclick="bnGoMonProfil()">
   </nav>
 
   <!-- ═══ RECHERCHE : page dédiée plein écran (app mobile uniquement) ═══ -->
@@ -2107,14 +2108,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     </div>
 
     <div style="padding:36px 40px 0; display:flex; align-items:center; gap:16px;">
-      <div style="font-family:'Canal',sans-serif;font-size:.8rem;letter-spacing:.3em;text-transform:uppercase;color:var(--text);">♥ Ma Liste</div>
-      <div style="flex:1;height:1px;background:linear-gradient(to right,rgba(201,168,76,0.3),transparent);"></div>
-    </div>
-    <div class="cards-row" id="monProfilListeRow" style="padding:16px 40px 0;"></div>
-    <div id="monProfilListeEmpty" style="display:none;padding:14px 40px 0;font-size:.8rem;color:var(--muted);">Votre liste est vide.</div>
-
-    <div style="padding:32px 40px 0; display:flex; align-items:center; gap:16px;">
-      <div style="font-family:'Canal',sans-serif;font-size:.8rem;letter-spacing:.3em;text-transform:uppercase;color:var(--text);">↻ Historique</div>
+      <div style="font-family:'Canal',sans-serif;font-size:.8rem;letter-spacing:.3em;text-transform:uppercase;color:var(--text);">↻ Historique de lecture</div>
       <div style="flex:1;height:1px;background:linear-gradient(to right,rgba(201,168,76,0.3),transparent);"></div>
     </div>
     <div class="cards-row" id="monProfilHistoriqueRow" style="padding:16px 40px 0;"></div>
@@ -5975,7 +5969,6 @@ const allContent = [
   ,{id:861,title:"Zootopie 2",genre:"Disney",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/019cdb4f-8785-78cb-aaf4-add4d1753384/compose?format=webp&label=standard_art_vertical_067&width=800",src:"https://files.catbox.moe/jgfrua.m3u",embed:true},
   {id:862,title:"Michael Jackson's This Is It",genre:"Musique",type:"film",thumb:"https://images.justwatch.com/poster/47584405/s718/michael-jacksons-this-is-it.jpg",src:"https://uqload.vc/embed-szzywhc5apwn.html",embed:true},
   // SÉRIES
-  {id:1029,title:"Olaf Présente",genre:"Disney",type:"serie",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/4a963518-a299-40c7-ae42-6f849776a447/compose?format=webp&label=standard_art_vertical_disney-original_067&width=800",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-8s4c718fefaj.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-lru6zsntqi28.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-nkdn3pw3ans2.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-mifko191o94w.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-5acmzdl10sf5.html",embed:true}]}]},
   {
   id: 1079,
   title: "Le Piège",
@@ -7022,6 +7015,7 @@ seasons:[
     }
   ]
 },
+{id:1029,title:"Olaf Présente",genre:"Disney",type:"serie",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/4a963518-a299-40c7-ae42-6f849776a447/compose?format=webp&label=standard_art_vertical_disney-original_067&width=800",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-8s4c718fefaj.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-lru6zsntqi28.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-nkdn3pw3ans2.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-mifko191o94w.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-5acmzdl10sf5.html",embed:true}]}]},
 {id:708,title:"Monstre — L'histoire d'Ed Gein",genre:"Thriller",type:"serie",thumb:"https://images.justwatch.com/poster/337863055/s718/saison-1.jpg",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://uqload.vc/embed-ccnkjihqqrti.html",embed:true},{label:"Épisode 2",src:"https://uqload.vc/embed-2y83kv20p6l3.html",embed:true},{label:"Épisode 3",src:"https://uqload.vc/embed-x11zsrihae71.html",embed:true},{label:"Épisode 4",src:"https://uqload.vc/embed-uzqvfma0gk46.html",embed:true},{label:"Épisode 5",src:"https://uqload.vc/embed-fxcz6we9vh1g.html",embed:true},{label:"Épisode 6",src:"https://uqload.vc/embed-nqb3538oetyl.html",embed:true},{label:"Épisode 7",src:"https://uqload.vc/embed-lf01koppwgqs.html",embed:true},{label:"Épisode 8",src:"https://uqload.vc/embed-yx3locsxervg.html",embed:true}]}]}
   ,
   {
@@ -7634,8 +7628,8 @@ function goToHome(profile){
   stopProfilesHero();
   currentProfileId=profile.id;
   document.getElementById('navProfileImg').src=profile.avatar;
-  const bnAvatar=document.getElementById('bottomNavProfileImg');
-  if(bnAvatar) bnAvatar.src=profile.avatar;
+  const topAvatar=document.getElementById('navProfileMobile');
+  if(topAvatar) topAvatar.src=profile.avatar;
   document.body.classList.add('has-bottom-nav');
   showScreen('homeScreen');
   showTab('accueil', document.querySelector('.nav-links a'));
@@ -8207,17 +8201,10 @@ function renderMaListe(){
 }
 
 // ══════════════════════════════════════════
-//  MON PROFIL (app mobile) — profils + Ma Liste + Historique
+//  MON PROFIL (app mobile) — profils (modifier / ajouter) + Historique de lecture
 // ══════════════════════════════════════════
 function renderMonProfil(){
   renderMonProfilProfiles();
-
-  const list=getMaListe();
-  const listeRow=document.getElementById('monProfilListeRow');
-  const listeEmpty=document.getElementById('monProfilListeEmpty');
-  listeRow.innerHTML='';
-  if(list.length===0){listeEmpty.style.display='block';listeRow.style.display='none';}
-  else{listeEmpty.style.display='none';listeRow.style.display='flex';allContent.filter(m=>list.includes(m.id)).forEach(m=>listeRow.appendChild(createCard(m)));}
 
   const hist=getContinueWatching();
   const histRow=document.getElementById('monProfilHistoriqueRow');
@@ -8599,8 +8586,10 @@ let heroProgressTimer = null;
 const HERO_DURATION = 5000; // 5 secondes
 
 function initHeroSlideshow() {
-  // Les 3 premiers contenus de allContent
-  heroSlides = allContent.slice(0, 3);
+  // Onglet Séries : les 3 dernières séries ajoutées ; sinon les 3 derniers contenus ajoutés
+  heroSlides = (currentTab === 'series'
+    ? allContent.filter(m => m.type === 'serie')
+    : allContent).slice(0, 3);
   heroFilm = heroSlides[0];
   heroSlideIndex = 0;
   buildSlideshowDots();
@@ -12165,7 +12154,7 @@ function openMobileSearch(){
   const input = document.getElementById('mobileSearchInput');
   input.value = '';
   _mssLast = '';
-  const _av = document.getElementById('mssAvatar'), _src = (document.getElementById('navProfileImg')||{}).src || (document.getElementById('bottomNavProfileImg')||{}).src || '';
+  const _av = document.getElementById('mssAvatar'), _src = (document.getElementById('navProfileImg')||{}).src || (document.getElementById('navProfileMobile')||{}).src || '';
   if(_av){ _av.src = _src; _av.style.display = _src ? '' : 'none'; }
   document.getElementById('mssSectionTitle').textContent = 'Séries et films suggérés';
   renderMssList(getMobileSearchSuggestions(), 'Aucune suggestion pour le moment.');
@@ -13004,9 +12993,10 @@ function closePlatformPage() {
     <svg class="bn-icon-active" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="8" height="8" rx="1"/><rect x="13" y="4" width="8" height="8" rx="1"/><rect x="3" y="14" width="8" height="6" rx="1"/><rect x="13" y="14" width="8" height="6" rx="1"/></svg>
     <span>Chaînes</span>
   </button>
-  <button class="bn-item" data-bn="profile" onclick="bnGoMonProfil()">
-    <img class="bn-avatar" id="bottomNavProfileImg" src="" alt="Profil">
-    <span>Mon Profil</span>
+  <button class="bn-item" data-bn="maliste" onclick="bnGoMaListe()">
+    <svg class="bn-icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.2-9.4C1.7 7.9 3.6 4.8 6.9 4.8c2 0 3.4 1.1 5.1 3 1.7-1.9 3.1-3 5.1-3 3.3 0 5.2 3.1 4.1 6.3-1.7 4.8-9.2 9.4-9.2 9.4Z"/></svg>
+    <svg class="bn-icon-active" viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5s-7.5-4.6-9.2-9.4C1.7 7.9 3.6 4.8 6.9 4.8c2 0 3.4 1.1 5.1 3 1.7-1.9 3.1-3 5.1-3 3.3 0 5.2 3.1 4.1 6.3-1.7 4.8-9.2 9.4-9.2 9.4Z"/></svg>
+    <span>Ma Liste</span>
   </button>
   <button class="bn-item" data-bn="search" onclick="bnOpenSearch()" aria-label="Recherche">
     <svg class="bn-icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
@@ -13030,6 +13020,16 @@ function closePlatformPage() {
   .bn-item .bn-icon-active { display:none; }
   .bn-item.active .bn-icon-default { display:none; }
   .bn-item.active .bn-icon-active { display:block; }
+}
+/* Avatar de profil en haut à droite (app mobile) — ouvre Mon Profil */
+.nav-profile-mobile { display:none; }
+@media(max-width:768px){
+  .nav-profile-mobile {
+    display:block; margin-left:auto; flex-shrink:0;
+    width:38px; height:38px; border-radius:50%; object-fit:cover;
+    border:2px solid rgba(255,255,255,0.22); cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
 }
 </style>
 
@@ -13088,6 +13088,14 @@ function bnGoChaines(){
   if(document.getElementById('mobileSearchScreen').classList.contains('open')) closeMobileSearch();
   showTab('chaines', document.querySelector('.nav-links a[data-tab="chaines"]'));
   bnSetActive('chaines');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function bnGoMaListe(){
+  const ps = document.getElementById('platformScreen');
+  if(ps && ps.style.display !== 'none') closePlatformPage();
+  if(document.getElementById('mobileSearchScreen').classList.contains('open')) closeMobileSearch();
+  showTab('maliste', document.querySelector('.nav-links a[data-tab="maliste"]'));
+  bnSetActive('maliste');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function bnGoMonProfil(){
