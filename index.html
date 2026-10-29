@@ -1969,19 +1969,15 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <div class="mobile-search-screen" id="mobileSearchScreen">
     <div class="mss-header">
       <span class="mss-back" onclick="closeMobileSearch()">←</span>
-      <div class="mss-title">Rechercher</div>
+      <div class="mss-title">Recherche</div>
+      <img class="mss-avatar" id="mssAvatar" src="" alt="Profil" onclick="bnGoMonProfil()">
+    </div>
+    <div class="mss-searchbar" id="mssSearchbar">
+      <svg class="mss-search-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
+      <input type="text" id="mobileSearchInput" placeholder="Que voulez-vous regarder ?" enterkeyhint="search" inputmode="search" autocomplete="off" autocorrect="on" autocapitalize="off" spellcheck="true">
     </div>
     <div class="mss-section-title" id="mssSectionTitle">Séries et films suggérés</div>
     <div class="mss-list" id="mssList"></div>
-    <div class="mss-bottombar">
-      <button class="mss-home-btn liquid-glass" onclick="mssGoHome()" aria-label="Accueil">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5"/><path d="M5.5 9.5V19a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5"/></svg>
-      </button>
-      <div class="mss-searchbar liquid-glass">
-        <svg class="mss-search-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
-        <input type="text" id="mobileSearchInput" placeholder="Film, série, chaîne TV, radio…" oninput="handleMobileSearch(this.value)" enterkeyhint="search">
-      </div>
-    </div>
   </div>
 
   <!-- HERO -->
@@ -12151,7 +12147,7 @@ function renderMssList(items, emptyMsg, channels){
 }
 
 function handleMobileSearch(query){
-  const q = query.trim();
+  const q = String(query||'').replace(/\s+/g,' ').trim();   // l'espace ajouté par la suggestion du clavier ne casse plus la recherche
   const titleEl = document.getElementById('mssSectionTitle');
   if (!q) {
     titleEl.textContent = 'Séries et films suggérés';
@@ -12160,7 +12156,7 @@ function handleMobileSearch(query){
   }
   const results = searchContent(q);
   const chs = searchChannels(q);
-  titleEl.textContent = `Résultats pour "${query.trim()}"`;
+  titleEl.textContent = `Résultats pour "${q}"`;
   renderMssList(results, 'Aucun résultat trouvé.', chs);
 }
 
@@ -12168,6 +12164,9 @@ function openMobileSearch(){
   const screen = document.getElementById('mobileSearchScreen');
   const input = document.getElementById('mobileSearchInput');
   input.value = '';
+  _mssLast = '';
+  const _av = document.getElementById('mssAvatar'), _src = (document.getElementById('navProfileImg')||{}).src || (document.getElementById('bottomNavProfileImg')||{}).src || '';
+  if(_av){ _av.src = _src; _av.style.display = _src ? '' : 'none'; }
   document.getElementById('mssSectionTitle').textContent = 'Séries et films suggérés';
   renderMssList(getMobileSearchSuggestions(), 'Aucune suggestion pour le moment.');
   clearTimeout(_mssCloseTimer);
@@ -12176,6 +12175,7 @@ function openMobileSearch(){
   document.body.classList.add('mss-open');
   document.body.style.overflow = 'hidden';
   if(typeof bnSetActive==='function') bnSetActive('search');
+  mssFitViewport();
   setTimeout(() => input.focus(), 300);
 }
 
@@ -12194,7 +12194,9 @@ function closeMobileSearch(){
   clearTimeout(_mssCloseTimer);
   _mssCloseTimer = setTimeout(()=>{
     screen.classList.remove('open','closing');
+    screen.style.height = ''; screen.style.top = ''; screen.style.bottom = '';
     document.body.style.overflow = '';
+    if(typeof mssFitNav==='function') mssFitNav();
     document.getElementById('searchInput').value = '';
   }, 200);
 }
@@ -13006,10 +13008,13 @@ function closePlatformPage() {
     <img class="bn-avatar" id="bottomNavProfileImg" src="" alt="Profil">
     <span>Mon Profil</span>
   </button>
+  <button class="bn-item" data-bn="search" onclick="bnOpenSearch()" aria-label="Recherche">
+    <svg class="bn-icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
+    <svg class="bn-icon-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
+    <span>Recherche</span>
+  </button>
 </nav>
-<button class="bn-search-btn" id="bnSearchBtn" data-bn="search" onclick="bnOpenSearch()" aria-label="Rechercher">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>
-</button>
+
 
 <style>
 @media(max-width:768px){
@@ -13053,6 +13058,12 @@ function bnGoAccueil(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function bnOpenSearch(){
+  const _scr = document.getElementById('mobileSearchScreen');
+  if(_scr && _scr.classList.contains('open') && !_scr.classList.contains('closing')){
+    bnSetActive('search');
+    const _i = document.getElementById('mobileSearchInput'); if(_i) _i.focus();
+    return;
+  }
   const ps = document.getElementById('platformScreen');
   if(ps && ps.style.display !== 'none') closePlatformPage();
   openMobileSearch();
@@ -14021,7 +14032,6 @@ function setMediaSession(){
   .bn-search-btn:active { transform:scale(.92); }
 
   /* Mode recherche : la barre disparaît, bouton accueil rond + champ en bas */
-  body.mss-open .bottom-nav-mobile, body.mss-open .bn-search-btn { display:none !important; }
   .mss-back { display:none; }
   .mss-list { padding-bottom:calc(110px + env(safe-area-inset-bottom)); }
   .mss-bottombar {
@@ -14511,6 +14521,93 @@ function setMediaSession(){
   hero.addEventListener('click', e=>{
     if(Date.now() < suppressUntil){ e.preventDefault(); e.stopPropagation(); }
   }, true);
+})();
+</script>
+
+<style id="bnSearchInNavStyle">
+/* ── Recherche = 6e onglet de la barre du bas + champ de recherche en haut de la page (comme Canal+) ── */
+.bn-search-btn { display:none !important; }
+@media(max-width:768px){
+  .bottom-nav-mobile { left:10px !important; right:10px !important; }
+  .bn-item span { font-size:.52rem !important; }
+
+  /* la barre reste visible sur la page Recherche (onglet « Recherche » actif) */
+  body.mss-open .bottom-nav-mobile,
+  body.has-bottom-nav.mss-open .bottom-nav-mobile {
+    display:flex !important; opacity:1 !important; transform:none !important; pointer-events:auto !important;
+  }
+  .mobile-search-screen { padding-top:env(safe-area-inset-top); background:var(--dark); }
+  .mss-back { display:none; }
+  .mss-header { padding:22px 20px 6px; justify-content:space-between; }
+  .mss-title { font-style:italic; text-transform:uppercase; font-size:2rem; letter-spacing:.01em; }
+  .mss-avatar { width:56px; height:56px; border-radius:50%; object-fit:cover; flex-shrink:0; border:2px solid rgba(255,255,255,0.22); cursor:pointer; }
+
+  .mss-searchbar {
+    position:sticky; top:6px; z-index:5; flex-shrink:0;
+    display:flex; align-items:center; gap:12px;
+    height:58px; margin:14px 20px 18px; padding:0 20px; border-radius:999px;
+    background:rgba(38,38,42,0.97) !important;
+    border:1px solid rgba(255,255,255,0.08) !important;
+    box-shadow:none !important;
+    -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
+  }
+  .mss-searchbar .mss-search-icon { color:rgba(255,255,255,0.85); flex-shrink:0; }
+  .mss-searchbar input { flex:1; min-width:0; font-size:16px; color:#fff; background:transparent; border:none; outline:none; -webkit-appearance:none; appearance:none; }
+  .mss-searchbar input::placeholder { color:rgba(255,255,255,0.5); }
+  .mss-searchbar:focus-within { border-color:rgba(255,77,106,0.55) !important; }
+  .mss-list { padding-bottom:calc(120px + env(safe-area-inset-bottom)); }
+}
+</style>
+<script>
+/* ═══ RECHERCHE MOBILE : prend en compte les suggestions du clavier + pas de zone vide ═══ */
+var _mssLast = null;
+function mssSync(force){
+  const input = document.getElementById('mobileSearchInput');
+  if(!input) return;
+  const v = input.value;
+  if(!force && v === _mssLast) return;
+  _mssLast = v;
+  handleMobileSearch(v);
+}
+function mssFitViewport(){
+  const s = document.getElementById('mobileSearchScreen'), vv = window.visualViewport;
+  if(!s || !vv || !s.classList.contains('open')) return;
+  s.style.top = vv.offsetTop + 'px';
+  s.style.bottom = 'auto';
+  s.style.height = vv.height + 'px';
+  mssFitNav();
+}
+// la barre du bas reste toujours visible : quand le clavier s'ouvre, elle remonte juste au-dessus
+function mssFitNav(){
+  const nav = document.getElementById('bottomNavMobile'), vv = window.visualViewport;
+  if(!nav) return;
+  const s = document.getElementById('mobileSearchScreen');
+  const open = s && s.classList.contains('open') && !s.classList.contains('closing');
+  const kb = (open && vv) ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) : 0;
+  nav.style.bottom = kb > 80 ? 'calc(' + (kb + 10) + 'px)' : '';
+}
+(function(){
+  const input = document.getElementById('mobileSearchInput');
+  const screen = document.getElementById('mobileSearchScreen');
+  if(!input || !screen) return;
+  let poll = null;
+  // Suggestion du clavier (QuickType), dictée, collage, correction auto… : on relit toujours la vraie valeur du champ
+  ['input','change','keyup','search','compositionend','paste','cut'].forEach(ev =>
+    input.addEventListener(ev, () => { mssSync(); setTimeout(mssSync, 0); setTimeout(mssSync, 120); }));
+  input.addEventListener('keydown', e => { if(e.key === 'Enter'){ mssSync(true); input.blur(); } });
+  input.addEventListener('focus', () => {
+    clearInterval(poll); poll = setInterval(() => mssSync(), 200);   // filet de sécurité : certaines suggestions iOS/Android n'émettent pas d'évènement
+    mssFitViewport();
+  });
+  input.addEventListener('blur', () => {
+    clearInterval(poll); poll = null;
+    mssSync();
+    setTimeout(() => { mssFitViewport(); mssFitNav(); }, 60);
+  });
+  if(window.visualViewport){
+    visualViewport.addEventListener('resize', mssFitViewport);
+    visualViewport.addEventListener('scroll', mssFitViewport);
+  }
 })();
 </script>
 </body>
