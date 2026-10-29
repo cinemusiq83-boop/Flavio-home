@@ -1245,7 +1245,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
    ══════════════════════════════════════════ */
 .tvch-player{ position:fixed; inset:0; z-index:2100; background:#000; display:none; flex-direction:column; }
 .tvch-player.open{ display:flex; }
-.tvch-header{ display:flex; align-items:center; gap:14px; padding:18px 24px; background:linear-gradient(to bottom, rgba(0,0,0,0.85), transparent); position:absolute; top:0; left:0; right:0; z-index:2; transition:opacity .35s ease; }
+.tvch-header{ display:flex; align-items:center; gap:14px; padding:calc(18px + env(safe-area-inset-top,0px)) calc(24px + env(safe-area-inset-right,0px)) 18px calc(24px + env(safe-area-inset-left,0px)); background:linear-gradient(to bottom, rgba(0,0,0,0.85), transparent); position:absolute; top:0; left:0; right:0; z-index:2; transition:opacity .35s ease; }
 .tvch-logo{ height:34px; width:auto; max-width:90px; object-fit:contain; flex-shrink:0; background:transparent; }
 .tvch-titles{ flex:1; min-width:0; }
 .tvch-prog-title{ font-family:'Canal',sans-serif; font-weight:700; font-size:1.25rem; color:#fff; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -1289,7 +1289,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .tvch-seek-icon .tvch-seek-num{ position:absolute; top:56%; left:50%; transform:translate(-50%,-50%); font-size:.6rem; font-weight:700; }
 .tvch-playpause{ font-size:3.4rem; }
 
-.tvch-bottom{ position:absolute; bottom:0; left:0; right:0; z-index:2; padding:0 24px 26px; background:linear-gradient(to top, rgba(0,0,0,0.85), transparent); transition:opacity .35s ease; }
+.tvch-bottom{ position:absolute; bottom:0; left:0; right:0; z-index:2; padding:0 calc(24px + env(safe-area-inset-right,0px)) calc(26px + env(safe-area-inset-bottom,0px)) calc(24px + env(safe-area-inset-left,0px)); background:linear-gradient(to top, rgba(0,0,0,0.85), transparent); transition:opacity .35s ease; }
 .tvch-bottom-row{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
 .tvch-live-badge{ background:#e50914; color:#fff; font-size:.7rem; font-weight:700; letter-spacing:.05em; padding:4px 10px; border-radius:2px; }
 .tvch-progress-row{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
@@ -10004,6 +10004,22 @@ function attachPinchZoom(el, getOn, setOn, onPinch){
   el.addEventListener('touchend', end, true);
   el.addEventListener('touchcancel', end, true);
 }
+// Pendant la lecture, la page s'étend jusque sous l'encoche / la barre d'accueil (iPhone 12 et +, Android à encoche),
+// pour que l'image agrandie remplisse vraiment tout l'écran, quelle que soit la taille du téléphone.
+// Le reste de l'application garde son affichage habituel (réglage retiré à la fermeture du lecteur).
+function setPlayerViewportCover(on){
+  const m = document.querySelector('meta[name="viewport"]'); if(!m) return;
+  let c = m.getAttribute('content') || '';
+  c = c.replace(/,?\s*viewport-fit=cover/g, '');
+  if(on) c += ', viewport-fit=cover';
+  if(c !== m.getAttribute('content')) m.setAttribute('content', c);
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(!(window.matchMedia && matchMedia('(pointer:coarse)').matches)) return;
+  const ids = ['tvChPlayer','fmp'];
+  const sync = () => setPlayerViewportCover(ids.some(id => { const e = document.getElementById(id); return e && e.classList.contains('open'); }));
+  ids.forEach(id => { const e = document.getElementById(id); if(e) new MutationObserver(sync).observe(e, {attributes:true, attributeFilter:['class']}); });
+});
 let tvChPinchUntil = 0;
 function tvChSetZoom(on){
   const pl = document.getElementById('tvChPlayer');
