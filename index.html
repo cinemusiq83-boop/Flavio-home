@@ -5579,6 +5579,16 @@ const filmMeta = {
   logo:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/24b721e0-df6e-4eba-99a7-59d06eb6ee80/trim?format=webp&max=800%7C300",
   backdrop:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/283049d2-271c-4a26-bfb4-dfb508320c55/compose?format=webp&width=2880"
 },
+1085:{
+  desc:"Sonic et ses amis forment une alliance improbable pour tenter d'arrêter un mystérieux et puissant ennemi aux pouvoirs inédits et sauver la planète.",
+  director:"Jeff Fowler",
+  cast:"James Marsden, Jim Carrey, Tika Sumpter",
+  year:"2024",
+  duration:"1h49",
+  country:"États-Unis, Japon",
+  logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/118998118",
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/118998120"
+},
 };
 
 // ══════════════════════════════════════════
@@ -5618,6 +5628,7 @@ const allContent = [
   {id:947,title:"The Mandalorian And Grogu",genre:"Star Wars",type:"film",thumb:"https://files.catbox.moe/oloxah.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/c2wk0s.m3u",embed:true,hero:true},
   {id:931,title:"Le Diable S'Habille En Prada 2",genre:"Comedie",type:"film",thumb:"https://files.catbox.moe/n5n0wa.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-0fgno6f0z2bf.html",embed:true,hero:true},
   {id:896,title:"Michael",genre:"Biopic",type:"film",thumb:"https://images.justwatch.com/poster/343089542/s718/michael-2025-0.jpg",backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/41603536/canal-ouah/STD169/MICHAEL_myCANAL_16x9_MEA_1920x1080_jpg80_-vk1p",src:"https://files.catbox.moe/3y7uot.m3u",embed:true,hero:true},
+  {id:1085,title:"Sonic 3 Le Film",genre:"Animation",type:"film",thumb:"https://image.tmdb.org/t/p/w500/gERwLGTa6JGN4qXjkip13eDaxy1.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/qll8wb.m3u",embed:true,hero:true},
   {id:1082,title:"Le Labyrinthe",genre:"Sci-Fi",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/019bd1c0-cb48-7ba8-a550-cefc6cd96996/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/ew37pc.m3u",embed:true,hero:true},
   {id:1083,title:"Le Labyrinthe La Terre Brulee",genre:"Sci-Fi",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/a5f38f42-707c-4d03-b30a-d8e0bcf2ca01/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/ag90yu.m3u",embed:true,hero:true},
   {id:1084,title:"Le Labyrinthe Le Remede Mortel",genre:"Sci-Fi",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/11361c89-eea9-425c-b992-36f9a4d30ded/compose?format=webp&label=standard_art_vertical_067&width=800",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://files.catbox.moe/z94loz.m3u",embed:true,hero:true},
@@ -11227,6 +11238,7 @@ const trailerMap = {
   1082: 'LyPiCH_4Al4', // Le Labyrinthe
   1083: 'K7jyL2cS6dc', // Le Labyrinthe 2
   1084: 'gx3HVAx82sg', // Le Labyrinthe 3
+  1085: 'TQ-9We-lxiA', // Sonic 3 Le Film
   };
 
 function getTrailerYtId(filmId) {
@@ -11241,6 +11253,7 @@ function getTrailerYtId(filmId) {
 //  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+1085: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_142919_BA/01JR7X715B6NKR9BNPBW62RHKC/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Sonic 3 Le Film
 1082: 'https://youtu.be/7XWmIFTFzHc', // Le Labyrinthe
 1083: 'https://youtu.be/oCQnCvaWEDs', // Le Labyrinthe 2
 1084: 'https://youtu.be/ijiin5K2Yz8', // Le Labyrinthe 3
@@ -11518,6 +11531,7 @@ const filmBgVideoMap = {
 // Les flux TVOD sont souvent vidéo seule : l'audio est un second fichier, lu en parallèle et resynchronisé sur la vidéo.
 // Ajoutez ici : id du film → url du fichier audio (.mp4 / .m4a).
 const filmBgAudioMap = {
+  1085: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_142919_BA/01JR7X715B6NKR9BNPBW62RHKC/w1_a_aac_0_fra_0_0_128.mp4', // Sonic 3 Le Film
   1080: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_157828_BA/01M61CRPN9EHXZA3DC0V4SFV7Y/w1_a_aac_0_fra_0_1_128.mp4', // La Bataille De Gaulle J'Ecris Ton Nom
   1081: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_157038_BA/01M4XRSV3ZE5HJ1MY72NAGC133/w1_a_aac_0_fra_0_1_64.mp4', // Permis De Detruire
   1075: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_86519_BA/140222/canalplay.com_86519_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Le Masque De La Mort Rouge
@@ -12648,7 +12662,7 @@ const platformContent = {
   ],
   // Paramount+
   paramount: [818,819, // Top Gun 1,2
-              816,817, // Sonic 1,2
+              816,817,1085, // Sonic
               821,  // The Truman Show
               825,  // Forrest Gump
               820,  // Grease
