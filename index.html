@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Flavio Home">
-<link rel="apple-touch-icon" href="https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=1024,height=1007/image/555259017/35f5d99e-f057-4b82-9098-0d5a0209f3be.jpg">
+<link rel="apple-touch-icon" href="https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=799,height=800/image/534669332/2ad96421-f41f-40d2-b11a-e9e9bdda1fc3.jpg">
 <link rel="icon" type="image/jpg" href="https://storage.e.jimdo.com/cdn-cgi/image/quality=85,fit=scale-down,format=auto,trim=0;0;0;0,width=799,height=800/image/534669332/2ad96421-f41f-40d2-b11a-e9e9bdda1fc3.jpg">
 <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; frame-src * youtube.com www.youtube.com youtube-nocookie.com www.youtube-nocookie.com uqload.vc uqload.com vidzy.org www.vidzy.org;">
 <style>
@@ -1958,7 +1958,6 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     </button>
     <div class="nav-links" id="navLinks">
       <a class="active" data-tab="accueil" onclick="showTab('accueil',this);closeBurger()">Accueil</a>
-      <a data-tab="halloween" onclick="openHalloweenPage();closeBurger()">🎃 Halloween</a>
       <a data-tab="films" onclick="showTab('films',this);closeBurger()">Films</a>
       <a data-tab="series" onclick="showTab('series',this);closeBurger()">Séries</a>
       <a data-tab="tv" onclick="showTab('tv',this);closeBurger()">TV Direct</a>
@@ -12589,10 +12588,6 @@ window.closePlayer = function() {
 
 // IDs de contenu par plateforme
 const platformContent = {
-  // Halloween
-  halloween: [993, 232, 902, 1015, 886, 1020, 1021, 318, 1022, 1014, 1016, 1008, 1003, 1004, 1005, 1006, 1007, 969, 948, 934, 935,
-             936, 937, 897, 882, 22, 25, 800, 801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811, 813, 832, 833, 835, 839, 860,
-             990, 987, 986, 985, 702, 703, 708, 1060, 1061, 1067, 1068,1075,1076,1077,1078],
   // HBO Max
   hbo: [800,801,802,803,804,805,806,807, // Harry Potter 1-8
         809,  // Gremlins
@@ -12742,7 +12737,6 @@ const platformContent = {
 const platformNames = {
   netflix:   'Netflix',
   disney:    'Disney',
-  halloween: 'Halloween',
   pixar:     'Pixar',
   marvel:    'Marvel',
   starwars:  'Star Wars',
@@ -12821,7 +12815,6 @@ const paramountBrands = [
 
 // Marques regroupées sous Disney+
 const disneyPlusBrands = [
-  { platform:'halloween', label:'Halloween', heroImage:'https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/DFAD5876E92AACA81FA85B47222A8415212CFD128565E78AD095134E775E988F/compose?format=webp&width=2880', logo:'https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0A9B35E498467B28965EA2E5C6003A820AD7493166FD252944D91FD7B54402D6/compose?format=webp&width=800', bg:'#0b0714' },
   { platform:'disney',   label:'Disney',    video:'https://files.catbox.moe/ayhcjs.mp4', heroVideo:'https://files.catbox.moe/gduobr.mp4', logo:'https://upload.wikimedia.org/wikipedia/commons/8/8f/Disney_logo.png' },
   { platform:'pixar',    label:'Pixar',     video:'https://files.catbox.moe/t9y278.mp4', heroVideo:'https://files.catbox.moe/29xjt7.mp4', logo:'https://storage.googleapis.com/endurance-apps-liip/media/cache/disney_no_filter_grid_fs/65cf18095a1d87d7e4022e89' },
   { platform:'marvel',   label:'Marvel',    video:'https://files.catbox.moe/n9fjsr.mp4', heroVideo:'https://files.catbox.moe/x85ppi.mp4', logo:'https://upload.wikimedia.org/wikipedia/commons/b/b9/Marvel_Logo.svg' },
@@ -12841,7 +12834,7 @@ function openPlatformPage(platform, logoSrc, videoSrc, imageSrc) {
   const heroLogoEl = document.getElementById('platformHeroLogo');
   const heroBgEl = document.getElementById('platformHeroBgFallback');
   if (imageSrc) {
-    // Page avec image de fond + logo (ex : Halloween)
+    // Page avec image de fond + logo 
     heroBgEl.style.background = "url('" + imageSrc + "') center/cover no-repeat";
     heroLogoEl.src = logoSrc;
     heroLogoEl.style.display = 'block';
@@ -13077,11 +13070,6 @@ function openPlatformPage(platform, logoSrc, videoSrc, imageSrc) {
   ps.scrollTo(0, 0);
 }
 
-function openHalloweenPage() {
-  const b = disneyPlusBrands.find(x => x.platform === 'halloween');
-  if (b) openPlatformPage('halloween', b.logo, null, b.heroImage);
-}
-
 function closePlatformPage() {
   const heroVid = document.getElementById('platformHeroVideo');
   heroVid.pause();
@@ -13099,10 +13087,6 @@ function closePlatformPage() {
     <svg class="bn-icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5"/><path d="M5.5 9.5V19a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5"/></svg>
     <svg class="bn-icon-active" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2 3 10.5V20a1 1 0 0 0 1 1h5.5v-6.5h5V21H19a1 1 0 0 0 1-1v-9.5L12 3.2Z"/></svg>
     <span>Accueil</span>
-  </button>
-  <button class="bn-item" data-bn="halloween" onclick="bnGoHalloween()">
-    <div style="font-size:21px;line-height:23px;height:23px;">🎃</div>
-    <span>Halloween</span>
   </button>
   <button class="bn-item" data-bn="tv" onclick="bnGoTV()">
     <svg class="bn-icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="1.5"/><path d="M8 3l4 3 4-3"/></svg>
@@ -13189,11 +13173,6 @@ function bnOpenSearch(){
   if(ps && ps.style.display !== 'none') closePlatformPage();
   openMobileSearch();
   bnSetActive('search');
-}
-function bnGoHalloween(){
-  if(document.getElementById('mobileSearchScreen').classList.contains('open')) closeMobileSearch();
-  openHalloweenPage();
-  bnSetActive('halloween');
 }
 function bnGoTV(){
   const ps = document.getElementById('platformScreen');
@@ -14153,7 +14132,7 @@ function setMediaSession(){
 </style>
 
 <style id="bnSplitNavStyle">
-/* ── Barre du bas : pilule (Accueil · Halloween · TV · Chaînes · Mon Profil) + bouton Rechercher à l'écart ── */
+/* ── Barre du bas : pilule (Accueil · TV · Chaînes · Mon Profil) + bouton Rechercher à l'écart ── */
 .bn-search-btn, .mss-bottombar { display:none; }
 @media(max-width:768px){
   .bottom-nav-mobile { left:12px !important; right:84px !important; }
