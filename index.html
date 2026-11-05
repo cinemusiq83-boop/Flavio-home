@@ -5588,6 +5588,16 @@ const filmMeta = {
   logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/118998118",
   backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/118998120"
 },
+1086:{
+  desc:"Après la mort de son fils, le passé de Pamela Voorhees refait surface, révélant un sombre secret.",
+  creator:"Michael Lennox, Celine Held, Logan George",
+  cast:"Linda Cardellini, William Catlett, Gwendolyn Sundstrom",
+  year:"",
+  seasons:"1",
+  country:"États-Unis",
+  logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/00fc8bec812a582feb71782b61670b2b.png",
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/media.prod.hawc.canal.aws.io-cplus.net/5dc09abd8f1dd91245146c2968bdb70a.jpg"
+},
 };
 
 // ══════════════════════════════════════════
@@ -6022,6 +6032,7 @@ const allContent = [
   ,{id:861,title:"Zootopie 2",genre:"Disney",type:"film",thumb:"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/019cdb4f-8785-78cb-aaf4-add4d1753384/compose?format=webp&label=standard_art_vertical_067&width=800",src:"https://files.catbox.moe/jgfrua.m3u",embed:true},
   {id:862,title:"Michael Jackson's This Is It",genre:"Musique",type:"film",thumb:"https://images.justwatch.com/poster/47584405/s718/michael-jacksons-this-is-it.jpg",src:"https://uqload.vc/embed-szzywhc5apwn.html",embed:true},
   // SÉRIES
+  {id:1086,title:"Crystal Lake",genre:"Horreur",type:"serie",thumb:"https://image.tmdb.org/t/p/w500/v1XEjgqIlHvbjbEG6YSZVGTVUg0.jpg",seasons:[{label:"Saison 1",episodes:[{label:"Épisode 1",src:"https://vidzy.org/embed-7hnuct8nobpj.html",embed:true},{label:"Épisode 2",src:"https://vidzy.org/embed-63pf6imz175r.html",embed:true},{label:"Épisode 3",src:"https://vidzy.org/embed-74zpd3if61cc.html",embed:true},{label:"Épisode 4",src:"https://vidzy.org/embed-pdrmppl0dbjn.html",embed:true},{label:"Épisode 5",src:"https://vidzy.org/embed-aqa7oyl2fbr4.html",embed:true},{label:"Épisode 6",src:"https://vidzy.org/embed-zqjtbtpoeuel.html",embed:true},{label:"Épisode 7",src:"https://vidzy.org/embed-1v1fk4naiq27.html",embed:true},{label:"Épisode 8",src:"https://vidzy.org/embed-d0nnrkagjg0h.html",embed:true}]}]},
   {
   id: 1079,
   title: "Le Piège",
@@ -11238,7 +11249,8 @@ const trailerMap = {
   1083: 'K7jyL2cS6dc', // Le Labyrinthe 2
   1084: 'gx3HVAx82sg', // Le Labyrinthe 3
   1085: 'TQ-9We-lxiA', // Sonic 3 Le Film
-  };
+  1086: 'O6MzkeY6dPA', // Crystal Lake
+    };
 
 function getTrailerYtId(filmId) {
   return trailerMap[filmId] || null;
@@ -11252,6 +11264,7 @@ function getTrailerYtId(filmId) {
 //  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+1086: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/studiobagelwimo/wildmoka.com_1369726737307/01M4GPX4SCXS8CX6EZRWDWDR4P/w1_v_avcvbr_20_1080_1920_0_3500.mp4', // Crystal Lake
 1085: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_142919_BA/01JR7X715B6NKR9BNPBW62RHKC/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Sonic 3 Le Film
 1082: 'https://youtu.be/7XWmIFTFzHc', // Le Labyrinthe
 1083: 'https://youtu.be/oCQnCvaWEDs', // Le Labyrinthe 2
@@ -11530,6 +11543,7 @@ const filmBgVideoMap = {
 // Les flux TVOD sont souvent vidéo seule : l'audio est un second fichier, lu en parallèle et resynchronisé sur la vidéo.
 // Ajoutez ici : id du film → url du fichier audio (.mp4 / .m4a).
 const filmBgAudioMap = {
+  1086: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/studiobagelwimo/wildmoka.com_1369726737307/01M4GPX4SCXS8CX6EZRWDWDR4P/w1_a_aac_0_fra_0_1_128.mp4', // Crystal Lake
   1085: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_142919_BA/01JR7X715B6NKR9BNPBW62RHKC/w1_a_aac_0_fra_0_0_128.mp4', // Sonic 3 Le Film
   1080: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_157828_BA/01M61CRPN9EHXZA3DC0V4SFV7Y/w1_a_aac_0_fra_0_1_128.mp4', // La Bataille De Gaulle J'Ecris Ton Nom
   1081: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_157038_BA/01M4XRSV3ZE5HJ1MY72NAGC133/w1_a_aac_0_fra_0_1_64.mp4', // Permis De Detruire
@@ -12621,7 +12635,8 @@ const platformContent = {
         967, // Dune
         968, // Dune Deuxieme Partie
         983, // Premier Contact
-        1067, 1068 // Ça 
+        1067, 1068, // Ça
+        1086 // Crystal Lake
   ],
   // Hulu
   hulu: [866,  // West Side Story 2019
