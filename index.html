@@ -11098,6 +11098,40 @@ function vzReloadPlayer(btn){
   if (btn && btn.classList) { btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin'); }
   vzReloadFn();
 }
+// ══════════════════════════════════════════
+//  GARDE-FOU VIDZY (remplace le sandbox)
+//  Site autorisé : https://cinemusiq83-boop.github.io/Flavio-home/
+//  • Redirection de la page entière vers un autre lien → confirmation « Quitter ? » (on peut rester)
+//  • Nouvel onglet / pub ouvert après un clic sur lecture → au retour, le lecteur est fermé automatiquement
+//  (un site ne peut pas fermer lui-même l'onglet d'un autre site : c'est une limite du navigateur)
+// ══════════════════════════════════════════
+const FLAVIO_HOME_URL = 'https://cinemusiq83-boop.github.io/Flavio-home/';
+let vzGuardOn = false, vzPopupSuspect = false, vzLastFocusInFrame = 0;
+function vzGuardArm(on){ vzGuardOn = !!on; vzPopupSuspect = false; }
+window.addEventListener('beforeunload', function(e){
+  if (!vzGuardOn) return;
+  e.preventDefault();
+  e.returnValue = '';
+  return '';
+});
+window.addEventListener('blur', function(){
+  // le clic dans l'iframe vidzy donne le focus à l'iframe → on mémorise l'instant
+  setTimeout(function(){
+    const a = document.activeElement;
+    if (vzGuardOn && a && a.tagName === 'IFRAME') vzLastFocusInFrame = Date.now();
+  }, 0);
+});
+document.addEventListener('visibilitychange', function(){
+  if (!vzGuardOn) return;
+  if (document.hidden) {
+    // page cachée juste après un clic dans le lecteur = un autre onglet vient de s'ouvrir
+    if (Date.now() - vzLastFocusInFrame < 2500) vzPopupSuspect = true;
+  } else if (vzPopupSuspect) {
+    vzPopupSuspect = false;
+    try { closePlayer(); } catch(e){}
+    if (typeof showToast === 'function') showToast('Lien externe détecté : lecteur fermé');
+  }
+});
 function loadMedia(frame,src,isEmbed){
   vzReloadFn = null; vzSyncReloadBtns();
   // Liens .m3u / .m3u8 (directs ou via hlsplayer.net) → lecteur intégré (comme les chaînes TV)
@@ -11141,7 +11175,9 @@ function loadMedia(frame,src,isEmbed){
       const ifr = document.createElement('iframe');
       ifr.setAttribute('allowfullscreen','');
       ifr.setAttribute('allow','autoplay; fullscreen; encrypted-media; picture-in-picture');
-      ifr.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-presentation');
+      // vidzy.org : plus de sandbox (plus de bloqueur de pub). uqload garde son sandbox.
+      if (!isVidzy) ifr.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-presentation');
+      vzGuardArm(isVidzy);
       ifr.setAttribute('referrerpolicy', refPolicy);
       ifr.addEventListener('load', () => clearTimeout(loadTimer));
       ifr.src = bust ? baseSrc + (baseSrc.includes('?') ? '&' : '?') + '_r=' + Date.now() : baseSrc;
@@ -12180,6 +12216,7 @@ function openTrailer(m, ytId) {
 }
 function closePlayer(){
   epNavSync(true);
+  if(typeof vzGuardArm==='function') vzGuardArm(false);
   vzReloadFn = null; if(typeof vzSyncReloadBtns==='function') vzSyncReloadBtns();
   try{ wpTick(); }catch(e){}   // dernière sauvegarde du temps avant de fermer
   if(typeof fmpHide==='function') fmpHide();
