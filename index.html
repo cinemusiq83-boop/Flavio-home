@@ -5661,6 +5661,26 @@ const filmMeta = {
   logo:"",
   backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/52702334"
 },
+1091:{
+  desc:"1985. Un gamin de la banlieue parisienne qui grandit entre son frère aîné et des parents aimants mais en conflit permanent prend conscience des dures réalités de la vie.",
+  director:"Olivier Nakache, Eric Toledano",
+  cast:"Louis Garrel, Camille Cottin, Pierre Lottin",
+  year:"2026",
+  duration:"1h54",
+  country:"France",
+  logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/31652182/canal-ouah/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-DeI2",
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/31652182/canal-ouah/STD169/myCANAL_16x9_MEA_1920x1080-3vSu"
+},
+1092:{
+  desc:"Plus de trente ans après le dernier numéro du Top 50, mythique émission musicale animée par Marc Toesca, des archives permettent de réécouter les tubes des années 80.",
+  director:"",
+  cast:"",
+  year:"2026",
+  duration:"28min",
+  country:"France",
+  logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/brand/32337212/canal-ouah_50001/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-DZH1",
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/brand/32337212/canal-ouah_50001/STD169/myCANAL_16x9_MEA_1920x1080-sia7"
+},
 };
 
 // ══════════════════════════════════════════
@@ -5761,6 +5781,8 @@ const avatarData = {
 //  CONTENT DATA
 // ══════════════════════════════════════════
 const allContent = [
+  {id:1091,title:"Juste Une Illusion",genre:"Comedie",type:"film",thumb:"https://image.tmdb.org/t/p/w500/eWPq3wSvJEMakESTXzaBECUNBYr.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-gutjyrw5m8gp.html",embed:true,hero:true},
+  {id:1092,title:"Top 50 Annees 80",genre:"Musique",type:"film",thumb:"https://thumb.canalplus.pro/http/unsafe/512x682/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/brand/32337212/canal-ouah_50001/JAQCANAL/myCANAL_Jaquette_MEA_600x800-TntA",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://stream.mux.com/HzlQHowE01FA5k7T3UJ7nqP8MhIrvvdsbT9w2Swil8S00.m3u8",embed:true,hero:true},
   {id:1089,title:"L'Odyssée",genre:"Action",type:"film",thumb:"https://image.tmdb.org/t/p/w500/jKf0p3fhO893ROvRuvuSDsZSvK6.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://cdn80.zen-blk.store/movies/The-Odyssey-HD-2026.mp4?ff=1794219328.Zw8WD3tVyIuF1VqXzNS-wDxm",embed:true,hero:true},
   {id:1080,title:"La Bataille De Gaulle J'Ecris Ton Nom",genre:"Biopic",type:"film",thumb:"https://image.tmdb.org/t/p/w500/9qc5CzjnxGpjpuwVlIziVr7ODcL.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-2v5e1wjwlat0.html",embed:true,hero:true},
   {id:1081,title:"Permis De Detruire",genre:"Comedie",type:"film",thumb:"https://image.tmdb.org/t/p/w500/gZQmPbQ9jo44jj9h4OSb61j14RD.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-6n7x4x66jhu9.html",embed:true,hero:true},
@@ -11393,7 +11415,8 @@ const trailerMap = {
   1085: 'TQ-9We-lxiA', // Sonic 3 Le Film
   1086: 'O6MzkeY6dPA', // Crystal Lake
   1089: 'uBh8Sg8wOuA', // L'Odyssée
-    };
+  1091: '3NcTEeCZrY0', // Juste Une Illusion
+  };
 
 function getTrailerYtId(filmId) {
   return trailerMap[filmId] || null;
@@ -11407,6 +11430,7 @@ function getTrailerYtId(filmId) {
 //  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+1092: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/canalpluswimo/wildmoka.com_70948131739/01M7A3W5NT2XFGP4QQM16M0K0G/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Top 50 Annees 80
 1087: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37713_BA/113761/canalplay.com_37713_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Le Parrain 2
 1088: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_103003_BA/103817/canalplay.com_103003_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Le Parrain 3
 1086: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/studiobagelwimo/wildmoka.com_1369726737307/01M4GPX4SCXS8CX6EZRWDWDR4P/w1_v_avcvbr_20_1080_1920_0_3500.mp4', // Crystal Lake
@@ -11688,6 +11712,7 @@ const filmBgVideoMap = {
 // Les flux TVOD sont souvent vidéo seule : l'audio est un second fichier, lu en parallèle et resynchronisé sur la vidéo.
 // Ajoutez ici : id du film → url du fichier audio (.mp4 / .m4a).
 const filmBgAudioMap = {
+  1092: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/canalpluswimo/wildmoka.com_70948131739/01M7A3W5NT2XFGP4QQM16M0K0G/w1_a_aac_0_fra_0_1_64.mp4', // Top 50 Annees 80
   1087: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37713_BA/113761/canalplay.com_37713_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Le Parrain 2
   1088: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_103003_BA/103817/canalplay.com_103003_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Le Parrain 3
   1086: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/studiobagelwimo/wildmoka.com_1369726737307/01M4GPX4SCXS8CX6EZRWDWDR4P/w1_a_aac_0_fra_0_1_128.mp4', // Crystal Lake
@@ -13251,7 +13276,7 @@ const A80 = {
   // Films ajoutés à la card Années 80 (quelle que soit leur année de sortie)
   // 896 Michael · 1056 Le Loup de Wall Street · 608 Bohemian Rhapsody · 937 Conjuring 4 (L'Heure du jugement)
   // 9 Stars 80 · 10 Stars 80 : La Suite · 1051 Tetris · 30 Super Mario Bros Le Film
-  extraIds: [896, 1056, 608, 937, 9, 10, 1051, 30, 824, 823, 834, 986, 985, 702, 1067, 1041, 936, 888, 12, 20],
+  extraIds: [896, 1056, 608, 937, 9, 10, 1051, 30, 824, 823, 834, 986, 985, 702, 1067, 1041, 936, 888, 12, 20, 1091, 1092],
   actors: [
     {name:"Robert De Niro", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6ad8da276b131/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
     {name:"Sylvester Stallone", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6ad8d9ca9f20f/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
