@@ -536,6 +536,21 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   .streaming-active-badge { left:20px; bottom:16px; }
 }
 
+/* ── CARD ANNÉES 80 ── */
+.platform-card.card-full { background:#000; }
+.platform-card.card-full .card-logo { max-width:none; max-height:none; width:100%; height:100%; object-fit:cover; }
+.a80-tiles { display:flex; gap:14px; overflow-x:auto; padding:4px 2px 14px; scrollbar-width:thin; scrollbar-color:rgba(201,168,76,0.3) transparent; -webkit-overflow-scrolling:touch; }
+.a80-tile { flex:0 0 auto; width:230px; cursor:pointer; transition:transform .3s cubic-bezier(0.16,1,0.3,1); }
+.a80-tile:hover { transform:scale(1.05) translateY(-4px); }
+.a80-tile img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:6px; background:#0d0d14; border:1px solid rgba(255,255,255,0.08); }
+.a80-tile:hover img { border-color:var(--gold); box-shadow:0 14px 34px rgba(0,0,0,0.65); }
+.a80-tile-name { margin-top:8px; font-size:.74rem; letter-spacing:.08em; color:var(--muted); text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.a80-back { display:inline-flex; align-items:center; gap:8px; margin-bottom:26px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:var(--text); padding:8px 18px; border-radius:30px; font-size:.75rem; letter-spacing:.1em; cursor:pointer; transition:background .2s,border-color .2s,color .2s; }
+.a80-back:hover { background:rgba(201,168,76,0.2); border-color:var(--gold); color:var(--gold); }
+.a80-empty { color:var(--muted); text-align:center; padding:60px 0; letter-spacing:.2em; font-size:.8rem; }
+.a80-cards-wrap { display:flex; flex-wrap:wrap; gap:14px; }
+@media(max-width:768px){ .a80-tile { width:160px; } }
+
 /* ── TV SCREEN ── */
 #tvScreen { flex-direction:column; background:var(--dark); padding-top:calc(64px + var(--banner-h)); min-height:100vh; }
 .tv-header { padding:30px 40px 20px; }
@@ -2075,6 +2090,14 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
         onmouseenter="hoverPlatform(this)" onmouseleave="leavePlatform()" onclick="clickPlatform(this)">
         <video class="card-video" muted loop playsinline preload="none"></video>
         <img class="card-logo" src="https://www.lfp.fr/assets/LFP_LOGOTYPE_L1_MASTER_ELECTRIC_BLUE_RVB_fdd5c15fd3.png" alt="Ligue 1+">
+      </div>
+
+      <div class="platform-card card-full" id="platform-annees80"
+        data-platform="annees80" data-video="https://banners-dsh-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/arya/arya_prod_229781_cover_16x8_1920x960/01M6P8WSEDPKMEHJGHS9KAY7C4/w1_v_avcdar_20_720_1440_0_2000.mp4" data-hero-video="https://banners-dsh-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/arya/arya_prod_229781_cover_16x8_1920x960/01M6P8WSEDPKMEHJGHS9KAY7C4/w1_v_avcdar_20_720_1440_0_2000.mp4"
+        data-logo="https://thumb.canalplus.pro/bran/unsafe/274x206/filters:quality(80)/image/6aec9c73d088d/uploads/media/TUILES_4x3_1440x1080_80.jpg"
+        onmouseenter="hoverPlatform(this)" onmouseleave="leavePlatform()" onclick="clickPlatform(this)">
+        <video class="card-video" muted loop playsinline preload="none"></video>
+        <img class="card-logo" src="https://thumb.canalplus.pro/bran/unsafe/274x206/filters:quality(80)/image/6aec9c73d088d/uploads/media/TUILES_4x3_1440x1080_80.jpg" alt="Années 80">
       </div>
 
     </div>
@@ -12988,6 +13011,7 @@ function openPlatformPage(platform, logoSrc, videoSrc, imageSrc) {
     heroLogoEl.style.display = 'none';
     heroLogoEl.style.maxHeight = '';
     heroLogoEl.style.maxWidth = '';
+    heroLogoEl.style.borderRadius = '';
   }
   const heroVid = document.getElementById('platformHeroVideo');
   if (videoSrc) {
@@ -13002,6 +13026,17 @@ function openPlatformPage(platform, logoSrc, videoSrc, imageSrc) {
 
   const area = document.getElementById('platformContentArea');
   area.innerHTML = '';
+
+  // Cas spécial : Années 80 (films, acteurs, années, radios Nostalgie)
+  if (platform === 'annees80') {
+    heroLogoEl.src = A80.heroLogo;
+    heroLogoEl.style.display = 'block';
+    heroLogoEl.style.maxHeight = '130px';
+    heroLogoEl.style.maxWidth = '380px';
+    render80sHome(area);
+    ps.scrollTo(0, 0);
+    return;
+  }
 
   // Cas spécial : Disney+ regroupe Disney, Pixar, Marvel, Star Wars et Hulu
   if (platform === 'disneyplus') {
@@ -13210,6 +13245,141 @@ function openPlatformPage(platform, logoSrc, videoSrc, imageSrc) {
   if (liveSec) area.appendChild(liveSec);
 
   ps.scrollTo(0, 0);
+}
+
+/* ═══════════════ ANNÉES 80 : page de la card ═══════════════ */
+const A80 = {
+  heroLogo: 'https://files.catbox.moe/xx74tx.png',
+  // Films ajoutés à la card Années 80 (quelle que soit leur année de sortie)
+  // 896 Michael · 1056 Le Loup de Wall Street · 608 Bohemian Rhapsody · 937 Conjuring 4 (L'Heure du jugement)
+  // 9 Stars 80 · 10 Stars 80 : La Suite · 1051 Tetris · 30 Super Mario Bros Le Film
+  extraIds: [896, 1056, 608, 937, 9, 10, 1051, 30],
+  actors: [
+    {name:"Robert De Niro", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6ad8da276b131/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Sylvester Stallone", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6ad8d9ca9f20f/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Meryl Streep", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6aee15b8b3436/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Demi Moore", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6aee15ca1a2a4/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Al Pacino", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6aee15e611e99/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Anthony Hopkins", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6aee160437ff5/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Mel Gibson", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6af1e0463543e/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Arnold Schwarzenegger", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6af1e04ccd304/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Tom Cruise", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6af1e0b583516/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Kevin Costner", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6af1e04348b7c/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Richard Gere", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6af1e05d23cec/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Jack Nicholson", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6af1e065d99c1/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Thierry Lhermitte", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6af1e08f1b1b7/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Gérard Jugnot", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6af1e098ebea2/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Sigourney Weaver", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6af1e0bbbd947/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'},
+    {name:"Tom Hanks", img:'https://thumb.canalplus.pro/bran/unsafe/920x518/filters:quality(80)/image/6af1e5a54b024/uploads/media/myCANAL_16x9_collection_1920x1080.jpg'}
+  ],
+  years: [
+    {year:1980, img:'https://thumb.canalplus.pro/http/unsafe/920x518/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/list/creplay-multithema-80-annees-1980/canal-ouah/STD169/80-FMOV'},
+    {year:1981, img:'https://thumb.canalplus.pro/http/unsafe/920x518/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/list/creplay-multithema-80-annee-1981/canal-ouah/STD169/81-6x_U'},
+    {year:1982, img:'https://thumb.canalplus.pro/http/unsafe/920x518/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/list/creplay-multithema-80-annee-1982/canal-ouah/STD169/82-ugRt'},
+    {year:1983, img:'https://thumb.canalplus.pro/http/unsafe/920x518/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/list/creplay-multithema-80-annee-1983/canal-ouah/STD169/83-zTKg'},
+    {year:1984, img:'https://thumb.canalplus.pro/http/unsafe/920x518/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/list/creplay-multithema-80-annee-1984/canal-ouah/STD169/84-V5JX'},
+    {year:1985, img:'https://thumb.canalplus.pro/http/unsafe/920x518/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/list/creplay-multithema-80-annee-1985/canal-ouah/STD169/85-q3ru'},
+    {year:1986, img:'https://thumb.canalplus.pro/http/unsafe/920x518/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/list/creplay-multithema-80-annee-1986/canal-ouah/STD169/86-rZ-H'},
+    {year:1987, img:'https://thumb.canalplus.pro/http/unsafe/920x518/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/list/creplay-multithema-80-annee-1987/canal-ouah/STD169/87-3T-K'},
+    {year:1988, img:'https://thumb.canalplus.pro/http/unsafe/920x518/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/list/creplay-multithema-80-annee-1988/canal-ouah/STD169/88-RPcH'},
+    {year:1989, img:'https://thumb.canalplus.pro/http/unsafe/920x518/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/list/creplay-multithema-80-annee-1989/canal-ouah/STD169/89-hyVc'}
+  ]
+};
+
+function a80Norm(s){ return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function a80Year(m){ const y = parseInt((filmMeta[m.id]||{}).year, 10); return isNaN(y) ? null : y; }
+function a80Sort(a,b){ return ((a80Year(a)||9999)-(a80Year(b)||9999)) || String(a.title).localeCompare(String(b.title),'fr'); }
+
+// Tous les films des années 80 présents dans le catalogue
+function a80IsEighties(m){ if (m.type === 'serie') return false; const y = a80Year(m); return y !== null && y >= 1980 && y <= 1989; }
+function a80Films(){
+  return allContent.filter(m => a80IsEighties(m) || A80.extraIds.includes(m.id)).sort(a80Sort);
+}
+// Tous les titres du catalogue liés à une personne (casting ou réalisateur)
+function a80ByPerson(name){
+  const k = a80Norm(name);
+  return allContent.filter(m => { const x = filmMeta[m.id] || {}; return a80Norm(x.cast).includes(k) || a80Norm(x.director).includes(k); }).sort(a80Sort);
+}
+function a80ByYear(year){
+  return allContent.filter(m => a80IsEighties(m) && a80Year(m) === year).sort(a80Sort);
+}
+
+function a80Section(area, title){
+  const sec = document.createElement('div');
+  sec.className = 'catalog-section';
+  sec.innerHTML = `<div class="section-header"><div class="section-title">${title}</div><div class="section-line"></div></div>`;
+  area.appendChild(sec);
+  return sec;
+}
+function a80CardsRow(area, title, items){
+  if (!items.length) return;
+  const sec = a80Section(area, title);
+  const row = document.createElement('div');
+  row.className = 'cards-row';
+  items.forEach(m => row.appendChild(createCard(m)));
+  sec.appendChild(row);
+}
+function a80Tiles(area, title, list, onClick){
+  if (!list.length) return;
+  const sec = a80Section(area, title);
+  const row = document.createElement('div');
+  row.className = 'a80-tiles';
+  list.forEach(t => {
+    const d = document.createElement('div');
+    d.className = 'a80-tile';
+    d.innerHTML = `<img src="${t.img}" alt="${t.label}" loading="lazy" onerror="this.style.opacity='.25'"><div class="a80-tile-name">${t.label}</div>`;
+    d.onclick = () => onClick(t);
+    row.appendChild(d);
+  });
+  sec.appendChild(row);
+}
+function a80Top(){
+  const ps = document.getElementById('platformScreen');
+  if (ps && ps.scrollTo) ps.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+function render80sHome(area){
+  area.innerHTML = '';
+
+  // 1. Tous les films des années 80
+  a80CardsRow(area, 'Tous les films des années 80', a80Films());
+
+  // 2. Acteurs / réalisateurs : on n'affiche que ceux qui ont au moins un film dans le catalogue
+  const people = A80.actors
+    .map(a => ({ label:a.name, img:a.img, items:a80ByPerson(a.name) }))
+    .filter(a => a.items.length);
+  a80Tiles(area, 'Acteurs & Réalisateurs', people, p => render80sList(area, p.label, p.items));
+
+  // 3. Années 1980 → 1989 (on masque une année sans film)
+  const yrs = A80.years
+    .map(y => ({ label:'Année ' + y.year, img:y.img, items:a80ByYear(y.year) }))
+    .filter(y => y.items.length);
+  a80Tiles(area, 'Par année', yrs, y => render80sList(area, y.label, y.items));
+
+  // 4. Radios Nostalgie consacrées aux années 80
+  const radioSec = buildLiveSection('Radios Nostalgie Années 80',
+    c => c.cat === 'Radio' && /nostalgie/i.test(c.name) && /80/.test(c.name));
+  if (radioSec) area.appendChild(radioSec);
+}
+
+function render80sList(area, title, items){
+  area.innerHTML = '';
+  const back = document.createElement('button');
+  back.className = 'a80-back';
+  back.textContent = '← Années 80';
+  back.onclick = () => { render80sHome(area); a80Top(); };
+  area.appendChild(back);
+
+  const films  = items.filter(m => m.type !== 'serie');
+  const series = items.filter(m => m.type === 'serie');
+  if (!films.length && !series.length) {
+    area.insertAdjacentHTML('beforeend', '<div class="a80-empty">AUCUN TITRE DISPONIBLE</div>');
+  } else {
+    a80CardsRow(area, title + (series.length ? ' — Films' : ''), films);
+    a80CardsRow(area, title + ' — Séries', series);
+  }
+  a80Top();
 }
 
 function closePlatformPage() {
