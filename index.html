@@ -11141,8 +11141,7 @@ function loadMedia(frame,src,isEmbed){
       const ifr = document.createElement('iframe');
       ifr.setAttribute('allowfullscreen','');
       ifr.setAttribute('allow','autoplay; fullscreen; encrypted-media; picture-in-picture');
-      // vidzy.org : plus de sandbox (plus de bloqueur de pub). uqload garde son sandbox.
-      if (!isVidzy) ifr.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-presentation');
+      ifr.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-presentation');
       ifr.setAttribute('referrerpolicy', refPolicy);
       ifr.addEventListener('load', () => clearTimeout(loadTimer));
       ifr.src = bust ? baseSrc + (baseSrc.includes('?') ? '&' : '?') + '_r=' + Date.now() : baseSrc;
