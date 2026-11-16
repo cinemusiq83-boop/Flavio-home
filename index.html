@@ -245,24 +245,30 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .hero-bg.fade-in  { opacity:1; transition:opacity 0.5s ease; }
 .hero-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(to top,var(--dark) 0%,rgba(5,5,8,0.4) 40%,rgba(5,5,8,0.2) 100%); }
 
-.hero-category-banners { display:none; }
+
+/* ── CARROUSEL DES CATÉGORIES (sous le hero) ── */
+.cat-carousel { position:relative; z-index:2; margin:0 -40px 36px; }
+.cat-track { display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x proximity; padding:6px 40px 10px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+.cat-track::-webkit-scrollbar { display:none; }
+.cat-tile { flex:0 0 auto; width:160px; height:110px; border-radius:8px; overflow:hidden; cursor:pointer; scroll-snap-align:start; background:#14141f; border:1px solid rgba(255,255,255,0.08); transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease; -webkit-tap-highlight-color:transparent; }
+.cat-tile img { width:100%; height:100%; object-fit:cover; display:block; user-select:none; }
+.cat-tile:hover { transform:scale(1.05); border-color:var(--gold); box-shadow:0 10px 28px rgba(0,0,0,0.55); }
+.cat-arrow { position:absolute; top:50%; transform:translateY(-50%); z-index:3; width:42px; height:42px; border-radius:50%; border:1px solid rgba(255,255,255,0.18); background:rgba(10,10,16,0.75); backdrop-filter:blur(8px); color:var(--text); font-size:1.5rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s, opacity .2s; }
+.cat-arrow:hover { background:rgba(201,168,76,0.3); }
+.cat-prev { left:10px; } .cat-next { right:10px; }
+.cat-arrow.hidden { opacity:0; pointer-events:none; }
 @media(max-width:768px){
-  .hero-category-banners {
-    display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch;
-    position:absolute; top:calc(64px + var(--banner-h)); left:0; right:0; z-index:2;
-    padding:0 16px; scrollbar-width:none;
-  }
-  .hero-category-banners::-webkit-scrollbar { display:none; }
-  .hcb-pill {
-    flex-shrink:0; padding:7px 16px; border-radius:20px;
-    background:rgba(20,20,31,0.55); border:1px solid rgba(201,168,76,0.25);
-    backdrop-filter:blur(6px); color:var(--text); font-family:'Canal',sans-serif;
-    font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; white-space:nowrap;
-    cursor:pointer; -webkit-tap-highlight-color:transparent;
-  }
-  .hcb-pill.active { background:rgba(201,168,76,0.22); border-color:var(--gold); color:var(--gold-light); }
-  .hcb-pill.sport { border-color:rgba(201,168,76,0.5); color:var(--gold); font-weight:700; }
+  .cat-carousel { margin:0 -20px 26px; }
+  .cat-track { padding:4px 20px 8px; gap:10px; }
+  .cat-tile { width:120px; height:88px; border-radius:8px; }
+  .cat-arrow { display:none; }
 }
+/* Page d'une catégorie */
+.cat-page-header { display:flex; align-items:center; gap:14px; margin-bottom:28px; }
+.cat-back { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:var(--text); width:38px; height:38px; border-radius:50%; font-size:1.2rem; cursor:pointer; flex-shrink:0; }
+.cat-page-title { font-family:'Canal',sans-serif; font-size:1.1rem; letter-spacing:.25em; text-transform:uppercase; color:var(--text); }
+.cat-empty { color:var(--muted); font-size:.85rem; padding:40px 0; text-align:center; }
+@media(max-width:768px){ .cat-page-title { font-size:.9rem; letter-spacing:.18em; } }
 
 /* HERO SLIDESHOW CONTROLS */
 .hero-slideshow-bar {
@@ -547,6 +553,9 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 .a80-tile-name { margin-top:8px; font-size:.74rem; letter-spacing:.08em; color:var(--muted); text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .a80-back { display:inline-flex; align-items:center; gap:8px; margin-bottom:26px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:var(--text); padding:8px 18px; border-radius:30px; font-size:.75rem; letter-spacing:.1em; cursor:pointer; transition:background .2s,border-color .2s,color .2s; }
 .a80-back:hover { background:rgba(201,168,76,0.2); border-color:var(--gold); color:var(--gold); }
+.a80-banner { display:block; width:100%; margin:0 0 34px; cursor:pointer; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); transition:transform .3s cubic-bezier(0.16,1,0.3,1), border-color .3s, box-shadow .3s; }
+.a80-banner:hover { transform:scale(1.01); border-color:var(--gold); box-shadow:0 14px 34px rgba(0,0,0,0.65); }
+.a80-banner img { display:block; width:100%; height:auto; aspect-ratio:1440/371; object-fit:cover; background:#0d0d14; }
 .a80-empty { color:var(--muted); text-align:center; padding:60px 0; letter-spacing:.2em; font-size:.8rem; }
 .a80-cards-wrap { display:flex; flex-wrap:wrap; gap:14px; }
 @media(max-width:768px){ .a80-tile { width:160px; } }
@@ -1973,11 +1982,9 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
     </button>
     <div class="nav-links" id="navLinks">
       <a class="active" data-tab="accueil" onclick="showTab('accueil',this);closeBurger()">Accueil</a>
-      <a data-tab="films" onclick="showTab('films',this);closeBurger()">Films</a>
-      <a data-tab="series" onclick="showTab('series',this);closeBurger()">Séries</a>
-      <a data-tab="tv" onclick="showTab('tv',this);closeBurger()">TV Direct</a>
-      <a data-tab="maliste" onclick="showTab('maliste',this);closeBurger()">Ma Liste</a>
+      <a data-tab="tv" onclick="showTab('tv',this);closeBurger()">TV En direct</a>
       <a data-tab="chaines" onclick="showTab('chaines',this);closeBurger()">Chaînes</a>
+      <a data-tab="maliste" onclick="showTab('maliste',this);closeBurger()">Ma Liste</a>
     </div>
     <div class="nav-search">
       <span class="nav-search-icon">🔍</span>
@@ -2007,10 +2014,6 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
 
   <!-- HERO -->
   <div class="hero" id="heroSection">
-    <div class="hero-category-banners" id="heroCategoryBanners">
-      <button class="hcb-pill liquid-glass" data-tab="films" onclick="hcbGoTab('films')">Films</button>
-      <button class="hcb-pill liquid-glass" data-tab="series" onclick="hcbGoTab('series')">Séries</button>
-    </div>
     <div class="hero-bg" id="heroBg"></div>
     <div class="hero-content" id="heroContent">
       <div class="hero-badge">✦ Nouveauté</div>
@@ -2027,6 +2030,22 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
 
   <!-- PLATEFORMES DE STREAMING -->
   <div class="streaming-section" id="streamingSection">
+
+    <!-- CARROUSEL DES CATÉGORIES -->
+    <div class="cat-carousel" id="catCarousel">
+      <button class="cat-arrow cat-prev" onclick="catScroll(-1)" aria-label="Précédent">‹</button>
+      <div class="cat-track" id="catTrack">
+        <div class="cat-tile" onclick="clickPlatform(document.getElementById('platform-annees80'))" role="button" aria-label="Années 80"><img src="https://thumb.canalplus.pro/bran/unsafe/274x206/filters:quality(80)/image/6aec9c73d088d/uploads/media/TUILES_4x3_1440x1080_80.jpg" alt="Années 80" loading="lazy" draggable="false"></div>
+        <div class="cat-tile" onclick="openCategory('cinema')" role="button" aria-label="Cinéma"><img src="https://thumb.canalplus.pro/bran/unsafe/274x206/filters:quality(80)/image/6ae8a487a473c/uploads/media/TUILES_4x3_1440x1080_cinema.jpg" alt="Cinéma" loading="lazy" draggable="false"></div>
+        <div class="cat-tile" onclick="openCategory('series')" role="button" aria-label="Séries"><img src="https://thumb.canalplus.pro/bran/unsafe/274x206/filters:quality(80)/image/6ae8a48aef1a2/uploads/media/TUILES_4x3_1440x1080_series.jpg" alt="Séries" loading="lazy" draggable="false"></div>
+        <div class="cat-tile" onclick="openCategory('sport')" role="button" aria-label="Sport"><img src="https://thumb.canalplus.pro/bran/unsafe/274x206/filters:quality(80)/image/6ae8a48bb4fa1/uploads/media/TUILES_4x3_1440x1080_sport.jpg" alt="Sport" loading="lazy" draggable="false"></div>
+        <div class="cat-tile" onclick="openCategory('jeunesse')" role="button" aria-label="Jeunesse"><img src="https://thumb.canalplus.pro/bran/unsafe/274x206/filters:quality(80)/image/6ae8a48945370/uploads/media/TUILES_4x3_1440x1080_jeunesse.jpg" alt="Jeunesse" loading="lazy" draggable="false"></div>
+        <div class="cat-tile" onclick="openCategory('docs')" role="button" aria-label="Documentaires"><img src="https://thumb.canalplus.pro/bran/unsafe/274x206/filters:quality(80)/image/6ae8a48871301/uploads/media/TUILES_4x3_1440x1080_docu.jpg" alt="Documentaires" loading="lazy" draggable="false"></div>
+        <div class="cat-tile" onclick="openCategory('info')" role="button" aria-label="Info"><img src="https://thumb.canalplus.pro/bran/unsafe/274x206/filters:quality(80)/image/6ae8a4885b394/uploads/media/TUILES_4x3_1440x1080_INFO.jpg" alt="Info" loading="lazy" draggable="false"></div>
+        <div class="cat-tile" onclick="openCategory('musique')" role="button" aria-label="Musique"><img src="https://thumb.canalplus.pro/bran/unsafe/274x206/filters:quality(80)/image/6aec9c7451569/uploads/media/TUILES_4x3_1440x1080_musique.jpg" alt="Musique" loading="lazy" draggable="false"></div>
+      </div>
+      <button class="cat-arrow cat-next" onclick="catScroll(1)" aria-label="Suivant">›</button>
+    </div>
 
     <div class="streaming-header">
       <span class="streaming-header-icon">🎬</span>
@@ -2092,7 +2111,7 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
         <img class="card-logo" src="https://www.lfp.fr/assets/LFP_LOGOTYPE_L1_MASTER_ELECTRIC_BLUE_RVB_fdd5c15fd3.png" alt="Ligue 1+">
       </div>
 
-      <div class="platform-card card-full" id="platform-annees80"
+      <div class="platform-card card-full" id="platform-annees80" style="display:none"
         data-platform="annees80" data-video="https://banners-dsh-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/arya/arya_prod_229781_cover_16x8_1920x960/01M6P8WSEDPKMEHJGHS9KAY7C4/w1_v_avcdar_20_720_1440_0_2000.mp4" data-hero-video="https://banners-dsh-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/arya/arya_prod_229781_cover_16x8_1920x960/01M6P8WSEDPKMEHJGHS9KAY7C4/w1_v_avcdar_20_720_1440_0_2000.mp4"
         data-logo="https://thumb.canalplus.pro/bran/unsafe/274x206/filters:quality(80)/image/6aec9c73d088d/uploads/media/TUILES_4x3_1440x1080_80.jpg"
         onmouseenter="hoverPlatform(this)" onmouseleave="leavePlatform()" onclick="clickPlatform(this)">
@@ -8770,7 +8789,6 @@ function showTab(tab, el){
   currentTab=tab;
   document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
   if(el) el.classList.add('active');
-  if(typeof hcbSetActive==='function') hcbSetActive(tab);
   document.getElementById('heroSection').style.display='none';
   document.getElementById('catalogEl').style.display='none';
   document.getElementById('streamingSection').style.display='none';
@@ -8780,6 +8798,7 @@ function showTab(tab, el){
   document.getElementById('maListeSection').style.display='none';
   document.getElementById('monProfilSection').style.display='none';
   document.getElementById('searchInput').value='';
+  document.getElementById('catalogEl').style.paddingTop='';
   // Stop slideshow when leaving accueil
   if(tab !== 'accueil') clearSlideshowTimers();
 
@@ -8797,6 +8816,11 @@ function showTab(tab, el){
   } else if(tab==='monprofil'){
     document.getElementById('monProfilSection').style.display='block';
     renderMonProfil();
+  } else if(tab.indexOf('cat:')===0){
+    const _c=document.getElementById('catalogEl');
+    _c.style.display='block';
+    _c.style.paddingTop='calc(84px + var(--banner-h))';
+    renderCategory(tab.slice(4));
   } else {
     document.getElementById('heroSection').style.display='flex';
     if(tab==='accueil') document.getElementById('streamingSection').style.display='block';
@@ -12361,6 +12385,7 @@ function hideSearchResults(){
   if(currentTab==='tv'){document.getElementById('tvSection').style.display='block';}
   else if(currentTab==='maliste'){document.getElementById('maListeSection').style.display='block';renderMaListe();}
   else if(currentTab==='monprofil'){document.getElementById('monProfilSection').style.display='block';renderMonProfil();}
+  else if(String(currentTab).indexOf('cat:')===0){document.getElementById('catalogEl').style.display='block';}
   else{document.getElementById('heroSection').style.display='flex';if(currentTab==='accueil')document.getElementById('streamingSection').style.display='block';document.getElementById('catalogEl').style.display='block';}
 }
 function openSearchDropdown(){if(document.getElementById('searchInput').value.trim())document.getElementById('searchDropdown').classList.add('open');}
@@ -13374,6 +13399,15 @@ function render80sHome(area){
     .filter(a => a.items.length);
   a80Tiles(area, 'Acteurs & Réalisateurs', people, p => render80sList(area, p.label, p.items));
 
+  // Bannière pleine largeur -> Top Archives (sous les acteurs)
+  const banner = document.createElement('a');
+  banner.className = 'a80-banner';
+  banner.href = 'https://top-archives.fr/top/home';
+  banner.target = '_blank';
+  banner.rel = 'noopener';
+  banner.innerHTML = '<img src="https://storage.e.jimdo.com/cdn-cgi/image/quality=85%2Cfit=scale-down%2Cformat=auto%2Ctrim=0;0;0;0%2Cwidth=1440%2Cheight=371/image/555795288/3824787e-1237-493c-b0c0-403736147cf3.jpg" alt="Top Archives">';
+  area.appendChild(banner);
+
   // 3. Années 1980 → 1989 (on masque une année sans film)
   const yrs = A80.years
     .map(y => ({ label:'Année ' + y.year, img:y.img, items:a80ByYear(y.year) }))
@@ -13542,19 +13576,99 @@ function bnGoMonProfil(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ── Bannières de catégories en haut du hero (app mobile) ──
-function hcbSetActive(tab){
-  document.querySelectorAll('.hcb-pill[data-tab]').forEach(b=>b.classList.remove('active'));
-  const el = document.querySelector('.hcb-pill[data-tab="'+tab+'"]');
-  if(el) el.classList.add('active');
+
+// ── Catégories (carrousel sous le hero) ──
+const CATEGORIES = {
+  cinema:   {label:'Cinéma',        type:'film',  channels:['Cinéma']},
+  series:   {label:'Séries',        type:'serie', channels:['Séries']},
+  sport:    {label:'Sport',         genres:[],     channels:['Sport']},
+  jeunesse: {label:'Jeunesse',      genres:['Disney','Pixar','Animation','Famille'], channels:['Jeunesse']},
+  docs:     {label:'Documentaires', genres:['Histoire','Documentaire'], ids:[1041,1042,824], channels:['Docs']}, // 1041 Bad 25 · 1042 Off The Wall · 824 Thriller 40
+  info:     {label:'Info',          genres:[],     channels:['Info']},
+  musique:  {label:'Musique',       genres:['Musique'], channels:['Musique'], radio:true}
+};
+function catScroll(dir){
+  const t=document.getElementById('catTrack'); if(!t) return;
+  t.scrollBy({left:dir*Math.max(300,t.clientWidth*0.8),behavior:'smooth'});
 }
-function hcbGoTab(tab){
-  const link = document.querySelector('.nav-links a[data-tab="'+tab+'"]');
-  showTab(tab, link);
-  hcbSetActive(tab);
-  bnSetActive('accueil');
-  window.scrollTo({top:0,behavior:'smooth'});
+function catUpdateArrows(){
+  const t=document.getElementById('catTrack'); if(!t) return;
+  const p=document.querySelector('.cat-prev'), n=document.querySelector('.cat-next');
+  if(p) p.classList.toggle('hidden', t.scrollLeft<10);
+  if(n) n.classList.toggle('hidden', t.scrollLeft+t.clientWidth>=t.scrollWidth-10);
 }
+document.addEventListener('DOMContentLoaded',()=>{
+  const t=document.getElementById('catTrack'); if(!t) return;
+  t.addEventListener('scroll',catUpdateArrows,{passive:true});
+  window.addEventListener('resize',catUpdateArrows);
+  setTimeout(catUpdateArrows,300);
+});
+function openCategory(key){
+  const ps=document.getElementById('platformScreen');
+  if(ps && ps.style.display!=='none' && typeof closePlatformPage==='function') closePlatformPage();
+  showTab('cat:'+key, null);
+  if(typeof bnSetActive==='function') bnSetActive('accueil');
+}
+function catBackHome(){
+  showTab('accueil', document.querySelector('.nav-links a[data-tab="accueil"]'));
+}
+function catNormGenre(g){ return g==='Comedie' ? 'Comédie' : g; }
+function catBuildChannelTile(ch){
+  const div=document.createElement('div');
+  div.className='tv-channel';
+  if(ch.cat==='Radio') div.setAttribute('data-radio-id', ch.id);
+  div.innerHTML=`
+    <div class="tv-channel-logo-wrap"><img src="${ch.logo}" data-logo="${ch.logo}" alt="${ch.name}" onerror="this.style.opacity='0'"></div>
+    <div class="tv-channel-info">
+      <div class="tv-channel-program loading">Chargement…</div>
+      <div class="tv-channel-time"></div>
+      <div class="tv-channel-progress-bar"><div class="tv-channel-progress-bar-fill" style="width:0%"></div></div>
+    </div>`;
+  div.onclick=()=>ch.cat==='Radio' ? openRadioPlayer(ch) : openTvChannelPlayer(ch);
+  if(ch.cat==='Radio') radioEpgUpdateCard(div, ch.id); else epgUpdateCard(div, ch.id);
+  return div;
+}
+function renderCategory(key){
+  const cfg=CATEGORIES[key]; if(!cfg) return;
+  const el=document.getElementById('catalogEl');
+  el.innerHTML=`<div class="cat-page-header"><button class="cat-back" onclick="catBackHome()" aria-label="Retour">←</button><div class="cat-page-title">${cfg.label}</div></div>`;
+  let any=false;
+  const addRow=(title,items)=>{
+    if(!items.length) return; any=true;
+    const div=document.createElement('div'); div.className='catalog-section';
+    div.innerHTML=`<div class="section-header"><div class="section-title">${title}</div><div class="section-line"></div></div>`;
+    const row=document.createElement('div'); row.className='cards-row';
+    items.forEach(m=>row.appendChild(createCard(m)));
+    div.appendChild(row); el.appendChild(div);
+  };
+  const addChannels=(title,list)=>{
+    if(!list.length) return; any=true;
+    const div=document.createElement('div'); div.className='catalog-section';
+    div.innerHTML=`<div class="section-header"><div class="section-title">${title}</div><div class="section-line"></div></div>`;
+    const grid=document.createElement('div'); grid.className='tv-channels-grid'; grid.style.padding='0';
+    list.forEach(ch=>grid.appendChild(catBuildChannelTile(ch)));
+    div.appendChild(grid); el.appendChild(div);
+  };
+  // Films / séries
+  if(key==='cinema'){
+    const films=allContent.filter(m=>m.type==='film');
+    const genres=[...new Set(films.map(m=>catNormGenre(m.genre)))];
+    genres.forEach(g=>addRow('🎬 '+g, films.filter(m=>catNormGenre(m.genre)===g)));
+  } else if(key==='series'){
+    addRow('📺 Toutes les séries', allContent.filter(m=>m.type==='serie'));
+  } else if(cfg.genres && cfg.genres.length){
+    cfg.genres.forEach(g=>addRow(g, allContent.filter(m=>catNormGenre(m.genre)===g)));
+  }
+  // Contenus ajoutés à la main (par id)
+  if(cfg.ids && cfg.ids.length) addRow('🎞️ Documentaires musicaux', cfg.ids.map(id=>allContent.find(m=>m.id===id)).filter(Boolean));
+  // Chaînes TV liées à la catégorie
+  const excl=c=>(c.name==='Ligue 1+'||/^Ligue 1\+ \d+$/.test(c.name)||c.name==='Disney Channel'||c.name==='National Geographic');
+  cfg.channels.forEach(cc=>addChannels('📡 Chaînes '+cc, tvChannels.filter(c=>c.cat===cc && !excl(c))));
+  if(cfg.radio) addChannels('📻 Radios', tvChannels.filter(c=>c.cat==='Radio'));
+  if(!any) el.innerHTML+='<div class="cat-empty">Aucun contenu pour le moment.</div>';
+  if(typeof radioStartAutoRefresh==='function') radioStartAutoRefresh();
+}
+
 function hcbGoExternal(url){
   window.location.href = url;
 }
