@@ -306,6 +306,16 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 }
 .hero-content { opacity:1; transition:opacity 0.4s ease; }
 .hero-content.fade-out { opacity:0; }
+/* ── BANDE-ANNONCE DU HERO ── */
+.hero-trailer { position:absolute; inset:0; opacity:0; transition:opacity 1s ease; pointer-events:none; overflow:hidden; background:#000; }
+.hero-trailer.show { opacity:1; }
+.hero-trailer video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
+.hero-trailer iframe { position:absolute; top:50%; left:50%; width:max(100%,177.78vh); height:max(100%,56.25vw); transform:translate(-50%,-50%); border:0; display:none; }
+.hero-trailer.is-video video, .hero-trailer.is-yt iframe { display:block; }
+.hero-sound-btn { position:absolute; z-index:3; right:60px; bottom:48px; width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.35); background:rgba(0,0,0,0.45); color:#fff; font-size:1rem; cursor:pointer; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
+.hero-sound-btn.show { display:flex; }
+@media(max-width:768px){ .hero-sound-btn { right:20px; bottom:40px; } }
+.hero-trailer::after { content:''; position:absolute; inset:0; background:linear-gradient(to top,var(--dark) 0%,rgba(5,5,8,0.4) 40%,rgba(5,5,8,0.2) 100%); }
 @media(max-width:768px){
   .hero-slideshow-bar { bottom:20px; right:20px; }
   .hero { padding:0 20px 70px; }
@@ -2015,6 +2025,13 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <!-- HERO -->
   <div class="hero" id="heroSection">
     <div class="hero-bg" id="heroBg"></div>
+    <!-- Bande-annonce de fond (mp4 Canal en priorité, sinon YouTube), lancée 2 s après l'affichage -->
+    <div class="hero-trailer" id="heroTrailer">
+      <video id="heroTrailerVideo" muted loop playsinline preload="none"></video>
+      <iframe id="heroTrailerYT" allow="autoplay; encrypted-media" tabindex="-1" aria-hidden="true"></iframe>
+    </div>
+    <audio id="heroTrailerAudio" loop preload="none"></audio>
+    <button type="button" class="hero-sound-btn" id="heroSoundBtn" aria-label="Activer / couper le son" onclick="toggleHeroSound(event)">🔇</button>
     <div class="hero-content" id="heroContent">
       <div class="hero-badge">✦ Nouveauté</div>
       <img class="hero-logo-img" id="heroLogoImg" src="" alt="">
@@ -8835,6 +8852,21 @@ function showTab(tab, el){
 //  HERO — logo avec chargement robuste
 // ══════════════════════════════════════════
 
+// ── Réglages propres au HERO uniquement (la fiche film n'est pas modifiée) ──
+// id du film → affiche du hero, vidéo mp4 et piste son séparée
+const HERO_FIRST_ID = 896; // Michael toujours en premier dans le hero
+const heroOverrides = {
+  896: {
+    backdrop: 'https://thumb.canalplus.pro/bran/unsafe/1260x552/filters:quality(80)/image/6afd70607c584/uploads/media/COVER_FIXE.png',
+    video: 'https://banners-dsh-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/arya/arya_prod_230897_cover/01M7Q027PRCHTM58Q7AGV0FKHD/w1_v_avcdar_20_720_1440_0_2000.mp4',
+    audio: 'https://banners-dsh-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/arya/arya_prod_230897_cover/01M7Q027PRCHTM58Q7AGV0FKHD/w1_a_aac_0_fra_0_1_64.mp4'
+  }
+};
+function heroBackdropFor(film, meta) {
+  const o = heroOverrides[film.id];
+  return (o && o.backdrop) || getBackdropFor(film, meta);
+}
+
 // Slideshow state
 let heroSlides = [];
 let heroSlideIndex = 0;
@@ -8844,9 +8876,14 @@ const HERO_DURATION = 5000; // 5 secondes
 
 function initHeroSlideshow() {
   // Onglet Séries : les 3 dernières séries ajoutées ; sinon les 3 derniers contenus ajoutés
-  heroSlides = (currentTab === 'series'
-    ? allContent.filter(m => m.type === 'serie')
-    : allContent).slice(0, 3);
+  if (currentTab === 'series') {
+    heroSlides = allContent.filter(m => m.type === 'serie').slice(0, 3);
+  } else {
+    const first = allContent.find(m => m.id === HERO_FIRST_ID);
+    heroSlides = first
+      ? [first, ...allContent.filter(m => m.id !== HERO_FIRST_ID).slice(0, 2)]
+      : allContent.slice(0, 3);
+  }
   heroFilm = heroSlides[0];
   heroSlideIndex = 0;
   buildSlideshowDots();
@@ -8864,9 +8901,10 @@ function setHeroSlide(idx, instant) {
   const film = heroSlides[idx];
   if (!film) return;
   heroFilm = film;
+  stopHeroTrailer();
 
   const meta = filmMeta[film.id] || {};
-  const backdropUrl = getBackdropFor(film, meta);
+  const backdropUrl = heroBackdropFor(film, meta);
   const logoUrl = meta.logo || film.logo || '';
   const desc = meta.desc ? meta.desc.substring(0,130)+'…' : film.genre + ' · Disponible maintenant sur Flavio Home';
 
@@ -8904,7 +8942,7 @@ function setHeroSlide(idx, instant) {
     dot.classList.toggle('active', i === idx);
     // Reset fill
     fill.style.transition = 'none';
-    fill.style.width = i < idx ? '100%' : '0%';
+    fill.style.width = i === idx ? '100%' : '0%';
   });
 }
 
@@ -8923,30 +8961,179 @@ function applyHeroLogo(logoEl, titleEl, logoUrl, title) {
   }
 }
 
+// Plus de défilement automatique : on lance seulement la bande-annonce du slide courant après 2 s.
 function startSlideshowTimer() {
   clearSlideshowTimers();
-  // Animate current dot fill
   const fill = document.getElementById('hero-fill-'+heroSlideIndex);
-  if (fill) {
-    fill.style.transition = 'none';
-    fill.style.width = '0%';
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        fill.style.transition = `width ${HERO_DURATION}ms linear`;
-        fill.style.width = '100%';
-      });
-    });
-  }
-  heroSlideshowTimer = setTimeout(() => {
-    const next = (heroSlideIndex + 1) % heroSlides.length;
-    goToHeroSlide(next);
-  }, HERO_DURATION);
+  if (fill) { fill.style.transition = 'none'; fill.style.width = '100%'; }
+  scheduleHeroTrailer(heroFilm);
 }
 
 function clearSlideshowTimers() {
   if (heroSlideshowTimer) { clearTimeout(heroSlideshowTimer); heroSlideshowTimer = null; }
   if (heroProgressTimer) { clearInterval(heroProgressTimer); heroProgressTimer = null; }
+  stopHeroTrailer();
 }
+
+// ── Bande-annonce du hero ──
+const HERO_TRAILER_DELAY = 2000; // 2 secondes
+let heroTrailerTimer = null;
+let heroTrailerToken = 0;
+
+function getHeroTrailerSources(film) {
+  // 1) mp4 Canal (ou autre mp4) 2) sinon YouTube (lien de filmBgVideoMap, puis trailerMap)
+  let mp4 = null, yt = null;
+  const ov = heroOverrides[film.id];
+  if (ov && ov.video) return { mp4: ov.video, yt: getTrailerYtId(film.id) || null, audio: ov.audio || null };
+  const url = (typeof filmBgVideoMap !== 'undefined' && filmBgVideoMap[film.id]) || null;
+  if (url) {
+    const id = extractYouTubeId(url);
+    if (id) yt = id; else mp4 = url;
+  }
+  if (!yt && typeof getTrailerYtId === 'function') yt = getTrailerYtId(film.id);
+  return { mp4, yt };
+}
+
+function stopHeroTrailer() {
+  heroTrailerToken++;
+  if (heroTrailerTimer) { clearTimeout(heroTrailerTimer); heroTrailerTimer = null; }
+  const box = document.getElementById('heroTrailer');
+  const v = document.getElementById('heroTrailerVideo');
+  const f = document.getElementById('heroTrailerYT');
+  if (box) box.classList.remove('show', 'is-video', 'is-yt');
+  heroAudioStop();
+  if (v && (v.getAttribute('src') || v.src)) { v.onerror = null; v.onplaying = null; v.pause(); v.removeAttribute('src'); v.load(); }
+  if (f && f.getAttribute('src')) f.removeAttribute('src');
+}
+
+function scheduleHeroTrailer(film) {
+  stopHeroTrailer();
+  if (!film) return;
+  const { mp4, yt, audio } = getHeroTrailerSources(film);
+  if (!mp4 && !yt) return;
+  const token = heroTrailerToken;
+  heroTrailerTimer = setTimeout(() => {
+    heroTrailerTimer = null;
+    if (token !== heroTrailerToken || heroFilm !== film) return;
+    const hero = document.getElementById('heroSection');
+    if (!hero || hero.style.display === 'none') return;
+    const modal = document.getElementById('filmModal');
+    if (modal && modal.classList.contains('open')) return;
+    playHeroTrailer(film, mp4, yt, token, audio);
+  }, HERO_TRAILER_DELAY);
+}
+
+function playHeroTrailer(film, mp4, yt, token, audio) {
+  const box = document.getElementById('heroTrailer');
+  const v = document.getElementById('heroTrailerVideo');
+  const f = document.getElementById('heroTrailerYT');
+  if (!box || !v || !f) return;
+
+  const startYT = () => {
+    if (token !== heroTrailerToken) return;
+    v.onerror = null; v.onplaying = null;
+    if (v.getAttribute('src')) { v.pause(); v.removeAttribute('src'); v.load(); }
+    if (!yt) { box.classList.remove('show', 'is-video', 'is-yt'); return; }
+    box.classList.remove('is-video');
+    box.classList.add('is-yt');
+    f.src = `https://www.youtube.com/embed/${yt}?autoplay=1&mute=1&controls=0&loop=1&playlist=${yt}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1&disablekb=1&fs=0`;
+    f.onload = () => { if (token === heroTrailerToken) box.classList.add('show'); };
+  };
+
+  if (mp4) {
+    box.classList.add('is-video');
+    v.muted = true; v.loop = true;
+    v.onplaying = () => { if (token === heroTrailerToken) { box.classList.add('show'); if (audio) heroAudioStart(audio, token); } };
+    v.onerror = () => { heroAudioStop(); startYT(); };   // mp4 indisponible → on bascule sur YouTube
+    v.src = mp4;
+    const pr = v.play();
+    if (pr && pr.catch) pr.catch(() => { if (token === heroTrailerToken && v.paused && v.error) startYT(); });
+  } else {
+    startYT();
+  }
+}
+
+// ── Son du hero (piste audio séparée, calée sur la vidéo) ──
+let heroSoundWanted = true;      // l'utilisateur n'a pas coupé le son
+let heroAudioPending = null;     // lecture bloquée par le navigateur → attend un premier geste
+function heroAudioSync(force) {
+  const v = document.getElementById('heroTrailerVideo'), a = document.getElementById('heroTrailerAudio');
+  if (!v || !a || !a.getAttribute('src')) return;
+  if (force || Math.abs(a.currentTime - v.currentTime) > 0.35) { try { a.currentTime = v.currentTime; } catch(e) {} }
+}
+function heroUpdateSoundBtn(show) {
+  const b = document.getElementById('heroSoundBtn'); if (!b) return;
+  if (show !== undefined) b.classList.toggle('show', !!show);
+  const a = document.getElementById('heroTrailerAudio');
+  b.textContent = (a && !a.paused && heroSoundWanted) ? '🔊' : '🔇';
+}
+function heroAudioStop() {
+  const a = document.getElementById('heroTrailerAudio');
+  heroAudioPending = null;
+  if (a) { a.pause(); if (a.getAttribute('src')) { a.removeAttribute('src'); a.load(); } }
+  heroUpdateSoundBtn(false);
+}
+function heroAudioStart(url, token) {
+  const v = document.getElementById('heroTrailerVideo'), a = document.getElementById('heroTrailerAudio');
+  if (!a || !v) return;
+  a.muted = false;
+  a.src = url;
+  heroUpdateSoundBtn(true);
+  const go = () => {
+    if (token !== heroTrailerToken || !heroSoundWanted) { heroUpdateSoundBtn(); return; }
+    heroAudioSync(true);
+    const pr = a.play();
+    if (pr && pr.catch) pr.catch(() => { if (token === heroTrailerToken) heroAudioPending = { url, token }; heroUpdateSoundBtn(); });
+    else heroUpdateSoundBtn();
+  };
+  if (a.readyState >= 2) go(); else a.addEventListener('canplay', function once(){ a.removeEventListener('canplay', once); go(); });
+  a.load();
+}
+function toggleHeroSound(e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  const a = document.getElementById('heroTrailerAudio'); if (!a || !a.getAttribute('src')) return;
+  if (a.paused) { heroSoundWanted = true; heroAudioSync(true); const pr = a.play(); if (pr && pr.catch) pr.catch(()=>{}); }
+  else { heroSoundWanted = false; a.pause(); }
+  heroAudioPending = null;
+  heroUpdateSoundBtn();
+}
+(function(){
+  const v = document.getElementById('heroTrailerVideo'), a = document.getElementById('heroTrailerAudio');
+  if (!v || !a) return;
+  v.addEventListener('timeupdate', () => { if (!a.paused) heroAudioSync(false); });
+  v.addEventListener('seeked', () => { if (!a.paused) heroAudioSync(true); });
+  v.addEventListener('pause', () => { if (!a.paused) a.pause(); });
+  v.addEventListener('playing', () => { if (a.getAttribute('src') && heroSoundWanted && a.paused && !heroAudioPending) { heroAudioSync(true); const pr = a.play(); if (pr && pr.catch) pr.catch(()=>{}); } });
+  // Premier geste de l'utilisateur : le navigateur autorise alors le son
+  const unlock = () => {
+    if (!heroAudioPending) return;
+    const { token } = heroAudioPending; heroAudioPending = null;
+    if (token !== heroTrailerToken || !heroSoundWanted) return;
+    heroAudioSync(true);
+    const pr = a.play(); if (pr && pr.then) pr.then(() => heroUpdateSoundBtn()).catch(() => {});
+  };
+  ['pointerdown','keydown','touchend'].forEach(ev => document.addEventListener(ev, unlock, { passive:true }));
+})();
+
+// Pause de la bande-annonce quand le hero n'est plus visible ou qu'une fiche film s'ouvre
+(function(){
+  const hero = document.getElementById('heroSection');
+  if (hero && 'IntersectionObserver' in window) {
+    new IntersectionObserver(es => {
+      es.forEach(e => {
+        if (!e.isIntersecting) stopHeroTrailer();
+        else if (heroFilm && !document.getElementById('heroTrailer').classList.contains('show')) scheduleHeroTrailer(heroFilm);
+      });
+    }, { threshold: 0.35 }).observe(hero);
+  }
+  const modal = document.getElementById('filmModal');
+  if (modal && 'MutationObserver' in window) {
+    new MutationObserver(() => {
+      if (modal.classList.contains('open')) stopHeroTrailer();
+      else if (heroFilm) scheduleHeroTrailer(heroFilm);
+    }).observe(modal, { attributes:true, attributeFilter:['class'] });
+  }
+})();
 
 function goToHeroSlide(idx) {
   if (idx === heroSlideIndex) return;
@@ -14964,7 +15151,7 @@ function setMediaSession(){
     heroSlides.forEach(f=>{
       try{
         const meta = filmMeta[f.id] || {};
-        [getBackdropFor(f, meta), meta.logo || f.logo].forEach(u=>{
+        [heroBackdropFor(f, meta), meta.logo || f.logo].forEach(u=>{
           if(!u) return; const im = new Image(); im.decoding = 'async'; im.src = u; if(im.decode) im.decode().catch(()=>{});
         });
       }catch(_){}
@@ -14979,7 +15166,7 @@ function setMediaSession(){
   /* — construction d'un panneau (fond + logo/titre + description + boutons) — */
   function makePanel(film, pos){
     const meta = (typeof filmMeta !== 'undefined' && filmMeta[film.id]) || {};
-    const bgUrl = getBackdropFor(film, meta);
+    const bgUrl = heroBackdropFor(film, meta);
     const logoUrl = meta.logo || film.logo || '';
     const desc = meta.desc ? meta.desc.substring(0,130)+'…' : film.genre + ' · Disponible maintenant sur Flavio Home';
 
