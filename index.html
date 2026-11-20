@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Flavio Home</title>
+<link rel="preload" as="image" href="https://files.catbox.moe/zb9w6o.webp">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Flavio Home">
@@ -1594,7 +1595,13 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   .navbar { padding:0 14px; height:56px; flex-wrap:nowrap; gap:10px; backdrop-filter:none; background:linear-gradient(to bottom,rgba(5,5,8,0.98) 0%,rgba(5,5,8,0.85) 75%,transparent 100%); justify-content:flex-start; }
   .nav-logo img { height:28px !important; }
   .nav-links, .nav-links.mobile-open, .burger-btn, .nav-search, .nav-right { display:none !important; }
-  .hero { height:70vh; min-height:420px; padding:0 18px 50px; align-items:flex-end; }
+  /* Hero = format exact de l'affiche Michael (1328 × 1904), sous la barre du haut */
+  .hero { height:auto; min-height:0; aspect-ratio:1328/1904; margin-top:calc(56px + var(--banner-h)); padding:0 18px 50px; align-items:flex-end; }
+  .hero-bg { background-size:cover; background-position:center top; }
+  .hero-bg::after, .hero-trailer::after { background:linear-gradient(to top,var(--dark) 0%,rgba(5,5,8,0.55) 22%,transparent 48%); }
+  /* le logo reste toujours visible, par-dessus l'affiche puis par-dessus la vidéo */
+  .hero-content { z-index:3; }
+  .hero-logo-img { max-width:240px; max-height:90px; }
   .hero-logo-img { max-width:220px; max-height:80px; }
   .hero-title { font-size:1.65rem; }
   .hero-desc { font-size:.82rem; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
@@ -8854,7 +8861,8 @@ function showTab(tab, el){
 
 // ── Réglages propres au HERO uniquement (la fiche film n'est pas modifiée) ──
 // id du film → affiche du hero, vidéo mp4 et piste son séparée
-const HERO_FIRST_ID = 896; // Michael toujours en premier dans le hero
+const HERO_FIRST_ID = 896; // Michael : seul film du hero
+const HERO_POSTER_MOBILE = 'https://files.catbox.moe/zb9w6o.webp'; // affiche affichée avant le lancement de la vidéo (app mobile)
 const heroOverrides = {
   896: {
     backdrop: 'https://thumb.canalplus.pro/bran/unsafe/1260x552/filters:quality(80)/image/6afd70607c584/uploads/media/COVER_FIXE.png',
@@ -8863,6 +8871,7 @@ const heroOverrides = {
   }
 };
 function heroBackdropFor(film, meta) {
+  if (film.id === HERO_FIRST_ID && typeof isMobileApp === 'function' && isMobileApp()) return HERO_POSTER_MOBILE;
   const o = heroOverrides[film.id];
   return (o && o.backdrop) || getBackdropFor(film, meta);
 }
@@ -8875,15 +8884,9 @@ let heroProgressTimer = null;
 const HERO_DURATION = 5000; // 5 secondes
 
 function initHeroSlideshow() {
-  // Onglet Séries : les 3 dernières séries ajoutées ; sinon les 3 derniers contenus ajoutés
-  if (currentTab === 'series') {
-    heroSlides = allContent.filter(m => m.type === 'serie').slice(0, 3);
-  } else {
-    const first = allContent.find(m => m.id === HERO_FIRST_ID);
-    heroSlides = first
-      ? [first, ...allContent.filter(m => m.id !== HERO_FIRST_ID).slice(0, 2)]
-      : allContent.slice(0, 3);
-  }
+  // Hero : uniquement Michael (Accueil, Films, Séries)
+  const first = allContent.find(m => m.id === HERO_FIRST_ID);
+  heroSlides = first ? [first] : allContent.slice(0, 1);
   heroFilm = heroSlides[0];
   heroSlideIndex = 0;
   buildSlideshowDots();
@@ -8891,9 +8894,19 @@ function initHeroSlideshow() {
   startSlideshowTimer();
 }
 
+// Si l'on passe de l'ordinateur à l'app mobile (ou inversement), on remet la bonne image
+(function(){
+  try {
+    const mq = window.matchMedia('(max-width:768px)');
+    const onChange = () => { if (heroSlides && heroSlides.length) { setHeroSlide(0, true); startSlideshowTimer(); } };
+    if (mq.addEventListener) mq.addEventListener('change', onChange); else if (mq.addListener) mq.addListener(onChange);
+  } catch(e) {}
+})();
+
 function buildSlideshowDots() {
   const bar = document.getElementById('heroSlideshowBar');
   if (!bar) return;
+  if (heroSlides.length < 2) { bar.innerHTML = ''; return; }
   bar.innerHTML = heroSlides.map((_, i) => `<div class="hero-dot${i===0?' active':''}" id="hero-dot-${i}" onclick="goToHeroSlide(${i})"><div class="hero-dot-fill" id="hero-fill-${i}"></div></div>`).join('');
 }
 
