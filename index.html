@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Flavio Home</title>
-<link rel="preload" as="image" href="https://files.catbox.moe/zb9w6o.webp">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Flavio Home">
@@ -307,16 +306,6 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
 }
 .hero-content { opacity:1; transition:opacity 0.4s ease; }
 .hero-content.fade-out { opacity:0; }
-/* ── BANDE-ANNONCE DU HERO ── */
-.hero-trailer { position:absolute; inset:0; opacity:0; transition:opacity 1s ease; pointer-events:none; overflow:hidden; background:#000; }
-.hero-trailer.show { opacity:1; }
-.hero-trailer video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
-.hero-trailer iframe { position:absolute; top:50%; left:50%; width:max(100%,177.78vh); height:max(100%,56.25vw); transform:translate(-50%,-50%); border:0; display:none; }
-.hero-trailer.is-video video, .hero-trailer.is-yt iframe { display:block; }
-.hero-sound-btn { position:absolute; z-index:3; right:60px; bottom:48px; width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.35); background:rgba(0,0,0,0.45); color:#fff; font-size:1rem; cursor:pointer; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
-.hero-sound-btn.show { display:flex; }
-@media(max-width:768px){ .hero-sound-btn { right:20px; bottom:40px; } }
-.hero-trailer::after { content:''; position:absolute; inset:0; background:linear-gradient(to top,var(--dark) 0%,rgba(5,5,8,0.4) 40%,rgba(5,5,8,0.2) 100%); }
 @media(max-width:768px){
   .hero-slideshow-bar { bottom:20px; right:20px; }
   .hero { padding:0 20px 70px; }
@@ -1595,13 +1584,7 @@ body::before { content:''; position:fixed; inset:0; z-index:9999; pointer-events
   .navbar { padding:0 14px; height:56px; flex-wrap:nowrap; gap:10px; backdrop-filter:none; background:linear-gradient(to bottom,rgba(5,5,8,0.98) 0%,rgba(5,5,8,0.85) 75%,transparent 100%); justify-content:flex-start; }
   .nav-logo img { height:28px !important; }
   .nav-links, .nav-links.mobile-open, .burger-btn, .nav-search, .nav-right { display:none !important; }
-  /* Hero = format exact de l'affiche Michael (1328 × 1904), sous la barre du haut */
-  .hero { height:auto; min-height:0; aspect-ratio:1328/1904; margin-top:calc(56px + var(--banner-h)); padding:0 18px 50px; align-items:flex-end; }
-  .hero-bg { background-size:cover; background-position:center top; }
-  .hero-bg::after, .hero-trailer::after { background:linear-gradient(to top,var(--dark) 0%,rgba(5,5,8,0.55) 22%,transparent 48%); }
-  /* le logo reste toujours visible, par-dessus l'affiche puis par-dessus la vidéo */
-  .hero-content { z-index:3; }
-  .hero-logo-img { max-width:240px; max-height:90px; }
+  .hero { height:70vh; min-height:420px; padding:0 18px 50px; align-items:flex-end; }
   .hero-logo-img { max-width:220px; max-height:80px; }
   .hero-title { font-size:1.65rem; }
   .hero-desc { font-size:.82rem; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
@@ -2032,13 +2015,6 @@ body.tv-mode .player-overlay.open .mobile-ep-ui { display:none !important; }
   <!-- HERO -->
   <div class="hero" id="heroSection">
     <div class="hero-bg" id="heroBg"></div>
-    <!-- Bande-annonce de fond (mp4 Canal en priorité, sinon YouTube), lancée 2 s après l'affichage -->
-    <div class="hero-trailer" id="heroTrailer">
-      <video id="heroTrailerVideo" muted loop playsinline preload="none"></video>
-      <iframe id="heroTrailerYT" allow="autoplay; encrypted-media" tabindex="-1" aria-hidden="true"></iframe>
-    </div>
-    <audio id="heroTrailerAudio" loop preload="none"></audio>
-    <button type="button" class="hero-sound-btn" id="heroSoundBtn" aria-label="Activer / couper le son" onclick="toggleHeroSound(event)">🔇</button>
     <div class="hero-content" id="heroContent">
       <div class="hero-badge">✦ Nouveauté</div>
       <img class="hero-logo-img" id="heroLogoImg" src="" alt="">
@@ -4214,14 +4190,14 @@ const filmMeta = {
   backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/113884403"
 },
 940:{
-  desc:"Dorothy, institutrice, mène une existence tranquille à Harlem. Un soir, alors qu'elle court après son chien, la jeune femme est entraînée par un tourbillon dans un univers parallèle, peuplé de sorcières, d'un magicien et de créatures?",
+  desc:"Une jeune institutrice, Dorothy, souffre d'une timidité maladive. Un soir d'hiver, elle est entraînée avec son chien Toto par une bourrasque de neige dans le merveilleux pays d'Oz. Désireuse de retourner chez elle, Dorothy apprend que seul le magicien d'Oz peut satisfaire à sa demande.",
   director:"Sidney Lumet",
   cast:"Michael Jackson, Diana Ross, Nipsey Russell",
   year:"1978",
-  duration:"2h08",
+  duration:"2h16",
   country:"États-Unis",
-  logo:"https://thumb.canalplus.pro/http/unsafe/380x214/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/101614/canal-ouah_50001/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-lQJN",
-  backdrop:"https://thumb.canalplus.pro/http/unsafe/1824x1026/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/101614/canal-ouah_50001/STD169/myCANAL_16x9_MEA_1920x1080-LrAk"
+  logo:"https://static.wikia.nocookie.net/logopedia/images/b/be/The-wiz-movie-logo.png/revision/latest?cb=20181025022605",
+  backdrop:"https://images.justwatch.com/backdrop/306177889/s1440/image.png"
 },
 941:{
   desc:"A la suite d'un pari avec Jules César, Cléopâtre demande à son architecte de lui construire un palais en trois mois. Astérix et Obélix arrivent en Egypte.",
@@ -5724,6 +5700,16 @@ const filmMeta = {
   logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/brand/32337212/canal-ouah_50001/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-DZH1",
   backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/brand/32337212/canal-ouah_50001/STD169/myCANAL_16x9_MEA_1920x1080-sia7"
 },
+1093:{
+  desc:"Depuis ses débuts avec les Jackson 5, jusqu'à Invincible, son dernier album solo sorti en 2001, Michael Jackson a marqué le monde de la pop d'une empreinte indélébile.",
+  director:"",
+  cast:"",
+  year:"2026",
+  duration:"1h20",
+  country:"France",
+  logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/32326454/canal-ouah_50001/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-vaRs",
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/32326454/canal-ouah_50001/STD169/myCANAL_16x9_MEA_1920x1080-OVJt"
+},
 };
 
 // ══════════════════════════════════════════
@@ -5824,6 +5810,7 @@ const avatarData = {
 //  CONTENT DATA
 // ══════════════════════════════════════════
 const allContent = [
+  {id:1093,title:"Michael Le Meilleur De Jackson",genre:"Musique",type:"film",thumb:"https://thumb.canalplus.pro/http/unsafe/%7BresolutionXY%7D/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/unit/32326454/canal-ouah_50001/JAQCANAL/myCANAL_Jaquette_MEA_600x800-MWjS",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://cinemusiq83-boop.github.io/michael-le-meilleur-de-jackson/",embed:true,hero:true},
   {id:1091,title:"Juste Une Illusion",genre:"Comedie",type:"film",thumb:"https://image.tmdb.org/t/p/w500/eWPq3wSvJEMakESTXzaBECUNBYr.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-gutjyrw5m8gp.html",embed:true,hero:true},
   {id:1092,title:"Top 50 Annees 80",genre:"Musique",type:"film",thumb:"https://thumb.canalplus.pro/http/unsafe/512x682/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/brand/32337212/canal-ouah_50001/JAQCANAL/myCANAL_Jaquette_MEA_600x800-TntA",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://stream.mux.com/HzlQHowE01FA5k7T3UJ7nqP8MhIrvvdsbT9w2Swil8S00.m3u8",embed:true,hero:true},
   {id:1089,title:"L'Odyssée",genre:"Action",type:"film",thumb:"https://image.tmdb.org/t/p/w500/jKf0p3fhO893ROvRuvuSDsZSvK6.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://cdn80.zen-blk.store/movies/The-Odyssey-HD-2026.mp4?ff=1794219328.Zw8WD3tVyIuF1VqXzNS-wDxm",embed:true,hero:true},
@@ -8859,23 +8846,6 @@ function showTab(tab, el){
 //  HERO — logo avec chargement robuste
 // ══════════════════════════════════════════
 
-// ── Réglages propres au HERO uniquement (la fiche film n'est pas modifiée) ──
-// id du film → affiche du hero, vidéo mp4 et piste son séparée
-const HERO_FIRST_ID = 896; // Michael : seul film du hero
-const HERO_POSTER_MOBILE = 'https://files.catbox.moe/zb9w6o.webp'; // affiche affichée avant le lancement de la vidéo (app mobile)
-const heroOverrides = {
-  896: {
-    backdrop: 'https://thumb.canalplus.pro/bran/unsafe/1260x552/filters:quality(80)/image/6afd70607c584/uploads/media/COVER_FIXE.png',
-    video: 'https://banners-dsh-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/arya/arya_prod_230897_cover/01M7Q027PRCHTM58Q7AGV0FKHD/w1_v_avcdar_20_720_1440_0_2000.mp4',
-    audio: 'https://banners-dsh-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/arya/arya_prod_230897_cover/01M7Q027PRCHTM58Q7AGV0FKHD/w1_a_aac_0_fra_0_1_64.mp4'
-  }
-};
-function heroBackdropFor(film, meta) {
-  if (film.id === HERO_FIRST_ID && typeof isMobileApp === 'function' && isMobileApp()) return HERO_POSTER_MOBILE;
-  const o = heroOverrides[film.id];
-  return (o && o.backdrop) || getBackdropFor(film, meta);
-}
-
 // Slideshow state
 let heroSlides = [];
 let heroSlideIndex = 0;
@@ -8884,9 +8854,10 @@ let heroProgressTimer = null;
 const HERO_DURATION = 5000; // 5 secondes
 
 function initHeroSlideshow() {
-  // Hero : uniquement Michael (Accueil, Films, Séries)
-  const first = allContent.find(m => m.id === HERO_FIRST_ID);
-  heroSlides = first ? [first] : allContent.slice(0, 1);
+  // Onglet Séries : les 3 dernières séries ajoutées ; sinon les 3 derniers contenus ajoutés
+  heroSlides = (currentTab === 'series'
+    ? allContent.filter(m => m.type === 'serie')
+    : allContent).slice(0, 3);
   heroFilm = heroSlides[0];
   heroSlideIndex = 0;
   buildSlideshowDots();
@@ -8894,19 +8865,9 @@ function initHeroSlideshow() {
   startSlideshowTimer();
 }
 
-// Si l'on passe de l'ordinateur à l'app mobile (ou inversement), on remet la bonne image
-(function(){
-  try {
-    const mq = window.matchMedia('(max-width:768px)');
-    const onChange = () => { if (heroSlides && heroSlides.length) { setHeroSlide(0, true); startSlideshowTimer(); } };
-    if (mq.addEventListener) mq.addEventListener('change', onChange); else if (mq.addListener) mq.addListener(onChange);
-  } catch(e) {}
-})();
-
 function buildSlideshowDots() {
   const bar = document.getElementById('heroSlideshowBar');
   if (!bar) return;
-  if (heroSlides.length < 2) { bar.innerHTML = ''; return; }
   bar.innerHTML = heroSlides.map((_, i) => `<div class="hero-dot${i===0?' active':''}" id="hero-dot-${i}" onclick="goToHeroSlide(${i})"><div class="hero-dot-fill" id="hero-fill-${i}"></div></div>`).join('');
 }
 
@@ -8914,10 +8875,9 @@ function setHeroSlide(idx, instant) {
   const film = heroSlides[idx];
   if (!film) return;
   heroFilm = film;
-  stopHeroTrailer();
 
   const meta = filmMeta[film.id] || {};
-  const backdropUrl = heroBackdropFor(film, meta);
+  const backdropUrl = getBackdropFor(film, meta);
   const logoUrl = meta.logo || film.logo || '';
   const desc = meta.desc ? meta.desc.substring(0,130)+'…' : film.genre + ' · Disponible maintenant sur Flavio Home';
 
@@ -8955,7 +8915,7 @@ function setHeroSlide(idx, instant) {
     dot.classList.toggle('active', i === idx);
     // Reset fill
     fill.style.transition = 'none';
-    fill.style.width = i === idx ? '100%' : '0%';
+    fill.style.width = i < idx ? '100%' : '0%';
   });
 }
 
@@ -8974,179 +8934,30 @@ function applyHeroLogo(logoEl, titleEl, logoUrl, title) {
   }
 }
 
-// Plus de défilement automatique : on lance seulement la bande-annonce du slide courant après 2 s.
 function startSlideshowTimer() {
   clearSlideshowTimers();
+  // Animate current dot fill
   const fill = document.getElementById('hero-fill-'+heroSlideIndex);
-  if (fill) { fill.style.transition = 'none'; fill.style.width = '100%'; }
-  scheduleHeroTrailer(heroFilm);
+  if (fill) {
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        fill.style.transition = `width ${HERO_DURATION}ms linear`;
+        fill.style.width = '100%';
+      });
+    });
+  }
+  heroSlideshowTimer = setTimeout(() => {
+    const next = (heroSlideIndex + 1) % heroSlides.length;
+    goToHeroSlide(next);
+  }, HERO_DURATION);
 }
 
 function clearSlideshowTimers() {
   if (heroSlideshowTimer) { clearTimeout(heroSlideshowTimer); heroSlideshowTimer = null; }
   if (heroProgressTimer) { clearInterval(heroProgressTimer); heroProgressTimer = null; }
-  stopHeroTrailer();
 }
-
-// ── Bande-annonce du hero ──
-const HERO_TRAILER_DELAY = 2000; // 2 secondes
-let heroTrailerTimer = null;
-let heroTrailerToken = 0;
-
-function getHeroTrailerSources(film) {
-  // 1) mp4 Canal (ou autre mp4) 2) sinon YouTube (lien de filmBgVideoMap, puis trailerMap)
-  let mp4 = null, yt = null;
-  const ov = heroOverrides[film.id];
-  if (ov && ov.video) return { mp4: ov.video, yt: getTrailerYtId(film.id) || null, audio: ov.audio || null };
-  const url = (typeof filmBgVideoMap !== 'undefined' && filmBgVideoMap[film.id]) || null;
-  if (url) {
-    const id = extractYouTubeId(url);
-    if (id) yt = id; else mp4 = url;
-  }
-  if (!yt && typeof getTrailerYtId === 'function') yt = getTrailerYtId(film.id);
-  return { mp4, yt };
-}
-
-function stopHeroTrailer() {
-  heroTrailerToken++;
-  if (heroTrailerTimer) { clearTimeout(heroTrailerTimer); heroTrailerTimer = null; }
-  const box = document.getElementById('heroTrailer');
-  const v = document.getElementById('heroTrailerVideo');
-  const f = document.getElementById('heroTrailerYT');
-  if (box) box.classList.remove('show', 'is-video', 'is-yt');
-  heroAudioStop();
-  if (v && (v.getAttribute('src') || v.src)) { v.onerror = null; v.onplaying = null; v.pause(); v.removeAttribute('src'); v.load(); }
-  if (f && f.getAttribute('src')) f.removeAttribute('src');
-}
-
-function scheduleHeroTrailer(film) {
-  stopHeroTrailer();
-  if (!film) return;
-  const { mp4, yt, audio } = getHeroTrailerSources(film);
-  if (!mp4 && !yt) return;
-  const token = heroTrailerToken;
-  heroTrailerTimer = setTimeout(() => {
-    heroTrailerTimer = null;
-    if (token !== heroTrailerToken || heroFilm !== film) return;
-    const hero = document.getElementById('heroSection');
-    if (!hero || hero.style.display === 'none') return;
-    const modal = document.getElementById('filmModal');
-    if (modal && modal.classList.contains('open')) return;
-    playHeroTrailer(film, mp4, yt, token, audio);
-  }, HERO_TRAILER_DELAY);
-}
-
-function playHeroTrailer(film, mp4, yt, token, audio) {
-  const box = document.getElementById('heroTrailer');
-  const v = document.getElementById('heroTrailerVideo');
-  const f = document.getElementById('heroTrailerYT');
-  if (!box || !v || !f) return;
-
-  const startYT = () => {
-    if (token !== heroTrailerToken) return;
-    v.onerror = null; v.onplaying = null;
-    if (v.getAttribute('src')) { v.pause(); v.removeAttribute('src'); v.load(); }
-    if (!yt) { box.classList.remove('show', 'is-video', 'is-yt'); return; }
-    box.classList.remove('is-video');
-    box.classList.add('is-yt');
-    f.src = `https://www.youtube.com/embed/${yt}?autoplay=1&mute=1&controls=0&loop=1&playlist=${yt}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1&disablekb=1&fs=0`;
-    f.onload = () => { if (token === heroTrailerToken) box.classList.add('show'); };
-  };
-
-  if (mp4) {
-    box.classList.add('is-video');
-    v.muted = true; v.loop = true;
-    v.onplaying = () => { if (token === heroTrailerToken) { box.classList.add('show'); if (audio) heroAudioStart(audio, token); } };
-    v.onerror = () => { heroAudioStop(); startYT(); };   // mp4 indisponible → on bascule sur YouTube
-    v.src = mp4;
-    const pr = v.play();
-    if (pr && pr.catch) pr.catch(() => { if (token === heroTrailerToken && v.paused && v.error) startYT(); });
-  } else {
-    startYT();
-  }
-}
-
-// ── Son du hero (piste audio séparée, calée sur la vidéo) ──
-let heroSoundWanted = true;      // l'utilisateur n'a pas coupé le son
-let heroAudioPending = null;     // lecture bloquée par le navigateur → attend un premier geste
-function heroAudioSync(force) {
-  const v = document.getElementById('heroTrailerVideo'), a = document.getElementById('heroTrailerAudio');
-  if (!v || !a || !a.getAttribute('src')) return;
-  if (force || Math.abs(a.currentTime - v.currentTime) > 0.35) { try { a.currentTime = v.currentTime; } catch(e) {} }
-}
-function heroUpdateSoundBtn(show) {
-  const b = document.getElementById('heroSoundBtn'); if (!b) return;
-  if (show !== undefined) b.classList.toggle('show', !!show);
-  const a = document.getElementById('heroTrailerAudio');
-  b.textContent = (a && !a.paused && heroSoundWanted) ? '🔊' : '🔇';
-}
-function heroAudioStop() {
-  const a = document.getElementById('heroTrailerAudio');
-  heroAudioPending = null;
-  if (a) { a.pause(); if (a.getAttribute('src')) { a.removeAttribute('src'); a.load(); } }
-  heroUpdateSoundBtn(false);
-}
-function heroAudioStart(url, token) {
-  const v = document.getElementById('heroTrailerVideo'), a = document.getElementById('heroTrailerAudio');
-  if (!a || !v) return;
-  a.muted = false;
-  a.src = url;
-  heroUpdateSoundBtn(true);
-  const go = () => {
-    if (token !== heroTrailerToken || !heroSoundWanted) { heroUpdateSoundBtn(); return; }
-    heroAudioSync(true);
-    const pr = a.play();
-    if (pr && pr.catch) pr.catch(() => { if (token === heroTrailerToken) heroAudioPending = { url, token }; heroUpdateSoundBtn(); });
-    else heroUpdateSoundBtn();
-  };
-  if (a.readyState >= 2) go(); else a.addEventListener('canplay', function once(){ a.removeEventListener('canplay', once); go(); });
-  a.load();
-}
-function toggleHeroSound(e) {
-  if (e) { e.stopPropagation(); e.preventDefault(); }
-  const a = document.getElementById('heroTrailerAudio'); if (!a || !a.getAttribute('src')) return;
-  if (a.paused) { heroSoundWanted = true; heroAudioSync(true); const pr = a.play(); if (pr && pr.catch) pr.catch(()=>{}); }
-  else { heroSoundWanted = false; a.pause(); }
-  heroAudioPending = null;
-  heroUpdateSoundBtn();
-}
-(function(){
-  const v = document.getElementById('heroTrailerVideo'), a = document.getElementById('heroTrailerAudio');
-  if (!v || !a) return;
-  v.addEventListener('timeupdate', () => { if (!a.paused) heroAudioSync(false); });
-  v.addEventListener('seeked', () => { if (!a.paused) heroAudioSync(true); });
-  v.addEventListener('pause', () => { if (!a.paused) a.pause(); });
-  v.addEventListener('playing', () => { if (a.getAttribute('src') && heroSoundWanted && a.paused && !heroAudioPending) { heroAudioSync(true); const pr = a.play(); if (pr && pr.catch) pr.catch(()=>{}); } });
-  // Premier geste de l'utilisateur : le navigateur autorise alors le son
-  const unlock = () => {
-    if (!heroAudioPending) return;
-    const { token } = heroAudioPending; heroAudioPending = null;
-    if (token !== heroTrailerToken || !heroSoundWanted) return;
-    heroAudioSync(true);
-    const pr = a.play(); if (pr && pr.then) pr.then(() => heroUpdateSoundBtn()).catch(() => {});
-  };
-  ['pointerdown','keydown','touchend'].forEach(ev => document.addEventListener(ev, unlock, { passive:true }));
-})();
-
-// Pause de la bande-annonce quand le hero n'est plus visible ou qu'une fiche film s'ouvre
-(function(){
-  const hero = document.getElementById('heroSection');
-  if (hero && 'IntersectionObserver' in window) {
-    new IntersectionObserver(es => {
-      es.forEach(e => {
-        if (!e.isIntersecting) stopHeroTrailer();
-        else if (heroFilm && !document.getElementById('heroTrailer').classList.contains('show')) scheduleHeroTrailer(heroFilm);
-      });
-    }, { threshold: 0.35 }).observe(hero);
-  }
-  const modal = document.getElementById('filmModal');
-  if (modal && 'MutationObserver' in window) {
-    new MutationObserver(() => {
-      if (modal.classList.contains('open')) stopHeroTrailer();
-      else if (heroFilm) scheduleHeroTrailer(heroFilm);
-    }).observe(modal, { attributes:true, attributeFilter:['class'] });
-  }
-})();
 
 function goToHeroSlide(idx) {
   if (idx === heroSlideIndex) return;
@@ -11654,6 +11465,7 @@ function getTrailerYtId(filmId) {
 //  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+1093: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/canalplus/ANT_1273353_878_CPSV/01M7T5R1HE7H1GK918CZMX38E8/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Michael Le Meilleur de Jackson
 1092: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/canalpluswimo/wildmoka.com_70948131739/01M7A3W5NT2XFGP4QQM16M0K0G/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Top 50 Annees 80
 1087: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37713_BA/113761/canalplay.com_37713_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Le Parrain 2
 1088: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_103003_BA/103817/canalplay.com_103003_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Le Parrain 3
@@ -11936,6 +11748,7 @@ const filmBgVideoMap = {
 // Les flux TVOD sont souvent vidéo seule : l'audio est un second fichier, lu en parallèle et resynchronisé sur la vidéo.
 // Ajoutez ici : id du film → url du fichier audio (.mp4 / .m4a).
 const filmBgAudioMap = {
+  1093: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/canalplus/ANT_1273353_878_CPSV/01M7T5R1HE7H1GK918CZMX38E8/w1_a_aac_0_fra_0_1_64.mp4', // Michael Le Meilleur de Jackson
   1092: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/canalpluswimo/wildmoka.com_70948131739/01M7A3W5NT2XFGP4QQM16M0K0G/w1_a_aac_0_fra_0_1_64.mp4', // Top 50 Annees 80
   1087: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37713_BA/113761/canalplay.com_37713_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Le Parrain 2
   1088: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_103003_BA/103817/canalplay.com_103003_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Le Parrain 3
@@ -15164,7 +14977,7 @@ function setMediaSession(){
     heroSlides.forEach(f=>{
       try{
         const meta = filmMeta[f.id] || {};
-        [heroBackdropFor(f, meta), meta.logo || f.logo].forEach(u=>{
+        [getBackdropFor(f, meta), meta.logo || f.logo].forEach(u=>{
           if(!u) return; const im = new Image(); im.decoding = 'async'; im.src = u; if(im.decode) im.decode().catch(()=>{});
         });
       }catch(_){}
@@ -15179,7 +14992,7 @@ function setMediaSession(){
   /* — construction d'un panneau (fond + logo/titre + description + boutons) — */
   function makePanel(film, pos){
     const meta = (typeof filmMeta !== 'undefined' && filmMeta[film.id]) || {};
-    const bgUrl = heroBackdropFor(film, meta);
+    const bgUrl = getBackdropFor(film, meta);
     const logoUrl = meta.logo || film.logo || '';
     const desc = meta.desc ? meta.desc.substring(0,130)+'…' : film.genre + ' · Disponible maintenant sur Flavio Home';
 
