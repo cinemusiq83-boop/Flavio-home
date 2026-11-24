@@ -5710,6 +5710,16 @@ const filmMeta = {
   logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/32326454/canal-ouah_50001/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-vaRs",
   backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/32326454/canal-ouah_50001/STD169/myCANAL_16x9_MEA_1920x1080-OVJt"
 },
+1094:{
+  desc:"A la Comédie-Française, une jeune metteuse en scène se lance dans une course contre la montre pour tenter d'assurer la bonne tenue de son premier spectacle.",
+  director:"Martin Darondeau , Bertrand Usclat",
+  cast:"Pauline Clément , Laurent Stocker , Julien Frison",
+  year:"2026",
+  duration:"1h15",
+  country:"France",
+  logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/125624278",
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/125624329"
+},
 };
 
 // ══════════════════════════════════════════
@@ -5810,6 +5820,7 @@ const avatarData = {
 //  CONTENT DATA
 // ══════════════════════════════════════════
 const allContent = [
+  {id:1094,title:"De La Comedie Française",genre:"Comedie",type:"film",thumb:"https://images.justwatch.com/poster/347518007/s718/de-la-comedie-francaise.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-3qs1kt5em993.html",embed:true,hero:true},
   {id:1093,title:"Michael Le Meilleur De Jackson",genre:"Musique",type:"film",thumb:"https://thumb.canalplus.pro/http/unsafe/%7BresolutionXY%7D/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/unit/32326454/canal-ouah_50001/JAQCANAL/myCANAL_Jaquette_MEA_600x800-MWjS",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://cinemusiq83-boop.github.io/michael-le-meilleur-de-jackson/",embed:true,hero:true},
   {id:1091,title:"Juste Une Illusion",genre:"Comedie",type:"film",thumb:"https://image.tmdb.org/t/p/w500/eWPq3wSvJEMakESTXzaBECUNBYr.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-gutjyrw5m8gp.html",embed:true,hero:true},
   {id:1092,title:"Top 50 Annees 80",genre:"Musique",type:"film",thumb:"https://thumb.canalplus.pro/http/unsafe/512x682/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/brand/32337212/canal-ouah_50001/JAQCANAL/myCANAL_Jaquette_MEA_600x800-TntA",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://stream.mux.com/HzlQHowE01FA5k7T3UJ7nqP8MhIrvvdsbT9w2Swil8S00.m3u8",embed:true,hero:true},
@@ -11451,6 +11462,7 @@ const trailerMap = {
   1086: 'O6MzkeY6dPA', // Crystal Lake
   1089: 'uBh8Sg8wOuA', // L'Odyssée
   1091: '3NcTEeCZrY0', // Juste Une Illusion
+  1094: 'WHMIX5BQJ3s', // De La Comedie Française
   };
 
 function getTrailerYtId(filmId) {
@@ -11465,6 +11477,7 @@ function getTrailerYtId(filmId) {
 //  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+1094: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_158003_BA/01M70D6PM7EQJVN45NKQGAQBDP/w1_v_avcvbr_10_720_1280_0_2400.mp4', // De La Comedie Française
 1093: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/canalplus/ANT_1273353_878_CPSV/01M7T5R1HE7H1GK918CZMX38E8/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Michael Le Meilleur de Jackson
 1092: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/canalpluswimo/wildmoka.com_70948131739/01M7A3W5NT2XFGP4QQM16M0K0G/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Top 50 Annees 80
 1087: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37713_BA/113761/canalplay.com_37713_BA_ATM_OTT_SD_5_AACLC_20_VF_video_1500_avc.mp4', // Le Parrain 2
@@ -11748,6 +11761,7 @@ const filmBgVideoMap = {
 // Les flux TVOD sont souvent vidéo seule : l'audio est un second fichier, lu en parallèle et resynchronisé sur la vidéo.
 // Ajoutez ici : id du film → url du fichier audio (.mp4 / .m4a).
 const filmBgAudioMap = {
+  1094: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_158003_BA/01M70D6PM7EQJVN45NKQGAQBDP/w1_a_aac_0_fra_0_1_128.mp4', // De La Comedie Française
   1093: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/canalplus/ANT_1273353_878_CPSV/01M7T5R1HE7H1GK918CZMX38E8/w1_a_aac_0_fra_0_1_64.mp4', // Michael Le Meilleur de Jackson
   1092: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/canalpluswimo/wildmoka.com_70948131739/01M7A3W5NT2XFGP4QQM16M0K0G/w1_a_aac_0_fra_0_1_64.mp4', // Top 50 Annees 80
   1087: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_37713_BA/113761/canalplay.com_37713_BA_ATM_OTT_SD_5_AACLC_20_VF_audio_64_aaclc_fra.mp4', // Le Parrain 2
