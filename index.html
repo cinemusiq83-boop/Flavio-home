@@ -5720,6 +5720,16 @@ const filmMeta = {
   logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/125624278",
   backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/img-hapi.canalplus.pro:80/ServiceImage/ImageID/125624329"
 },
+1095:{
+  desc:"Paris, 1830. Alors que le choléra menace la ville, un homme recherché pour d'obscures expériences médicales se retrouve pris entre la révolte et un amour impossible.",
+  director:"Jean-François Richet",
+  cast:"Vincent Cassel, Karim Leklou, Daphné Patakia",
+  year:"2026",
+  duration:"1h44",
+  country:"France",
+  logo:"https://thumb.canalplus.pro/http/unsafe/760x428/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/47833023/canal-ouah_50259/TITLELOGO/myCANAL_Logo_Fiche_Programme_1920x1080-eLPb",
+  backdrop:"https://thumb.canalplus.pro/http/unsafe/2880x1620/filters:quality(80)/canalplus-cdn.canal-plus.io/p1/unit/47833023/canal-ouah_50259/STD169/myCANAL_16x9_MEA_1920x1080-ZLGH"
+},
 };
 
 // ══════════════════════════════════════════
@@ -5820,6 +5830,7 @@ const avatarData = {
 //  CONTENT DATA
 // ══════════════════════════════════════════
 const allContent = [
+  {id:1095,title:"Quasimodo L'Ame De Paris",genre:"Drame",type:"film",thumb:"https://images.justwatch.com/poster/356521847/s718/quasimodo-lame-de-paris.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-bpeixgvyyeo1.html",embed:true,hero:true},
   {id:1094,title:"De La Comedie Française",genre:"Comedie",type:"film",thumb:"https://images.justwatch.com/poster/347518007/s718/de-la-comedie-francaise.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-3qs1kt5em993.html",embed:true,hero:true},
   {id:1093,title:"Michael Le Meilleur De Jackson",genre:"Musique",type:"film",thumb:"https://thumb.canalplus.pro/http/unsafe/%7BresolutionXY%7D/filters:quality(%7BimageQualityPercentage%7D)/canalplus-cdn.canal-plus.io/p1/unit/32326454/canal-ouah_50001/JAQCANAL/myCANAL_Jaquette_MEA_600x800-MWjS",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://cinemusiq83-boop.github.io/michael-le-meilleur-de-jackson/",embed:true,hero:true},
   {id:1091,title:"Juste Une Illusion",genre:"Comedie",type:"film",thumb:"https://image.tmdb.org/t/p/w500/eWPq3wSvJEMakESTXzaBECUNBYr.jpg",backdrop:"https://media.pathe.fr/news/common/backdrop/262638/lg/1/diable-prada-2.jpg",src:"https://vidzy.org/embed-gutjyrw5m8gp.html",embed:true,hero:true},
@@ -11463,6 +11474,7 @@ const trailerMap = {
   1089: 'uBh8Sg8wOuA', // L'Odyssée
   1091: '3NcTEeCZrY0', // Juste Une Illusion
   1094: 'WHMIX5BQJ3s', // De La Comedie Française
+  1095: 'POXSU2KLU-0', // Quasimodo L'Ame De Paris
   };
 
 function getTrailerYtId(filmId) {
@@ -11477,6 +11489,7 @@ function getTrailerYtId(filmId) {
 //  pour activer l'effet sur d'autres fiches. Les deux formats sont détectés automatiquement.
 // ══════════════════════════════════════════
 const filmBgVideoMap = {
+1095: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/netflixtrailerswildmoka/wildmoka.com_70957392938/01M7AS42BKMHB31866CGQJN70Z/w1_v_avcvbr_20_1080_1920_0_3500.mp4', // Quasimodo L'Ame De Paris
 1094: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_158003_BA/01M70D6PM7EQJVN45NKQGAQBDP/w1_v_avcvbr_10_720_1280_0_2400.mp4', // De La Comedie Française
 1093: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/canalplus/ANT_1273353_878_CPSV/01M7T5R1HE7H1GK918CZMX38E8/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Michael Le Meilleur de Jackson
 1092: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/canalpluswimo/wildmoka.com_70948131739/01M7A3W5NT2XFGP4QQM16M0K0G/w1_v_avcvbr_10_720_1280_0_2400.mp4', // Top 50 Annees 80
@@ -11761,6 +11774,7 @@ const filmBgVideoMap = {
 // Les flux TVOD sont souvent vidéo seule : l'audio est un second fichier, lu en parallèle et resynchronisé sur la vidéo.
 // Ajoutez ici : id du film → url du fichier audio (.mp4 / .m4a).
 const filmBgAudioMap = {
+  1095: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/netflixtrailerswildmoka/wildmoka.com_70957392938/01M7AS42BKMHB31866CGQJN70Z/w1_a_aac_0_fra_0_1_128.mp4', // Quasimodo L'Ame De Paris
   1094: 'https://tvod-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/mvs/canalplay/canalplay.com_158003_BA/01M70D6PM7EQJVN45NKQGAQBDP/w1_a_aac_0_fra_0_1_128.mp4', // De La Comedie Française
   1093: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/canalplus/canalplus/ANT_1273353_878_CPSV/01M7T5R1HE7H1GK918CZMX38E8/w1_a_aac_0_fra_0_1_64.mp4', // Michael Le Meilleur de Jackson
   1092: 'https://replay-dshclear1-aka-canalplus.akamaized.net/wal/dash/clear/wildmoka/canalpluswimo/wildmoka.com_70948131739/01M7A3W5NT2XFGP4QQM16M0K0G/w1_a_aac_0_fra_0_1_64.mp4', // Top 50 Annees 80
@@ -12929,6 +12943,7 @@ const platformContent = {
             987, // Monstre L'Histoire de Lizzie Borden
             988, // Berlin Et La Dame A L'Hermine
             1079, // Le Piege
+            1095, // Quasimodo L'Ame De Paris
   ],
   // Disney — tous les films Disney (ids 200-235)
   disney: [200,201,202,203,204,898,899,900,901,902,205,206,207,903,208,209,210,211,904,905,906,907,908,909,910,212,213,911,214,215,216,912,217,913,914,915,218,916,917,918,919,920,921,922,923,924,925,219,220,926,221,222,927,224,225,928,929,930,226,227,228,229,230,231,232,233,235,
